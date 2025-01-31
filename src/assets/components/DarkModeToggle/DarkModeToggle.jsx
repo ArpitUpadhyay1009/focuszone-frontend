@@ -37,7 +37,7 @@ export default function DarkModeToggle() {
       </button>
 
       {/* Moon icon on the right */}
-      <Moon className="w-6 h-6 text-gray-600" />
+      <Moon className="w-6 h-6 text-gray-500" />
     </div>
   );
 }
