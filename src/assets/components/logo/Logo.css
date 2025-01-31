@@ -1,1 +1,18 @@
 @import "tailwindcss";
+:root{
+    --light-image: url('/logo.png');
+    /* --dark-image: url('../../images/logo-white.png'); */
+}
+
+[data-theme="dark"]{
+    /* --light-image: url('/logo.png'); */
+    --dark-image: url('../../images/logo-white.png');
+}
+
+img{
+    content: var(--light-image);
+}
+
+[data-theme="dark"]img{
+    content: var(--dark-image);
+}

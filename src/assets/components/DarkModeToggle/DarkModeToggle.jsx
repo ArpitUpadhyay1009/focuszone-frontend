@@ -24,7 +24,9 @@ export default function DarkModeToggle() {
       {/* Toggle Switch */}
       <button
         onClick={() => setIsDark(!isDark)}
-        className="relative flex items-center w-11 h-6 md:w-10 md:h-5 sm:w-9 sm:h-4 bg-gray-200 rounded-full p-1 transition-all duration-300"
+        className={`relative flex items-center w-11 h-6 md:w-10 md:h-5 sm:w-9 sm:h-4 rounded-full p-1 transition-all duration-300 ${
+          isDark ? "bg-[#7500CA]" : "bg-gray-200"
+        }`}
       >
         {/* Moving Circle */}
         <div
