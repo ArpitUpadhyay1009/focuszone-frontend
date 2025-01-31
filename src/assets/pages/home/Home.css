@@ -1,0 +1,36 @@
+@import "tailwindcss";
+/* Default Light Theme */
+:root {
+    --bg-image-light: url('../../images/background.png');
+    --bg-image-dark: url('../../images/darkmode-bg.png');
+    --text-color: #000000;
+  }
+  
+  /* Dark Theme */
+  [data-theme="dark"] {
+    --bg-image-light: url('../../images/background.png'); /* You can change this path */
+    --bg-image-dark: url('../../images/darkmode-bg.png'); /* Path for dark theme background */
+    --text-color: #ffffff;
+    --primary-color: #bb86fc;
+  }
+  
+  /* Apply Theme Variables */
+  body {
+    background-image: var(--bg-image-light);
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: var(--text-color);
+    transition: background-image 0.3s ease, color 0.3s ease;
+    height: auto;
+    width: 100vw;
+  }
+  
+  /* Dark Mode Background */
+  [data-theme="dark"] body {
+    background-image: var(--bg-image-dark);
+    background-size: cover;
+    background-repeat: no-repeat;
+    transition: background-image 0.3s ease, color 0.3s ease;
+  }
+
+  
