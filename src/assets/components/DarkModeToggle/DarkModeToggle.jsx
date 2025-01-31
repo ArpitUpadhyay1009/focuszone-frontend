@@ -7,22 +7,19 @@ export default function DarkModeToggle() {
     localStorage.getItem("theme") === "dark"
   );
 
-  // Update the document's theme and save preference to localStorage whenever isDark changes
   useEffect(() => {
-    // Set the data-theme attribute to either 'dark' or 'light'
     document.documentElement.setAttribute(
       "data-theme",
       isDark ? "dark" : "light"
     );
 
-    // Save the theme preference to localStorage so it persists across sessions
     localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]); // Runs whenever isDark changes
+  }, [isDark]);
 
   return (
     <div className="flex items-center gap-3 mr-[1.5em]">
       {/* Sun icon on the left */}
-      <SunDim className="w-6 h-6 text-yellow-500" />
+      <SunDim className="w-6 h-6 text-gray-500" />
 
       {/* Toggle Switch */}
       <button
