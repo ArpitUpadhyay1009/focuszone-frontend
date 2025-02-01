@@ -20,7 +20,7 @@
     background-size: cover;
     background-repeat: no-repeat;
     color: var(--text-color);
-    transition: background-image 0.3s ease, color 0.3s ease;
+    transition: background-image 0.5s ease, color 0.7s ease;
     height: auto;
     width: 100vw;
   }
@@ -30,7 +30,9 @@
     background-image: var(--bg-image-dark);
     background-size: cover;
     background-repeat: no-repeat;
-    transition: background-image 0.3s ease, color 0.3s ease;
+    height: auto;
+    width: 100vw;
+    transition: background-image 0.5s ease, color 0.7s ease;
   }
 
   
