@@ -1,12 +1,16 @@
 import { useState, useEffect } from "react";
-import { Timer, Pause, RefreshCcw } from "lucide-react";
+import { Timer, Pause, RefreshCcw, Settings } from "lucide-react";
+import { Dialog } from "@headlessui/react";
+import Popup from "../popup/Popup";
 
 export default function TimerApp() {
   const [mode, setMode] = useState("pomodoro"); // Modes: pomodoro, countdown, stopwatch
   const [time, setTime] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [showStart, setShowStart] = useState(true);
-  const [customTime, setCustomTime] = useState(0);
+  const [customTime, setCustomTime] = useState(5); // Default countdown time in minutes
+  const [pomodoroTime, setPomodoroTime] = useState(25); // Default Pomodoro time in minutes
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     let timer;
@@ -32,7 +36,7 @@ export default function TimerApp() {
 
   const resetTimer = () => {
     setIsRunning(false);
-    if (mode === "pomodoro") setTime(25 * 60);
+    if (mode === "pomodoro") setTime(pomodoroTime * 60);
     else if (mode === "countdown") setTime(customTime * 60);
     else setTime(0);
     setShowStart(true);
@@ -42,7 +46,7 @@ export default function TimerApp() {
     setMode(newMode);
     setIsRunning(false);
     setShowStart(true);
-    if (newMode === "pomodoro") setTime(25 * 60);
+    if (newMode === "pomodoro") setTime(pomodoroTime * 60);
     else if (newMode === "countdown") setTime(customTime * 60);
     else setTime(0);
   };
@@ -53,8 +57,23 @@ export default function TimerApp() {
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
+  const saveSettings = () => {
+    setIsSettingsOpen(false);
+    if (mode === "pomodoro") setTime(pomodoroTime * 60);
+    if (mode === "countdown") setTime(customTime * 60);
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg w-120 h-contain text-center">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-120 h-contain text-center relative">
+      {/* Settings Button */}
+      <button
+        onClick={() => setIsSettingsOpen(true)}
+        className="absolute top-3 right-3 text-gray-400 hover:text-black"
+      >
+        <Settings size={24} />
+      </button>
+
+      {/* Mode Switcher */}
       <div className="flex justify-between border border-[#7500CA] rounded-full p-0 mb-4">
         <button
           className={`px-4 py-2 rounded-full ${
@@ -88,22 +107,12 @@ export default function TimerApp() {
         </button>
       </div>
 
-      {mode === "countdown" && (
-        <div className="mb-4">
-          <input
-            type="number"
-            className="border p-2 w-20 text-center rounded font-[Poppins]"
-            value={customTime}
-            onChange={(e) => setCustomTime(e.target.value)}
-            placeholder="Minutes"
-          />
-        </div>
-      )}
-
+      {/* Timer Display */}
       <div className="text-8xl font-[Poppins] font-medium mb-4">
         {formatTime(time)}
       </div>
 
+      {/* Start/Pause/Reset Buttons */}
       <div className="space-x-4 flex justify-center">
         {showStart ? (
           <button
@@ -132,6 +141,63 @@ export default function TimerApp() {
           </>
         )}
       </div>
+
+      {/* Settings Popup */}
+      <Dialog
+        open={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        className="fixed inset-0 flex items-center justify-center z-50"
+      >
+        <div
+          className="fixed inset-0 bg-black bg-opacity-400"
+          onClick={() => setIsSettingsOpen(false)}
+        ></div>
+
+        <div className="bg-[#181818] text-white p-6 rounded-lg shadow-lg w-80 relative">
+          {/* Close Button */}
+          <button
+            className="absolute top-3 right-3 text-gray-400 hover:text-white"
+            onClick={() => setIsSettingsOpen(false)}
+          >
+            ✖
+          </button>
+
+          {/* Title */}
+          <h2 className="text-lg font-semibold mb-4">Settings</h2>
+
+          {/* Pomodoro Time Input */}
+          <div className="mb-4">
+            <label className="block mb-2">Pomodoro Time (minutes)</label>
+            <input
+              type="number"
+              value={pomodoroTime}
+              onChange={(e) => setPomodoroTime(Number(e.target.value))}
+              className="w-full p-2 text-white rounded-md"
+              min="1"
+            />
+          </div>
+
+          {/* Countdown Time Input */}
+          <div className="mb-4">
+            <label className="block mb-2">Countdown Time (minutes)</label>
+            <input
+              type="number"
+              value={customTime}
+              onChange={(e) => setCustomTime(Number(e.target.value))}
+              className="w-full p-2 text-white rounded-md"
+              min="1"
+            />
+          </div>
+
+          {/* Save Button */}
+          <button
+            onClick={saveSettings}
+            className="bg-purple-600 text-white w-full py-2 rounded-md mt-4"
+          >
+            Save
+          </button>
+        </div>
+      </Dialog>
     </div>
   );
 }
