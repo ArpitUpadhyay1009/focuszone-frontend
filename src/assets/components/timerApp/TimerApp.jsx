@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Timer, Pause, RefreshCcw, Settings } from "lucide-react";
 import { Dialog } from "@headlessui/react";
-import Popup from "../popup/Popup";
 
 export default function TimerApp() {
   const [mode, setMode] = useState("pomodoro"); // Modes: pomodoro, countdown, stopwatch
@@ -65,14 +64,6 @@ export default function TimerApp() {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg w-120 h-contain text-center relative">
-      {/* Settings Button */}
-      <button
-        onClick={() => setIsSettingsOpen(true)}
-        className="absolute top-3 right-3 text-gray-400 hover:text-black"
-      >
-        <Settings size={24} />
-      </button>
-
       {/* Mode Switcher */}
       <div className="flex justify-between border border-[#7500CA] rounded-full p-0 mb-4">
         <button
@@ -112,8 +103,8 @@ export default function TimerApp() {
         {formatTime(time)}
       </div>
 
-      {/* Start/Pause/Reset Buttons */}
-      <div className="space-x-4 flex justify-center">
+      {/* Start/Pause/Reset Buttons with Settings Icon */}
+      <div className="flex justify-center items-center space-x-4">
         {showStart ? (
           <button
             onClick={startTimer}
@@ -140,6 +131,14 @@ export default function TimerApp() {
             </button>
           </>
         )}
+
+        {/* Settings Button positioned next to the Start Button */}
+        <button
+          onClick={() => setIsSettingsOpen(true)}
+          className="text-[#fff] hover:text-gray-200 ml-4 px-2 py-1 rounded bg-[#7500CA]"
+        >
+          <Settings size={24} />
+        </button>
       </div>
 
       {/* Settings Popup */}
