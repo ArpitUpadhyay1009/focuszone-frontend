@@ -33,6 +33,7 @@
     height: auto;
     width: 100vw;
     transition: background-image 0.5s ease, color 0.7s ease;
+    color: #000000;
   }
 
   
