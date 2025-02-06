@@ -15,13 +15,15 @@ export default function TimerApp() {
     let timer;
     if (isRunning) {
       timer = setInterval(() => {
-        setTime((prevTime) => (prevTime > 0 ? prevTime - 1 : 0));
+        setTime((prevTime) =>
+          mode === "stopwatch" ? prevTime + 1 : Math.max(prevTime - 1, 0)
+        );
       }, 1000);
     } else {
       clearInterval(timer);
     }
     return () => clearInterval(timer);
-  }, [isRunning]);
+  }, [isRunning, mode]);
 
   const startTimer = () => {
     setIsRunning(true);
@@ -37,7 +39,7 @@ export default function TimerApp() {
     setIsRunning(false);
     if (mode === "pomodoro") setTime(pomodoroTime * 60);
     else if (mode === "countdown") setTime(customTime * 60);
-    else setTime(0);
+    else setTime(0); // Reset stopwatch to 0
     setShowStart(true);
   };
 
@@ -47,7 +49,7 @@ export default function TimerApp() {
     setShowStart(true);
     if (newMode === "pomodoro") setTime(pomodoroTime * 60);
     else if (newMode === "countdown") setTime(customTime * 60);
-    else setTime(0);
+    else setTime(0); // Set stopwatch to 0 on mode switch
   };
 
   const formatTime = (seconds) => {
