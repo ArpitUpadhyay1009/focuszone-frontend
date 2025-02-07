@@ -1,1 +1,4 @@
 @import "tailwindcss";
+[data-theme="dark"].bg-dark{
+    background-color: gray;
+}
