@@ -4,7 +4,7 @@ import "./Logo.css";
 export const Logo = () => {
   return (
     <>
-      <a href="/">
+      <a href="/home">
         <img
           src="/logo.png"
           alt="logo"

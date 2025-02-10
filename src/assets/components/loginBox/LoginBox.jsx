@@ -58,12 +58,18 @@ const LoginBox = () => {
                 onChange={(event) => setPassword(event.target.value)}
                 required
               />
-              <Link
+              <a
+                href="/forgot"
+                className="text-purple-700 font-[Poppins] font-semibold block mt-2"
+              >
+                Forgot password
+              </a>
+              {/* <Link
                 to="/forgot"
                 className="text-purple-700 font-[Poppins] font-semibold block mt-2"
               >
                 Forgot Password?
-              </Link>
+              </Link> */}
             </div>
             <button
               type="submit"
