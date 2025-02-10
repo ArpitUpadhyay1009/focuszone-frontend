@@ -20,7 +20,7 @@ const LoginBox = () => {
         if (result.data === "Success") {
           console.log("Login Success");
           alert("Login successful!");
-          navigate("/");
+          navigate("/home");
         } else {
           alert("Incorrect password! Please try again.");
         }
