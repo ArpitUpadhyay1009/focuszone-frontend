@@ -34,9 +34,15 @@ const Register = () => {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col justify-center align-middle mt-30">
-        <img src="/logo.png" alt="logo" className="h-25 w-25 ml-175 p-4" />
-        <RegisterBox />
+      <div className="flex flex-col justify-center align-middle mt-20">
+        <img
+          src="/logo.png"
+          alt="logo"
+          className="h-25 w-25 ml-[47%] p-4 mb-2"
+        />
+        <div className="ml-[1%]">
+          <RegisterBox />
+        </div>
       </div>
     </>
   );

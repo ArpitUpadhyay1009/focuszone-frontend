@@ -171,10 +171,10 @@ export default function TimerApp() {
         className="fixed inset-0 flex items-center justify-center z-50"
       >
         <div
-          className="fixed inset-0 bg-black bg-opacity-50"
+          className="fixed inset-0 bg-[#d3d3d3] bg-opacity-50"
           onClick={() => setIsSettingsOpen(false)}
         ></div>
-        <div className="bg-white bg-dark p-6 rounded-lg shadow-lg w-80 relative">
+        <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
           <button
             onClick={() => setIsSettingsOpen(false)}
             className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -187,7 +187,7 @@ export default function TimerApp() {
             type="number"
             value={pomodoroTime / 60}
             onChange={(e) => setPomodoroTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
             min="1"
           />
           <label className="block mb-2">Countdown Time (minutes)</label>
@@ -195,7 +195,7 @@ export default function TimerApp() {
             type="number"
             value={countdownTime / 60}
             onChange={(e) => setCountdownTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
             min="1"
           />
           <label className="block mb-2">Break Time (minutes)</label>
@@ -203,7 +203,7 @@ export default function TimerApp() {
             type="number"
             value={breakTime / 60}
             onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
             min="1"
           />
           <label className="block mb-2">Number of Cycles</label>
@@ -211,7 +211,7 @@ export default function TimerApp() {
             type="number"
             value={cycles}
             onChange={(e) => setCycles(Number(e.target.value))}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
             min="1"
           />
           <button

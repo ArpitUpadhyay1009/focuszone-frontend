@@ -7,9 +7,11 @@ const Login = () => {
   return (
     <>
       <Navbar />
-      <div className="flex flex-col justify-center align-middle mt-30">
-        <img src="/logo.png" alt="logo" className="h-25 w-25 ml-175 p-4" />
-        <LoginBox />
+      <div className="flex flex-col justify-center align-middle mt-20">
+        <img src="/logo.png" alt="logo" className="h-25 w-25 ml-[47%] p-4" />
+        <div className="ml-[1%]">
+          <LoginBox />
+        </div>
       </div>
     </>
   );

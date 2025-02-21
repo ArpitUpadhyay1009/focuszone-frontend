@@ -6,6 +6,7 @@ import Login from "./assets/pages/login/Login";
 import Register from "./assets/pages/register/Register";
 import ForgotPassword from "./assets/pages/forgotPassword/ForgotPassword";
 import ResetPassword from "./assets/pages/resetPassword/resetPassword";
+import VerifyOtp from "./assets/pages/verifyotp/VerifyOtp";
 function App() {
   return (
     <>
@@ -16,6 +17,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot" element={<ForgotPassword />} />
           <Route path="/reset" element={<ResetPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/home" element={<Dashboard />} />
         </Routes>
       </BrowserRouter>
