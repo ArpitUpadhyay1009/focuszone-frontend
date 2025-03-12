@@ -15,6 +15,7 @@ export default function TimerApp() {
   const [isBreak, setIsBreak] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [countdownTime, setCountdownTime] = useState(5 * 60);
+  const [coins, setCoins] = useState(0); // New state for coins
 
   const notificationSound = new Audio("/notification.mp3");
 
@@ -26,28 +27,78 @@ export default function TimerApp() {
           if (prevTime <= 1 && mode !== "stopwatch") {
             clearInterval(timer);
             notificationSound.play();
+
+            if (mode === "countdown") {
+              setIsRunning(false); 
+              return 0; 
+            }
+
+
             if (mode === "pomodoro" && !isBreak) {
-              if (currentCycle < cycles) {
+              if (currentCycle + 1 < cycles) {
                 setIsBreak(true);
+                setCoins((prevCoins) => prevCoins + 0.5);
                 setTime(breakTime);
               } else {
                 setIsRunning(false);
+                setCoins((prevCoins) => prevCoins + 0.5);
+                return 0;
               }
             } else {
+              
               setIsBreak(false);
               setCurrentCycle((prev) => prev + 1);
               setTime(pomodoroTime);
             }
             return prevTime;
           }
+
+          // Award coins after the minute has elapsed
+          if (mode === "pomodoro" && !isBreak && (prevTime - 1) % 60 === 0) {
+            setCoins((prevCoins) => prevCoins + 0.5);
+          }
+
           return mode === "stopwatch" ? prevTime + 1 : prevTime - 1;
         });
+
+
+
+        
       }, 1000);
     } else {
       clearInterval(timer);
     }
     return () => clearInterval(timer);
   }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime]);
+
+  // Function to save coins to the database
+  const saveCoinsToDatabase = async (coins) => {
+    try {
+      const response = await fetch("/api/saveCoins", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ coins }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to save coins");
+      }
+      const data = await response.json();
+      console.log("Coins saved:", data);
+    } catch (error) {
+      console.error("Error saving coins:", error);
+    }
+  };
+
+  // Save coins when the component unmounts or when the session ends
+  useEffect(() => {
+    return () => {
+      if (coins > 0) {
+        saveCoinsToDatabase(coins);
+      }
+    };
+  }, [coins]);
 
   const startTimer = () => {
     setIsRunning(true);
@@ -67,6 +118,7 @@ export default function TimerApp() {
     if (mode === "countdown") setTime(countdownTime);
     if (mode === "stopwatch") setTime(0);
     setShowStart(true);
+    setCoins(0); // Reset coins when resetting the timer
   };
 
   const formatTime = (seconds) => {
@@ -165,16 +217,22 @@ export default function TimerApp() {
           <Settings size={24} />
         </button>
       </div>
+
+      {/* Display Coins */}
+      <div className="mt-4 text-lg font-semibold">
+        Coins Earned: {coins}
+      </div>
+
       <Dialog
         open={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         className="fixed inset-0 flex items-center justify-center z-50"
       >
         <div
-          className="fixed inset-0 bg-[#d3d3d3] bg-opacity-50"
+          className="fixed inset-0 bg-black bg-opacity-50"
           onClick={() => setIsSettingsOpen(false)}
         ></div>
-        <div className="bg-white p-6 rounded-lg shadow-lg w-80 relative">
+        <div className="bg-white bg-dark p-6 rounded-lg shadow-lg w-80 relative">
           <button
             onClick={() => setIsSettingsOpen(false)}
             className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -187,7 +245,7 @@ export default function TimerApp() {
             type="number"
             value={pomodoroTime / 60}
             onChange={(e) => setPomodoroTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
+            className="w-full p-2 border rounded-md mb-4"
             min="1"
           />
           <label className="block mb-2">Countdown Time (minutes)</label>
@@ -195,7 +253,7 @@ export default function TimerApp() {
             type="number"
             value={countdownTime / 60}
             onChange={(e) => setCountdownTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
+            className="w-full p-2 border rounded-md mb-4"
             min="1"
           />
           <label className="block mb-2">Break Time (minutes)</label>
@@ -203,7 +261,7 @@ export default function TimerApp() {
             type="number"
             value={breakTime / 60}
             onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
+            className="w-full p-2 border rounded-md mb-4"
             min="1"
           />
           <label className="block mb-2">Number of Cycles</label>
@@ -211,7 +269,7 @@ export default function TimerApp() {
             type="number"
             value={cycles}
             onChange={(e) => setCycles(Number(e.target.value))}
-            className="w-full p-2 border rounded-md mb-4 border-none bg-gray-100"
+            className="w-full p-2 border rounded-md mb-4"
             min="1"
           />
           <button
