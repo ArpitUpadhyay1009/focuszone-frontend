@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Timer, Pause, RefreshCcw, Settings, X } from "lucide-react";
 import { Dialog } from "@headlessui/react";
+import { useTheme } from "../../context/ThemeContext";
 import "./TimerApp.css";
 
 export default function TimerApp() {
@@ -19,6 +20,8 @@ export default function TimerApp() {
 
   const notificationSound = new Audio("/notification.mp3");
 
+  const { theme } = useTheme();
+
   useEffect(() => {
     let timer;
     if (isRunning) {
@@ -29,10 +32,9 @@ export default function TimerApp() {
             notificationSound.play();
 
             if (mode === "countdown") {
-              setIsRunning(false); 
-              return 0; 
+              setIsRunning(false);
+              return 0;
             }
-
 
             if (mode === "pomodoro" && !isBreak) {
               if (currentCycle + 1 < cycles) {
@@ -45,7 +47,6 @@ export default function TimerApp() {
                 return 0;
               }
             } else {
-              
               setIsBreak(false);
               setCurrentCycle((prev) => prev + 1);
               setTime(pomodoroTime);
@@ -60,10 +61,6 @@ export default function TimerApp() {
 
           return mode === "stopwatch" ? prevTime + 1 : prevTime - 1;
         });
-
-
-
-        
       }, 1000);
     } else {
       clearInterval(timer);
@@ -74,7 +71,7 @@ export default function TimerApp() {
   // Function to save coins to the database
   const saveCoinsToDatabase = async (coins) => {
     try {
-      const response = await fetch("/api/saveCoins", {
+      const response = await fetch("http://localhost:3001/api/auth/save-coin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,15 +131,23 @@ export default function TimerApp() {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg w-120 h-contain text-center relative">
+    <div
+      className={`p-6 rounded-lg shadow-lg w-120 h-contain text-center relative transition-colors duration-300 ${
+        theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+      }`}
+    >
       <div className="flex justify-between border border-[#7500CA] rounded-full p-0 mb-4">
         <button
-          className={`px-4 py-2 rounded-full ${
+          className={`px-4 py-2 rounded-full transition-colors duration-300 ${
             isBreak
               ? "bg-gray-300"
               : mode === "pomodoro"
-              ? "bg-orange-300"
-              : "bg-white"
+              ? theme === "dark"
+                ? "bg-purple-500 text-white"
+                : "bg-orange-300 text-black"
+              : theme === "dark"
+              ? "bg-black text-white"
+              : "bg-white text-black"
           }`}
           onClick={() => {
             setMode("pomodoro");
@@ -152,8 +157,14 @@ export default function TimerApp() {
           {isBreak ? "Break" : "Pomodoro"}
         </button>
         <button
-          className={`px-4 py-2 rounded-full ${
-            mode === "countdown" ? "bg-orange-300" : "bg-white"
+          className={`px-4 py-2 rounded-full transition-colors duration-300 ${
+            mode === "countdown"
+              ? theme === "dark"
+                ? "bg-purple-500 text-white"
+                : "bg-orange-300 text-black"
+              : theme === "dark"
+              ? "bg-black text-white"
+              : "bg-white text-black"
           }`}
           onClick={() => {
             setMode("countdown");
@@ -163,8 +174,14 @@ export default function TimerApp() {
           Countdown
         </button>
         <button
-          className={`px-4 py-2 rounded-full ${
-            mode === "stopwatch" ? "bg-orange-300" : "bg-white"
+          className={`px-4 py-2 rounded-full transition-colors duration-300 ${
+            mode === "stopwatch"
+              ? theme === "dark"
+                ? "bg-purple-500 text-white"
+                : "bg-orange-300 text-black"
+              : theme === "dark"
+              ? "bg-black text-white"
+              : "bg-white text-black"
           }`}
           onClick={() => {
             setMode("stopwatch");
@@ -176,8 +193,12 @@ export default function TimerApp() {
       </div>
 
       <div
-        className={`text-8xl font-medium mb-4 ${
-          isBreak ? "text-gray-500" : "text-black"
+        className={`text-8xl font-medium mb-4 transition-colors duration-300 ${
+          isBreak
+            ? "text-gray-500"
+            : theme === "dark"
+            ? "text-white"
+            : "text-black"
         }`}
       >
         {formatTime(time)}
@@ -187,7 +208,7 @@ export default function TimerApp() {
         {showStart ? (
           <button
             onClick={startTimer}
-            className="bg-[#7500CA] text-white px-36 py-2 rounded flex items-center justify-center"
+            className="bg-[#7500CA] text-white px-36 py-2 rounded flex items-center justify-center transition-colors duration-300"
           >
             <Timer size={20} />
             <span>Start</span>
@@ -196,14 +217,14 @@ export default function TimerApp() {
           <>
             <button
               onClick={pauseTimer}
-              className="bg-[#7500CA] text-white px-8 py-2 rounded flex items-center justify-center"
+              className="bg-[#7500CA] text-white px-8 py-2 rounded flex items-center justify-center transition-colors duration-300"
             >
               <Pause size={20} />
               <span>Pause</span>
             </button>
             <button
               onClick={resetTimer}
-              className="bg-[#7500CA] text-white px-8 py-2 rounded flex items-center justify-center"
+              className="bg-[#7500CA] text-white px-8 py-2 rounded flex items-center justify-center transition-colors duration-300"
             >
               <RefreshCcw size={20} />
               <span>Reset</span>
@@ -212,14 +233,14 @@ export default function TimerApp() {
         )}
         <button
           onClick={() => setIsSettingsOpen(true)}
-          className="text-[#fff] hover:text-gray-200 ml-4 px-2 py-1 rounded bg-[#7500CA]"
+          className="text-[#fff] hover:text-gray-200 ml-4 px-2 py-1 rounded bg-[#7500CA] transition-colors duration-300"
         >
           <Settings size={24} />
         </button>
       </div>
 
       {/* Display Coins */}
-      <div className="mt-4 text-lg font-semibold">
+      <div className="mt-4 text-lg font-semibold transition-colors duration-300">
         Coins Earned: {coins}
       </div>
 
@@ -232,7 +253,11 @@ export default function TimerApp() {
           className="fixed inset-0 bg-black bg-opacity-50"
           onClick={() => setIsSettingsOpen(false)}
         ></div>
-        <div className="bg-white bg-dark p-6 rounded-lg shadow-lg w-80 relative">
+        <div
+          className={`p-6 rounded-lg shadow-lg w-80 relative transition-colors duration-300 ${
+            theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+          }`}
+        >
           <button
             onClick={() => setIsSettingsOpen(false)}
             className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
@@ -245,7 +270,7 @@ export default function TimerApp() {
             type="number"
             value={pomodoroTime / 60}
             onChange={(e) => setPomodoroTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
             min="1"
           />
           <label className="block mb-2">Countdown Time (minutes)</label>
@@ -253,7 +278,7 @@ export default function TimerApp() {
             type="number"
             value={countdownTime / 60}
             onChange={(e) => setCountdownTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
             min="1"
           />
           <label className="block mb-2">Break Time (minutes)</label>
@@ -261,7 +286,7 @@ export default function TimerApp() {
             type="number"
             value={breakTime / 60}
             onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
             min="1"
           />
           <label className="block mb-2">Number of Cycles</label>
@@ -269,12 +294,12 @@ export default function TimerApp() {
             type="number"
             value={cycles}
             onChange={(e) => setCycles(Number(e.target.value))}
-            className="w-full p-2 border rounded-md mb-4"
+            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
             min="1"
           />
           <button
             onClick={saveSettings}
-            className="bg-purple-600 text-white w-full py-2 rounded-md"
+            className="bg-purple-600 text-white w-full py-2 rounded-md transition-colors duration-300"
           >
             Save
           </button>

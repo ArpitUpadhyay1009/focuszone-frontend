@@ -1,29 +1,20 @@
-import { useState, useEffect } from "react";
 import { SunDim, Moon } from "lucide-react";
+import { useTheme } from "../../context/ThemeContext"; // Import theme context
 import "./DarkModeToggle.css";
 
 export default function DarkModeToggle() {
-  const [isDark, setIsDark] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
+  const { theme, toggleTheme } = useTheme(); // Access theme and toggle function
 
-  useEffect(() => {
-    document.documentElement.setAttribute(
-      "data-theme",
-      isDark ? "dark" : "light"
-    );
-
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-  }, [isDark]);
+  const isDark = theme === "dark";
 
   return (
     <div className="flex items-center gap-3 mr-[1.5em]">
-      {/* Sun icon on the left */}
+      {/* Sun icon */}
       <SunDim className="w-6 h-6 text-gray-500" />
 
-      {/* Toggle Switch */}
+      {/* Toggle Button */}
       <button
-        onClick={() => setIsDark(!isDark)}
+        onClick={toggleTheme}
         className={`relative flex items-center w-11 h-6 md:w-10 md:h-5 sm:w-9 sm:h-4 rounded-full p-1 transition-all duration-300 ${
           isDark ? "bg-[#7500CA]" : "bg-gray-200"
         }`}
@@ -38,7 +29,7 @@ export default function DarkModeToggle() {
         ></div>
       </button>
 
-      {/* Moon icon on the right */}
+      {/* Moon icon */}
       <Moon className="w-6 h-6 text-gray-500" />
     </div>
   );
