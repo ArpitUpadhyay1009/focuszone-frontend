@@ -5,6 +5,7 @@ import TimerApp from "../../components/timerApp/TimerApp";
 // import LevelRenders from "../../components/levelRenders/LevelRenders";
 import SpotifyEmbed from "../../components/spotify/SpotifyEmbed";
 import LoginToUnlock from "../../components/loginToUnlock/LoginToUnlock";
+import TodoList from "../../components/todo/todo";
 
 export const Home = () => {
   return (
@@ -20,6 +21,9 @@ export const Home = () => {
           <LoginToUnlock />
           <SpotifyEmbed />
         </div>
+      </div>
+      <div>
+        <TodoList />
       </div>
     </>
   );
