@@ -3,6 +3,7 @@ import { Timer, Pause, RefreshCcw, Settings, X } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import { useTheme } from "../../context/ThemeContext";
 import "./TimerApp.css";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TimerApp() {
   const [mode, setMode] = useState("pomodoro");
@@ -191,7 +192,6 @@ export default function TimerApp() {
           Stopwatch
         </button>
       </div>
-
       <div
         className={`text-8xl font-medium mb-4 transition-colors duration-300 ${
           isBreak
@@ -203,7 +203,6 @@ export default function TimerApp() {
       >
         {formatTime(time)}
       </div>
-
       <div className="flex justify-center items-center space-x-4">
         {showStart ? (
           <button
@@ -231,80 +230,93 @@ export default function TimerApp() {
             </button>
           </>
         )}
-        <button
+        <motion.button
+          whileTap={{ scale: 0.9 }}
           onClick={() => setIsSettingsOpen(true)}
-          className="text-[#fff] hover:text-gray-200 ml-4 px-2 py-1 rounded bg-[#7500CA] transition-colors duration-300"
+          className="text-[#fff] hover:text-gray-200 ml-4 px-2 py-2 rounded bg-[#7500CA] transition-colors duration-300"
         >
           <Settings size={24} />
-        </button>
+        </motion.button>
       </div>
-
       {/* Display Coins */}
       <div className="mt-4 text-lg font-semibold transition-colors duration-300">
         Coins Earned: {coins}
       </div>
-
-      <Dialog
-        open={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        className="fixed inset-0 flex items-center justify-center z-50"
-      >
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50"
-          onClick={() => setIsSettingsOpen(false)}
-        ></div>
-        <div
-          className={`p-6 rounded-lg shadow-lg w-80 relative transition-colors duration-300 ${
-            theme === "dark" ? "bg-black text-white" : "bg-white text-black"
-          }`}
-        >
-          <button
-            onClick={() => setIsSettingsOpen(false)}
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <Dialog
+            open={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            className="fixed inset-0 flex items-center justify-center z-50"
           >
-            <X size={20} />
-          </button>
-          <h2 className="text-lg font-semibold mb-4">Settings</h2>
-          <label className="block mb-2">Pomodoro Time (minutes)</label>
-          <input
-            type="number"
-            value={pomodoroTime / 60}
-            onChange={(e) => setPomodoroTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
-            min="1"
-          />
-          <label className="block mb-2">Countdown Time (minutes)</label>
-          <input
-            type="number"
-            value={countdownTime / 60}
-            onChange={(e) => setCountdownTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
-            min="1"
-          />
-          <label className="block mb-2">Break Time (minutes)</label>
-          <input
-            type="number"
-            value={breakTime / 60}
-            onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
-            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
-            min="1"
-          />
-          <label className="block mb-2">Number of Cycles</label>
-          <input
-            type="number"
-            value={cycles}
-            onChange={(e) => setCycles(Number(e.target.value))}
-            className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
-            min="1"
-          />
-          <button
-            onClick={saveSettings}
-            className="bg-purple-600 text-white w-full py-2 rounded-md transition-colors duration-300"
-          >
-            Save
-          </button>
-        </div>
-      </Dialog>
+            <motion.div
+              className="fixed inset-0 bg-transparent bg-opacity-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)} // ✅ Click outside closes modal
+            />
+            <div
+              className="fixed inset-0 bg-transparent bg-opacity-50"
+              onClick={() => setIsSettingsOpen(false)}
+            ></div>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className={`p-6 rounded-lg shadow-lg w-80 relative transition-colors duration-300 ${
+                theme === "dark" ? "bg-black text-white" : "bg-white text-black"
+              }`}
+            >
+              <button
+                onClick={() => setIsSettingsOpen(false)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              >
+                <X size={20} />
+              </button>
+              <h2 className="text-lg font-semibold mb-4">Settings</h2>
+              <label className="block mb-2">Pomodoro Time (minutes)</label>
+              <input
+                type="number"
+                value={pomodoroTime / 60}
+                onChange={(e) => setPomodoroTime(Number(e.target.value) * 60)}
+                className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
+                min="1"
+              />
+              <label className="block mb-2">Countdown Time (minutes)</label>
+              <input
+                type="number"
+                value={countdownTime / 60}
+                onChange={(e) => setCountdownTime(Number(e.target.value) * 60)}
+                className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
+                min="1"
+              />
+              <label className="block mb-2">Break Time (minutes)</label>
+              <input
+                type="number"
+                value={breakTime / 60}
+                onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
+                className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
+                min="1"
+              />
+              <label className="block mb-2">Number of Cycles</label>
+              <input
+                type="number"
+                value={cycles}
+                onChange={(e) => setCycles(Number(e.target.value))}
+                className="w-full p-2 border rounded-md mb-4 transition-colors duration-300"
+                min="1"
+              />
+              <button
+                onClick={saveSettings}
+                className="bg-purple-600 text-white w-full py-2 rounded-md transition-colors duration-300"
+              >
+                Save
+              </button>
+            </motion.div>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

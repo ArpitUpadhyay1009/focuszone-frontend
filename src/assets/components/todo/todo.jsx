@@ -3,6 +3,7 @@ import { useState } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { useTheme } from "../../context/ThemeContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function TodoList() {
   const { theme } = useTheme();
@@ -16,7 +17,11 @@ export default function TodoList() {
   });
 
   const addTask = () => {
-    if (newTask.name && newTask.date && (newTask.hours || newTask.minutes)) {
+    if (
+      newTask.name.trim() &&
+      newTask.date &&
+      (newTask.hours || newTask.minutes)
+    ) {
       setTasks((prevTasks) => [
         ...prevTasks,
         { ...newTask, id: Date.now(), status: "ongoing" },
@@ -57,7 +62,7 @@ export default function TodoList() {
           >
             <input
               type="radio"
-              name="task-radio"
+              name={`task-${task.id}`}
               checked={task.status === "finished"}
               onChange={() => toggleTaskStatus(task.id)}
               className="w-5 h-5 cursor-pointer"
@@ -94,7 +99,9 @@ export default function TodoList() {
         ))}
       </ul>
 
-      <button
+      {/* Add Task Button */}
+      <motion.button
+        whileTap={{ scale: 0.9 }}
         className={`mt-4 ${
           theme === "dark"
             ? "bg-purple-400 border-white border-2 text-white"
@@ -103,67 +110,98 @@ export default function TodoList() {
         onClick={() => setIsOpen(true)}
       >
         <FaPlus size={16} /> Add Task
-      </button>
+      </motion.button>
 
-      <Dialog
-        open={isOpen}
-        onClose={() => setIsOpen(false)}
-        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
-      >
-        <div className="bg-white p-6 rounded-lg shadow-md w-96">
-          <h2 className="text-lg font-semibold mb-4">New Task</h2>
-          <label>Enter task:</label>
-          <input
-            type="text"
-            placeholder="Task Name"
-            value={newTask.name}
-            onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
-            className="w-full p-2 border rounded mb-2"
-          />
-          <label>Enter date of completion:</label>
-          <input
-            type="date"
-            value={newTask.date}
-            onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
-            className="w-full p-2 border rounded mb-2"
-          />
-          <label>Estimated time of completion:</label>
-          <div className="flex gap-2">
-            <input
-              type="number"
-              placeholder="Hours"
-              value={newTask.hours}
-              onChange={(e) =>
-                setNewTask({ ...newTask, hours: e.target.value })
-              }
-              className="w-1/2 p-2 border rounded mb-2"
+      <AnimatePresence>
+        {isOpen && (
+          <Dialog
+            as="div"
+            className="fixed inset-0 flex items-center justify-center"
+            open={isOpen}
+            onClose={() => setIsOpen(false)}
+          >
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 bg-transparent bg-opacity-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)} // ✅ Click outside closes modal
             />
-            <input
-              type="number"
-              placeholder="Minutes"
-              value={newTask.minutes}
-              onChange={(e) =>
-                setNewTask({ ...newTask, minutes: e.target.value })
-              }
-              className="w-1/2 p-2 border rounded mb-2"
-            />
-          </div>
-          <div className="flex justify-end gap-2">
-            <button
-              className="bg-gray-300 px-4 py-2 rounded"
-              onClick={() => setIsOpen(false)}
+
+            {/* Modal */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className={`relative p-6 rounded-lg shadow-md w-96 ${
+                theme === "dark" ? "bg-black text-white" : "bg-white"
+              }`}
+              onClick={(e) => e.stopPropagation()} // ✅ Prevent closing on modal click
             >
-              Cancel
-            </button>
-            <button
-              className="bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={addTask}
-            >
-              Add
-            </button>
-          </div>
-        </div>
-      </Dialog>
+              <h2 className="text-lg font-semibold mb-4">New Task</h2>
+              <label>Enter task:</label>
+              <input
+                type="text"
+                placeholder="Task Name"
+                value={newTask.name}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, name: e.target.value })
+                }
+                className="w-full p-2 border rounded mb-2"
+              />
+              <label>Enter date of completion:</label>
+              <input
+                type="date"
+                value={newTask.date}
+                onChange={(e) =>
+                  setNewTask({ ...newTask, date: e.target.value })
+                }
+                className="w-full p-2 border rounded mb-2"
+              />
+              <label>Estimated time of completion:</label>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Hours"
+                  value={newTask.hours}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, hours: e.target.value })
+                  }
+                  className="w-1/2 p-2 border rounded mb-2"
+                />
+                <input
+                  type="number"
+                  placeholder="Minutes"
+                  value={newTask.minutes}
+                  onChange={(e) =>
+                    setNewTask({ ...newTask, minutes: e.target.value })
+                  }
+                  className="w-1/2 p-2 border rounded mb-2"
+                />
+              </div>
+              <div className="flex justify-end gap-2">
+                <button
+                  className="bg-gray-300 px-4 py-2 rounded"
+                  onClick={() => setIsOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className={` px-4 py-2 rounded ${
+                    theme === "dark"
+                      ? "bg-[#7500CA] text-white"
+                      : "bg-[#7500CA] text-white"
+                  }`}
+                  onClick={addTask}
+                >
+                  Add
+                </button>
+              </div>
+            </motion.div>
+          </Dialog>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

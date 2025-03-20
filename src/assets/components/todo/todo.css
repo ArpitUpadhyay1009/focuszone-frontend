@@ -1,1 +1,6 @@
 @import "tailwindcss";
+/* Apply only to the calendar icon */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+  }
+  
