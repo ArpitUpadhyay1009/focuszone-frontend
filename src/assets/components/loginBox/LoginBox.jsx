@@ -4,9 +4,11 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 import "./LoginBox.css";
 
 const LoginBox = () => {
+  const { login } = useAuth();
   const [identifier, setIdentifier] = useState(""); // Can be email or username
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -25,8 +27,12 @@ const LoginBox = () => {
       );
 
       alert("Login successful!");
-      localStorage.setItem("token", response.data.token); // Store JWT token
-      navigate("/home"); // Redirect to home page
+      if (response.data.token) {
+        login(response.data.user, response.data.token);
+        navigate("/home"); // ✅ Redirect after login
+      } else {
+        console.error("Login failed: No token received");
+      }
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {

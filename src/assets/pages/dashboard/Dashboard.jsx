@@ -4,6 +4,7 @@ import "./Dashboard.css";
 import TimerApp from "../../components/timerApp/TimerApp";
 import LevelRenders from "../../components/levelRenders/LevelRenders";
 import SpotifyEmbed from "../../components/spotify/SpotifyEmbed";
+import TodoList from "../../components/todo/todo";
 
 export const Home = () => {
   return (
@@ -19,6 +20,9 @@ export const Home = () => {
           <LevelRenders />
           <SpotifyEmbed />
         </div>
+      </div>
+      <div>
+        <TodoList />
       </div>
     </>
   );
