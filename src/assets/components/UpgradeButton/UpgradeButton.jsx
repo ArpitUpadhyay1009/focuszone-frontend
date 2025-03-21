@@ -1,7 +1,12 @@
 import { motion } from "framer-motion";
 import { ArrowUp, Coins } from "lucide-react";
 
-const UpgradeButton = ({ onClick, isUpgrading, coinsRequired, coinsAvailable }) => {
+const UpgradeButton = ({
+  onClick,
+  isUpgrading,
+  coinsRequired,
+  coinsAvailable,
+}) => {
   const canUpgrade = coinsAvailable >= coinsRequired; // ✅ Ensure this evaluates correctly
 
   return (
@@ -14,14 +19,14 @@ const UpgradeButton = ({ onClick, isUpgrading, coinsRequired, coinsAvailable }) 
         type: "spring",
         stiffness: 400,
         damping: 17,
-        delay: 0.3
+        delay: 0.3,
       }}
       onClick={canUpgrade ? onClick : undefined} // ✅ Prevents clicking if not enough coins
       disabled={isUpgrading || !canUpgrade} // ✅ Ensures the button is enabled when upgrade is possible
       className={`flex items-center justify-center px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow ${
-        canUpgrade 
-          ? "bg-upgrade-orange text-white hover:bg-orange-500"  // ✅ Enable hover effect only when possible
-          : "bg-gray-300 text-gray-600 cursor-not-allowed"
+        canUpgrade
+          ? "bg-orange-500 text-white " // ✅ Enable hover effect only when possible
+          : "bg-gray-500 text-white "
       }`}
     >
       <motion.div
@@ -32,7 +37,13 @@ const UpgradeButton = ({ onClick, isUpgrading, coinsRequired, coinsAvailable }) 
         <ArrowUp className="w-5 h-5" />
       </motion.div>
       Upgrade
-      <div className="flex items-center ml-2 bg-white bg-opacity-20 px-2 py-1 rounded-md">
+      <div
+        className={`flex items-center ml-2 ${
+          canUpgrade
+            ? "bg-orange-300 text-orange-600 border-1 border-orange-600"
+            : "bg-gray-400 text-gray-500 border-1 border-gray-500"
+        } bg-opacity-20 px-2 py-1 rounded-md`}
+      >
         <Coins className="w-4 h-4 mr-1" />
         <span>{coinsRequired}</span>
       </div>

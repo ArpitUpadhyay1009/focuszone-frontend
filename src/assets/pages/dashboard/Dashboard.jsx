@@ -9,7 +9,6 @@ import LevelUpgradeSystem from "../../components/LevelUpgradeSystem/LevelUpgrade
 import SpotifyEmbed from "../../components/spotify/SpotifyEmbed";
 import TodoList from "../../components/todo/todo";
 
-
 export const Home = () => {
   return (
     <>
@@ -22,7 +21,7 @@ export const Home = () => {
         </div>
         <div className="mt-10 mr-30">
           <LevelRenders />
-        <LevelUpgradeSystem/>
+          <LevelUpgradeSystem />
           <SpotifyEmbed />
         </div>
       </div>
