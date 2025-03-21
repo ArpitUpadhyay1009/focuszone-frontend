@@ -3,8 +3,12 @@ import Navbar2 from "../../components/navbar2/Navbar2";
 import "./Dashboard.css";
 import TimerApp from "../../components/timerApp/TimerApp";
 import LevelRenders from "../../components/levelRenders/LevelRenders";
+
+import LevelUpgradeSystem from "../../components/LevelUpgradeSystem/LevelUpgradeSystem";
+
 import SpotifyEmbed from "../../components/spotify/SpotifyEmbed";
 import TodoList from "../../components/todo/todo";
+
 
 export const Home = () => {
   return (
@@ -18,6 +22,7 @@ export const Home = () => {
         </div>
         <div className="mt-10 mr-30">
           <LevelRenders />
+        <LevelUpgradeSystem/>
           <SpotifyEmbed />
         </div>
       </div>
