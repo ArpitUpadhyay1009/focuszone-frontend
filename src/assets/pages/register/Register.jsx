@@ -5,7 +5,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar/Navbar";
 import "./Register.css";
-import RegisterBox from "../../components/registerBox/RegisterBox";
+import RegisterBox from "../../components/RegisterBox/RegisterBox";
 import Logo from "../../components/Logo/Logo";
 
 const Register = () => {

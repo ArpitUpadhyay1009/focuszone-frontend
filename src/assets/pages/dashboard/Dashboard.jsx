@@ -7,7 +7,7 @@ import LevelRenders from "../../components/LevelRenders/LevelRenders";
 import LevelUpgradeSystem from "../../components/LevelUpgradeSystem/LevelUpgradeSystem";
 
 import SpotifyEmbed from "../../components/Spotify/SpotifyEmbed";
-import TodoList from "../../components/todo/todo";
+import TodoList from "../../components/Todo/todo";
 
 export const Home = () => {
   return (

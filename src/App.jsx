@@ -6,7 +6,7 @@ import Login from "./assets/pages/login/Login";
 import Register from "./assets/pages/register/Register";
 import ForgotPassword from "./assets/pages/forgotPassword/ForgotPassword";
 // import ResetPassword from "./assets/pages/resetPassword/resetPassword";
-import VerifyOtp from "./assets/pages/verifyOtp/VerifyOtp";
+import VerifyOtp from "./assets/pages/verifyotp/VerifyOtp";
 function App() {
   return (
     <>
