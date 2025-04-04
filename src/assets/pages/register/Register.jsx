@@ -3,10 +3,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Navbar from "../../components/navbar/Navbar";
+import Navbar from "../../components/Navbar/Navbar";
 import "./Register.css";
 import RegisterBox from "../../components/registerBox/RegisterBox";
-import Logo from "../../components/logo/Logo";
+import Logo from "../../components/Logo/Logo";
 
 const Register = () => {
   const [name, setName] = useState();

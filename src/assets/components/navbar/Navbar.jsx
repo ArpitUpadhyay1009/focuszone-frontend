@@ -1,8 +1,8 @@
 import React from "react";
 import "./Navbar.css";
-import Logo from "../logo/Logo";
-import Button from "../button/Button";
-import DarkModeToggle from "../darkModeToggle/DarkModeToggle";
+import Logo from "../Logo/Logo";
+import Button from "../Button/Button";
+import DarkModeToggle from "../DarkModeToggle/DarkModeToggle";
 
 export const Navbar = () => {
   return (

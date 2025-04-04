@@ -1,12 +1,12 @@
 import React from "react";
-import Navbar2 from "../../components/navbar2/Navbar2";
+import Navbar2 from "../../components/Navbar2/Navbar2";
 import "./Dashboard.css";
-import TimerApp from "../../components/timerApp/TimerApp";
-import LevelRenders from "../../components/levelRenders/LevelRenders";
+import TimerApp from "../../components/TimerApp/TimerApp";
+import LevelRenders from "../../components/LevelRenders/LevelRenders";
 
 import LevelUpgradeSystem from "../../components/LevelUpgradeSystem/LevelUpgradeSystem";
 
-import SpotifyEmbed from "../../components/spotify/SpotifyEmbed";
+import SpotifyEmbed from "../../components/Spotify/SpotifyEmbed";
 import TodoList from "../../components/todo/todo";
 
 export const Home = () => {
