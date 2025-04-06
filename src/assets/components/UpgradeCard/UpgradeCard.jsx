@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import ProgressBar from "../ProgressBar/ProgressBar";
-import UpgradeButton from "../UpgradeButton/UpgradeButton";
+import ProgressBar from "../ProgressBar/ProgressBar.jsx";
+import UpgradeButton from "../UpgradeButton/UpgradeButton.jsx";
 
 const UpgradeCard = () => {
   const [currentLevel, setCurrentLevel] = useState(13);

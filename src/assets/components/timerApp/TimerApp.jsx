@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Timer, Pause, RefreshCcw, Settings, X } from "lucide-react";
 import { Dialog } from "@headlessui/react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext.jsx";
 import "./TimerApp.css";
 import { motion, AnimatePresence } from "framer-motion";
 

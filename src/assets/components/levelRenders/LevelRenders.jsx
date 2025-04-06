@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
-import { useTheme } from "../../context/ThemeContext"; // Adjust path as needed
+import { useTheme } from "../../context/ThemeContext.jsx"; // Adjust path as needed
 
 const API_URL = "http://localhost:3001/api/auth"; // Update this if needed
 

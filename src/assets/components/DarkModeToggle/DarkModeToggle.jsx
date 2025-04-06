@@ -1,5 +1,5 @@
 import { SunDim, Moon } from "lucide-react";
-import { useTheme } from "../../context/ThemeContext"; // Import theme context
+import { useTheme } from "../../context/ThemeContext.jsx"; // Import theme context
 import "./DarkModeToggle.css";
 
 export default function DarkModeToggle() {

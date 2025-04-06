@@ -2,7 +2,7 @@ import "./todo.css";
 import { useState } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/ThemeContext.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function TodoList() {

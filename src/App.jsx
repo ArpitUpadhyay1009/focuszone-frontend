@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import Home from "@pages/home/Home";
-import Dashboard from "@pages/dashboard/Dashboard";
-import Login from "@pages/login/Login";
-import Register from "@pages/register/Register";
-import ForgotPassword from "@pages/forgotPassword/ForgotPassword";
-import VerifyOtp from "@pages/verifyotp/VerifyOtp";
+import Home from "@pages/home/Home.jsx";
+import Dashboard from "@pages/dashboard/Dashboard.jsx";
+import Login from "@pages/login/Login.jsx";
+import Register from "@pages/register/Register.jsx";
+import ForgotPassword from "@pages/forgotPassword/ForgotPassword.jsx";
+import VerifyOtp from "@pages/verifyotp/VerifyOtp.jsx";
 function App() {
   return (
     <>
