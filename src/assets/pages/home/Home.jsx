@@ -1,5 +1,5 @@
 import React from "react";
-import Navbar from "../../components/Navbar/Navbar";
+import Navbar from "src/assets/components/Navbar/Navbar";
 import "./Home.css";
 import TimerApp from "../../components/TimerApp/TimerApp";
 // import LevelRenders from "../../components/levelRenders/LevelRenders";
