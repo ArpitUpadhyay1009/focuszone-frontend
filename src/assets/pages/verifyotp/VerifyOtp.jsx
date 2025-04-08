@@ -1,5 +1,5 @@
 import React from "react";
-import VerifyBox from "@components/Verifybox/VerifyBox.jsx";
+import VerifyBox from "@components/verifybox/VerifyBox.jsx";
 
 const VerifyOtp = () => {
   return (

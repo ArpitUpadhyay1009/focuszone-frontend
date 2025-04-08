@@ -1,13 +1,13 @@
 import React from "react";
-import Navbar2 from "@components/Navbar2/Navbar2.jsx";
+import Navbar2 from "@components/navbar2/Navbar2.jsx";
 import "./Dashboard.css";
-import TimerApp from "@components/TimerApp/TimerApp.jsx";
-import LevelRenders from "@components/LevelRenders/LevelRenders.jsx";
+import TimerApp from "@components/timerApp/TimerApp.jsx";
+import LevelRenders from "@components/levelRenders/LevelRenders.jsx";
 
 import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSystem.jsx";
 
-import SpotifyEmbed from "@components/Spotify/SpotifyEmbed.jsx";
-import TodoList from "@components/Todo/todo.jsx";
+import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
+import TodoList from "@components/todo/todo.jsx";
 
 export const Home = () => {
   return (

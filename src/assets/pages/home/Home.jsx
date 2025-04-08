@@ -1,10 +1,10 @@
 import React from "react";
-import Navbar from "@components/Navbar/Navbar.jsx";
+import Navbar from "@components/navbar/Navbar.jsx";
 import "./Home.css";
-import TimerApp from "@components/TimerApp/TimerApp.jsx";
+import TimerApp from "@components/timerApp/TimerApp.jsx";
 // import LevelRenders from "../../components/levelRenders/LevelRenders";
-import SpotifyEmbed from "@components/Spotify/SpotifyEmbed.jsx";
-import LoginToUnlock from "@components/LoginToUnlock/LoginToUnlock.jsx";
+import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
+import LoginToUnlock from "@components/loginToUnlock/LoginToUnlock.jsx";
 
 export const Home = () => {
   return (

@@ -1,6 +1,6 @@
 import React from "react";
-import Navbar from "@components/Navbar/Navbar.jsx";
-import ForgotBox from "@components/ForgotBox/ForgotBox.jsx";
+import Navbar from "@components/navbar/Navbar.jsx";
+import ForgotBox from "@components/forgotBox/ForgotBox.jsx";
 import "./ForgotPassword.css";
 
 const ForgotPassword = () => {
