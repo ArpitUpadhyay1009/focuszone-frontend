@@ -103,10 +103,11 @@ const addTask = async () => {
 
       const date = new Date(res.data.task.dueDate).toLocaleDateString();
 
+      // Ensure the task ID is correctly set
       setTasks((prev) => [
         ...prev,
         {
-          id: res.data.task._id,
+          id: res.data.task._id, // Ensure this ID is correctly set
           name: res.data.task.taskName,
           date,
           hours,
