@@ -3,9 +3,7 @@ import Navbar2 from "@components/navbar2/Navbar2.jsx";
 import "./Dashboard.css";
 import TimerApp from "@components/timerApp/TimerApp.jsx";
 import LevelRenders from "@components/levelRenders/LevelRenders.jsx";
-
 import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSystem.jsx";
-
 import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
 import TodoList from "@components/todo/todo.jsx";
 
@@ -15,17 +13,17 @@ export const Home = () => {
       <div>
         <Navbar2 />
       </div>
-      <div className="flex flex-row flex-wrap justify-between align-middle">
-        <div className="mt-50 ml-55 md:ml-2 md:mt-25 sm:mt-10 sm:ml-5 lg:mt-50 lg:ml-55">
+      <div className="flex flex-col md:flex-row flex-wrap justify-center items-center space-y-10 md:space-y-0 md:space-x-40">
+        <div className="mt-5 mb-60 ml-2 md:ml-5 lg:mt-1 lg:ml-15">
           <TimerApp />
         </div>
-        <div className="mt-10 mr-30">
+        <div className="mt-2 mr-5 md:mr-5 lg:mr-20">
           <LevelRenders />
           <LevelUpgradeSystem />
           <SpotifyEmbed />
         </div>
       </div>
-      <div>
+      <div className="mt-10">
         <TodoList />
       </div>
     </>

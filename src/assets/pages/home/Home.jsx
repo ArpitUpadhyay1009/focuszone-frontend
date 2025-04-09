@@ -12,8 +12,8 @@ export const Home = () => {
       <div>
         <Navbar />
       </div>
-      <div className="flex flex-row flex-nowrap md:flex-wrap sm:flex-wrap xs:flex-wrap lg:flex-nowrap justify-between align-middle">
-        <div className="mt-50 ml-55 md:ml-2 md:mt-25 sm:mt-10 sm:ml-5 lg:mt-50 lg:ml-55">
+      <div className="flex flex-col md:flex-row flex-wrap justify-center items-center space-y-10 md:space-y-0 md:space-x-40">
+        <div className="mt-5 ml-2 md:ml-5 lg:mt-1 lg:ml-15">
           <TimerApp />
         </div>
         <div className="flex flex-col w-auto mr-[10%] mt-[5%]">
