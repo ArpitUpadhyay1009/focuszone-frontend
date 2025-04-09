@@ -27,10 +27,23 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const login = (userData, userToken) => {
-    setUser(userData);
-    setToken(userToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", userToken);
+    if (userData && typeof userData === "object") {
+      localStorage.setItem("user", JSON.stringify(userData));
+      setUser(userData);
+    } else {
+      // console.warn("Invalid userData in login:", userData);
+      localStorage.removeItem("user");
+      setUser(null);
+    }
+
+    if (userToken) {
+      localStorage.setItem("token", userToken);
+      setToken(userToken);
+    } else {
+      console.warn("Invalid token in login");
+      localStorage.removeItem("token");
+      setToken(null);
+    }
   };
 
   const logout = () => {

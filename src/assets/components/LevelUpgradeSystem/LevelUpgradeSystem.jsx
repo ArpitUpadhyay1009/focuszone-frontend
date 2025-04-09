@@ -56,7 +56,7 @@ const LevelUpgradeSystem = () => {
         }
 
         const data = await response.json();
-        console.log(data);
+        // console.log(data);
 
         // Fetch max possible upgrades with current coins
         const upgradesResponse = await fetch(

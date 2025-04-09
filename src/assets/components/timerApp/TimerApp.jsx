@@ -70,22 +70,23 @@ export default function TimerApp() {
   }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime]);
 
   // Function to save coins to the database
-  const saveCoinsToDatabase = async (coins) => {
+  const saveCoinsToDatabase = async (coins, token) => {
     try {
-      const response = await fetch("http://localhost:3001/api/auth/save-coin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ coins }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to save coins");
-      }
-      const data = await response.json();
-      console.log("Coins saved:", data);
+      const response = await axios.post(
+        "http://localhost:3001/api/auth/save-coin",
+        { coins },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Coins saved:", response.data);
     } catch (error) {
-      console.error("Error saving coins:", error);
+      console.error(
+        "Error saving coins:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -93,7 +94,9 @@ export default function TimerApp() {
   useEffect(() => {
     return () => {
       if (coins > 0) {
-        saveCoinsToDatabase(coins);
+        const token = localStorage.getItem("token");
+        console.log(token);
+        saveCoinsToDatabase(coins, token);
       }
     };
   }, [coins]);

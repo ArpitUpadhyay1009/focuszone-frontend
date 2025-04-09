@@ -1,9 +1,10 @@
 import "./todo.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "axios";
 
 export default function TodoList() {
   const { theme } = useTheme();
@@ -16,36 +17,148 @@ export default function TodoList() {
     minutes: "",
   });
 
-  const addTask = () => {
-    if (
-      newTask.name.trim() &&
-      newTask.date &&
-      (newTask.hours || newTask.minutes)
-    ) {
-      setTasks((prevTasks) => [
-        ...prevTasks,
-        { ...newTask, id: Date.now(), status: "ongoing" },
-      ]);
-      setNewTask({ name: "", date: "", hours: "", minutes: "" });
-      setIsOpen(false);
+  const token = localStorage.getItem("token");
+
+  // 📌 Fetch tasks on mount
+  // 📌 Fetch tasks on mount
+  // ... existing code ...
+
+// ... existing code ...
+
+useEffect(() => {
+  const fetchTasks = async () => {
+    try {
+      const res = await axios.get("http://localhost:3001/api/tasks", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setTasks(
+        res.data.ongoingTasks.map((task) => {
+          let hours = "0";
+          let minutes = "0";
+          
+          if (typeof task.estimatedTime === 'string') {
+            const timeMatch = task.estimatedTime.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/i);
+            if (timeMatch) {
+              hours = timeMatch[1];
+              minutes = timeMatch[2];
+            }
+          }
+
+          const date = new Date(task.dueDate).toLocaleDateString();
+
+          return {
+            id: task._id,
+            name: task.taskName,
+            date,
+            hours,
+            minutes,
+            status: "ongoing",
+          };
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching tasks:", error.message);
     }
   };
 
-  const deleteTask = (id) => {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+  fetchTasks();
+}, [token]);
+
+const addTask = async () => {
+  if (
+    newTask.name.trim() &&
+    newTask.date &&
+    (newTask.hours || newTask.minutes)
+  ) {
+    try {
+      const estimatedTime = {
+        hours: newTask.hours || "0",
+        minutes: newTask.minutes || "0"
+      };
+
+      const res = await axios.post(
+        "http://localhost:3001/api/tasks",
+        {
+          taskName: newTask.name,
+          dueDate: newTask.date,
+          estimatedTime,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      let hours = "0";
+      let minutes = "0";
+      
+      if (typeof res.data.task.estimatedTime === 'string') {
+        const timeMatch = res.data.task.estimatedTime.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/i);
+        if (timeMatch) {
+          hours = timeMatch[1];
+          minutes = timeMatch[2];
+        }
+      }
+
+      const date = new Date(res.data.task.dueDate).toLocaleDateString();
+
+      setTasks((prev) => [
+        ...prev,
+        {
+          id: res.data.task._id,
+          name: res.data.task.taskName,
+          date,
+          hours,
+          minutes,
+          status: "ongoing",
+        },
+      ]);
+
+      setNewTask({ name: "", date: "", hours: "", minutes: "" });
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Failed to add task:", error.message);
+    }
+  }
+};
+
+
+  // 📌 Delete task from backend
+  const deleteTask = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3001/api/tasks/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setTasks((prev) => prev.filter((task) => task.id !== id));
+    } catch (error) {
+      console.error("Failed to delete task:", error.message);
+    }
   };
 
-  const toggleTaskStatus = (id) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === id
-          ? {
-              ...task,
-              status: task.status === "finished" ? "ongoing" : "finished",
-            }
-          : task
-      )
-    );
+  // 📌 Mark as completed
+  const toggleTaskStatus = async (id) => {
+    try {
+      await axios.patch(
+        `http://localhost:3001/api/tasks/${id}/complete`,
+        null,
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      // Update the task status to "finished"
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === id ? { ...task, status: "finished" } : task
+        )
+      );
+      // Add a delay of 3 seconds before removing the task from the list
+      setTimeout(() => {
+        setTasks((prev) => prev.filter((task) => task.id !== id));
+      }, 3000);
+    } catch (error) {
+      console.error("Failed to complete task:", error.message);
+    }
   };
 
   return (
@@ -126,7 +239,7 @@ export default function TodoList() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setIsOpen(false)} // ✅ Click outside closes modal
+              onClick={() => setIsOpen(false)}
             />
 
             {/* Modal */}
@@ -137,7 +250,7 @@ export default function TodoList() {
               className={`relative p-6 rounded-lg shadow-md w-96 ${
                 theme === "dark" ? "bg-black text-white" : "bg-white"
               }`}
-              onClick={(e) => e.stopPropagation()} // ✅ Prevent closing on modal click
+              onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-semibold mb-4">New Task</h2>
               <label>Enter task:</label>
