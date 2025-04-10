@@ -196,24 +196,74 @@ const LevelUpgradeSystem = () => {
     }
   };
 
-  const handleCloseCongratsPopup = () => {
+  // In the LevelUpgradeSystem component:
+  
+  // Add a new state variable for max level
+  const [isMaxLevel, setIsMaxLevel] = useState(false);
+  
+  // Update the handleCloseCongratsPopup function
+  const handleCloseCongratsPopup = (reachedMaxLevel = false) => {
     setShowCongratsPopup(false);
+    
+    // Update max level state if needed
+    if (reachedMaxLevel) {
+      setIsMaxLevel(true);
+    }
+    
     // Reload the page
     window.location.reload();
   };
-
-  if (isLoading) {
-    return (
-      <div className="w-full p-8 flex justify-center items-center">
-        <motion.div
-          className="h-16 w-16 border-4 border-upgrade-green border-t-transparent rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        />
-      </div>
-    );
-  }
-
+  
+  // Update the useEffect that loads user data
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        setIsLoading(true);
+  
+        // Fetch user level data
+        const response = await fetch(
+          "http://localhost:3001/api/auth/user-level",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+  
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+  
+        const data = await response.json();
+        const currentLevel = data.level || 1;
+  
+        // Construct user data from response
+        setUserData({
+          level: currentLevel,
+          coins: data.coins || 0,
+          progress: 100,
+        });
+        
+        setNewLevel(currentLevel + 1);
+        
+        // Check if user is at max level (50)
+        if (currentLevel >= 50) {
+          setIsMaxLevel(true);
+        } else {
+          setIsMaxLevel(false);
+        }
+      } catch (error) {
+        console.error("Failed to load user data:", error);
+        toast.error("Failed to load your progress. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    loadUserData();
+  }, []);
+  
+  // Update the return statement to properly pass isMaxLevel to UpgradeButton
   return (
     <>
       <motion.div
@@ -269,6 +319,7 @@ const LevelUpgradeSystem = () => {
             isUpgrading={isUpgrading}
             coinsRequired={UPGRADE_COST}
             coinsAvailable={userData.coins}
+            isMaxLevel={isMaxLevel} // Make sure this prop is passed
           />
         </div>
       </motion.div>
