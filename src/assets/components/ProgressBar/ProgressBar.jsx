@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { CheckCircle, Clock } from "lucide-react";
+import { CheckCircle, Coins } from "lucide-react";
 
 const ProgressBar = ({
   level,
   progress,
-  timeRemaining,
   isComplete,
+  coinsRequired = 150,
 }) => {
   return (
     <div className="mb-6">
@@ -19,29 +19,23 @@ const ProgressBar = ({
               isComplete ? "bg-green-500" : "bg-gray-300"
             } flex items-center justify-center mr-2`}
           >
-            {isComplete ? (
-              <CheckCircle size={16} className="text-white" />
-            ) : (
-              <motion.div
-                animate={{ 
-                  rotate: 360,
-                  transition: { repeat: Infinity, duration: 2 }
-                }}
-              >
-                <Clock size={16} className="text-gray-600" />
-              </motion.div>
-            )}
+            <CheckCircle size={16} className={isComplete ? "text-white" : "text-gray-600"} />
           </motion.div>
           <span className="font-medium">Level {level}</span>
         </div>
         <span className="text-sm font-medium">
-          {isComplete ? "100%" : timeRemaining}
+          {isComplete ? "100%" : (
+            <div className="flex items-center">
+              <Coins size={14} className="text-yellow-500 mr-1" />
+              <span>{coinsRequired} coins</span>
+            </div>
+          )}
         </span>
       </div>
       <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
+          animate={{ width: "100%" }}
           transition={{ duration: 1 }}
           className={`h-full ${
             isComplete ? "bg-green-500" : "bg-purple-500"

@@ -7,7 +7,7 @@ const UpgradeButton = ({
   coinsRequired,
   coinsAvailable,
 }) => {
-  const canUpgrade = coinsAvailable >= coinsRequired; // ✅ Ensure this evaluates correctly
+  const canUpgrade = coinsAvailable >= coinsRequired;
 
   return (
     <motion.button
@@ -21,12 +21,12 @@ const UpgradeButton = ({
         damping: 17,
         delay: 0.3,
       }}
-      onClick={canUpgrade ? onClick : undefined} // ✅ Prevents clicking if not enough coins
-      disabled={isUpgrading || !canUpgrade} // ✅ Ensures the button is enabled when upgrade is possible
+      onClick={canUpgrade ? onClick : undefined}
+      disabled={isUpgrading || !canUpgrade}
       className={`flex items-center justify-center px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow ${
         canUpgrade
-          ? "bg-orange-500 text-white " // ✅ Enable hover effect only when possible
-          : "bg-gray-500 text-white "
+          ? "bg-orange-500 text-white"
+          : "bg-gray-500 text-white"
       }`}
     >
       <motion.div
