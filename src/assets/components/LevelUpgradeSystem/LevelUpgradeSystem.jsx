@@ -153,6 +153,23 @@ const LevelUpgradeSystem = () => {
     };
   }, []);
 
+  // NEW: Listen for coin updates from the timer
+  // Add this useEffect to listen for coin updates
+  useEffect(() => {
+    const handleCoinUpdate = () => {
+    // Refresh user data when coins are updated
+    fetchUserData();
+  };
+
+  // Add event listener for coin updates
+  window.addEventListener("coinUpdate", handleCoinUpdate);
+
+  // Remove event listener on cleanup
+  return () => {
+    window.removeEventListener("coinUpdate", handleCoinUpdate);
+  };
+}, []);
+
   const handleUpgrade = async () => {
     if (userData.coins < UPGRADE_COST) {
       toast.error(
