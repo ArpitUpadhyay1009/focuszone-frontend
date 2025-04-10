@@ -32,9 +32,9 @@ export default function TimerApp() {
         console.error("No token found, user might not be logged in");
         return;
       }
-      
+
       const response = await axios.post(
-        "http://localhost:3001/api/auth/save-coin",
+        "/api/auth/save-coin",
         { coins: earnedCoins },
         {
           headers: {
@@ -43,13 +43,16 @@ export default function TimerApp() {
         }
       );
       console.log("Coins saved:", response.data);
-      
+
       // Dispatch a custom event to notify other components that coins have been updated
       window.dispatchEvent(new Event("coinUpdate"));
-      
+
       return response.data;
     } catch (error) {
-      console.error("Error saving coins:", error.response?.data || error.message);
+      console.error(
+        "Error saving coins:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -79,13 +82,13 @@ export default function TimerApp() {
                 // Immediately save coins when earned at the end of all cycles
                 saveCoinsToDatabase(0.5);
                 setCoins((prevCoins) => prevCoins + 0.5);
-                
+
                 // Auto reset after a short delay when all cycles are completed
                 setTimeout(() => {
                   resetTimer();
                   setCoins(0); // Explicitly reset coins display
                 }, 2000);
-                
+
                 return 0;
               }
             } else {
@@ -97,7 +100,12 @@ export default function TimerApp() {
           }
 
           // Award and save coins after each minute
-          if (mode === "pomodoro" && !isBreak && (prevTime - 1) % 60 === 0 && prevTime > 1) {
+          if (
+            mode === "pomodoro" &&
+            !isBreak &&
+            (prevTime - 1) % 60 === 0 &&
+            prevTime > 1
+          ) {
             // Immediately save coins when earned each minute
             saveCoinsToDatabase(0.5);
             setCoins((prevCoins) => prevCoins + 0.5);
@@ -131,7 +139,7 @@ export default function TimerApp() {
     if (mode === "stopwatch") setTime(0);
     setShowStart(true);
     setCoins(0); // Reset coins when resetting the timer
-    
+
     // Dispatch the coinUpdate event when resetting
     window.dispatchEvent(new Event("coinUpdate"));
   };
@@ -158,7 +166,7 @@ export default function TimerApp() {
       }`}
     >
       {/* Mode selector with improved styling */}
-      <motion.div 
+      <motion.div
         className="flex justify-between border border-[#7500CA] rounded-full p-1 mb-6"
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
@@ -255,7 +263,7 @@ export default function TimerApp() {
               <span className="text-lg font-medium">Start</span>
             </motion.button>
           ) : (
-            <motion.div 
+            <motion.div
               key="controls"
               className="flex space-x-4"
               initial={{ opacity: 0 }}
@@ -283,7 +291,7 @@ export default function TimerApp() {
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <motion.button
           whileHover={{ scale: 1.1, rotate: 15 }}
           whileTap={{ scale: 0.9 }}
@@ -295,7 +303,7 @@ export default function TimerApp() {
       </div>
 
       {/* Coins display with animation */}
-      <motion.div 
+      <motion.div
         className="mt-4 text-lg font-semibold flex items-center justify-center gap-2 transition-colors duration-300"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -305,7 +313,10 @@ export default function TimerApp() {
         <motion.span
           key={coins}
           initial={{ scale: 1.5, color: "#FFD700" }}
-          animate={{ scale: 1, color: theme === "dark" ? "#FFFFFF" : "#000000" }}
+          animate={{
+            scale: 1,
+            color: theme === "dark" ? "#FFFFFF" : "#000000",
+          }}
           transition={{ duration: 0.5 }}
         >
           {coins} Coins Earned
@@ -333,7 +344,9 @@ export default function TimerApp() {
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25 }}
               className={`p-8 rounded-2xl shadow-2xl w-96 relative transition-colors duration-300 ${
-                theme === "dark" ? "bg-gray-900 text-white" : "bg-white text-black"
+                theme === "dark"
+                  ? "bg-gray-900 text-white"
+                  : "bg-white text-black"
               }`}
             >
               <motion.button
@@ -345,22 +358,28 @@ export default function TimerApp() {
                 <X size={24} />
               </motion.button>
               <h2 className="text-2xl font-bold mb-6">Timer Settings</h2>
-              
+
               {/* Settings inputs with improved styling */}
               <div className="space-y-4">
                 <div>
-                  <label className="block mb-2 font-medium">Pomodoro Time (minutes)</label>
+                  <label className="block mb-2 font-medium">
+                    Pomodoro Time (minutes)
+                  </label>
                   <input
                     type="number"
                     value={pomodoroTime / 60}
-                    onChange={(e) => setPomodoroTime(Number(e.target.value) * 60)}
+                    onChange={(e) =>
+                      setPomodoroTime(Number(e.target.value) * 60)
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     min="1"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block mb-2 font-medium">Break Time (minutes)</label>
+                  <label className="block mb-2 font-medium">
+                    Break Time (minutes)
+                  </label>
                   <input
                     type="number"
                     value={breakTime / 60}
@@ -369,20 +388,26 @@ export default function TimerApp() {
                     min="1"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block mb-2 font-medium">Countdown Time (minutes)</label>
+                  <label className="block mb-2 font-medium">
+                    Countdown Time (minutes)
+                  </label>
                   <input
                     type="number"
                     value={countdownTime / 60}
-                    onChange={(e) => setCountdownTime(Number(e.target.value) * 60)}
+                    onChange={(e) =>
+                      setCountdownTime(Number(e.target.value) * 60)
+                    }
                     className="w-full p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     min="1"
                   />
                 </div>
-                
+
                 <div>
-                  <label className="block mb-2 font-medium">Number of Cycles</label>
+                  <label className="block mb-2 font-medium">
+                    Number of Cycles
+                  </label>
                   <input
                     type="number"
                     value={cycles}
@@ -392,7 +417,7 @@ export default function TimerApp() {
                   />
                 </div>
               </div>
-              
+
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}

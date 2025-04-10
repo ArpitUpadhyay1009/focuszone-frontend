@@ -16,7 +16,7 @@ const ProtectedPage = () => {
     }
 
     axios
-      .get("http://localhost:3001/api/protected-data", {
+      .get("/api/protected-data", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((response) => {

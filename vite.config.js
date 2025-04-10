@@ -3,7 +3,6 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-// https://vite.dev/config/
 export default defineConfig({
   base: "/",
   plugins: [react(), tailwindcss()],
@@ -13,6 +12,14 @@ export default defineConfig({
       "@pages": path.resolve(__dirname, "src/assets/pages"),
       "@context": path.resolve(__dirname, "src/assets/context"),
       "@images": path.resolve(__dirname, "src/assets/images"),
+    },
+  },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3001", // change if your dev backend runs on another port
+        changeOrigin: true,
+      },
     },
   },
 });

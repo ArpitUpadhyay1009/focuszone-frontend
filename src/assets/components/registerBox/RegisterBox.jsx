@@ -17,14 +17,11 @@ const RegisterBox = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/auth/register",
-        {
-          username,
-          email,
-          password,
-        }
-      );
+      const response = await axios.post("api/auth/register", {
+        username,
+        email,
+        password,
+      });
 
       alert("Registered successfully! Please verify your email.");
       navigate("/verify-otp"); // Navigate to OTP verification page
