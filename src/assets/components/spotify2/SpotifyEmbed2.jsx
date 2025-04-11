@@ -1,7 +1,7 @@
-import "./SpotifyEmbed.css";
+import "./SpotifyEmbed2.css";
 import React from "react";
 
-const SpotifyEmbed = () => {
+const SpotifyEmbed2 = () => {
   return (
     <>
       <div>
@@ -12,10 +12,10 @@ const SpotifyEmbed = () => {
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"
-          className="frame ml-[5%] mb-[10%] md:ml-[22%]" // Adjusted margin for tablet screens
+          className="frame ml-[13%] mr-[17%] mb-[10%] md:ml-[22%]" // Adjusted margin for tablet screens
         ></iframe>
       </div>
     </>
   );
 };
-export default SpotifyEmbed;
+export default SpotifyEmbed2;

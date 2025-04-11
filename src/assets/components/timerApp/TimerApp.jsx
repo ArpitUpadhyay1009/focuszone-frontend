@@ -161,19 +161,19 @@ export default function TimerApp() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`p-8 rounded-2xl shadow-lg max-w-md mx-auto text-center relative transition-colors duration-300 ${
+      className={`p-4 md:p-6 lg:p-8 rounded-2xl shadow-lg max-w-xs md:max-w-sm lg:max-w-md mx-auto text-center relative transition-colors duration-300 ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-black"
       }`}
     >
       {/* Mode selector with improved styling */}
       <motion.div
-        className="flex justify-between border border-[#7500CA] rounded-full p-1 mb-6"
+        className="flex justify-between border border-[#7500CA] rounded-full p-1 mb-4 md:mb-6"
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
       >
         <motion.button
-          className={`px-6 py-3 rounded-full transition-all duration-300 ${
+          className={`px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 ${
             isBreak
               ? "bg-gray-300 text-gray-700"
               : mode === "pomodoro"
@@ -192,7 +192,7 @@ export default function TimerApp() {
           {isBreak ? "Break" : "Pomodoro"}
         </motion.button>
         <motion.button
-          className={`px-6 py-3 rounded-full transition-all duration-300 ${
+          className={`px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 ${
             mode === "countdown"
               ? "bg-[#FFE3A6] text-black"
               : theme === "dark"
@@ -209,7 +209,7 @@ export default function TimerApp() {
           Countdown
         </motion.button>
         <motion.button
-          className={`px-6 py-3 rounded-full transition-all duration-300 ${
+          className={`px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 ${
             mode === "stopwatch"
               ? "bg-[#FFE3A6] text-black"
               : theme === "dark"
@@ -233,7 +233,7 @@ export default function TimerApp() {
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className={`text-8xl font-bold mb-8 transition-colors duration-300 ${
+        className={`text-6xl md:text-6xl lg:text-8xl font-bold mb-6 md:mb-8 transition-colors duration-300 ${
           isBreak
             ? "text-gray-500"
             : theme === "dark"
@@ -245,7 +245,7 @@ export default function TimerApp() {
       </motion.div>
 
       {/* Control buttons with improved styling */}
-      <div className="flex justify-center items-center space-x-4 mb-6">
+      <div className="flex justify-center items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
         <AnimatePresence mode="wait">
           {showStart ? (
             <motion.button
@@ -255,38 +255,38 @@ export default function TimerApp() {
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.3 }}
               onClick={startTimer}
-              className="bg-[#7500CA] text-white px-12 py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="bg-[#7500CA] text-white px-8 py-2 md:px-10 md:py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Timer size={24} />
-              <span className="text-lg font-medium">Start</span>
+              <Timer size={20} />
+              <span className="text-base md:text-lg font-medium">Start</span>
             </motion.button>
           ) : (
             <motion.div
               key="controls"
-              className="flex space-x-4"
+              className="flex space-x-3 md:space-x-4"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
               <motion.button
                 onClick={pauseTimer}
-                className="bg-[#7500CA] text-white px-8 py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-[#7500CA] text-white px-6 py-2 md:px-8 md:py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Pause size={24} />
-                <span className="text-lg font-medium">Pause</span>
+                <Pause size={20} />
+                <span className="text-base md:text-lg font-medium">Pause</span>
               </motion.button>
               <motion.button
                 onClick={resetTimer}
-                className="bg-[#7500CA] text-white px-8 py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-[#7500CA] text-white px-6 py-2 md:px-8 md:py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <RefreshCcw size={24} />
-                <span className="text-lg font-medium">Reset</span>
+                <RefreshCcw size={20} />
+                <span className="text-base md:text-lg font-medium">Reset</span>
               </motion.button>
             </motion.div>
           )}
@@ -296,20 +296,20 @@ export default function TimerApp() {
           whileHover={{ scale: 1.1, rotate: 15 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsSettingsOpen(true)}
-          className="text-[#fff] hover:text-gray-200 ml-4 p-3 rounded-full bg-[#7500CA] shadow-lg transition-all duration-300"
+          className="text-[#fff] hover:text-gray-200 ml-3 md:ml-4 p-2 md:p-3 rounded-full bg-[#7500CA] shadow-lg transition-all duration-300"
         >
-          <Settings size={24} />
+          <Settings size={20} />
         </motion.button>
       </div>
 
       {/* Coins display with animation */}
       <motion.div
-        className="mt-4 text-lg font-semibold flex items-center justify-center gap-2 transition-colors duration-300"
+        className="mt-3 md:mt-4 text-base md:text-lg font-semibold flex items-center justify-center gap-2 transition-colors duration-300"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
       >
-        <Coins size={24} className="text-yellow-500" />
+        <Coins size={20} className="text-yellow-500" />
         <motion.span
           key={coins}
           initial={{ scale: 1.5, color: "#FFD700" }}
@@ -343,7 +343,7 @@ export default function TimerApp() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0, y: 20 }}
               transition={{ type: "spring", damping: 25 }}
-              className={`p-8 rounded-2xl shadow-2xl w-96 relative transition-colors duration-300 ${
+              className={`p-6 md:p-8 rounded-2xl shadow-2xl w-80 md:w-96 relative transition-colors duration-300 ${
                 theme === "dark"
                   ? "bg-gray-900 text-white"
                   : "bg-white text-black"
@@ -355,14 +355,14 @@ export default function TimerApp() {
                 onClick={() => setIsSettingsOpen(false)}
                 className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
               >
-                <X size={24} />
+                <X size={20} />
               </motion.button>
-              <h2 className="text-2xl font-bold mb-6">Timer Settings</h2>
+              <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Timer Settings</h2>
 
               {/* Settings inputs with improved styling */}
-              <div className="space-y-4">
+              <div className="space-y-3 md:space-y-4">
                 <div>
-                  <label className="block mb-2 font-medium">
+                  <label className="block mb-1 md:mb-2 font-medium">
                     Pomodoro Time (minutes)
                   </label>
                   <input
@@ -371,26 +371,26 @@ export default function TimerApp() {
                     onChange={(e) =>
                       setPomodoroTime(Number(e.target.value) * 60)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     min="1"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2 font-medium">
+                  <label className="block mb-1 md:mb-2 font-medium">
                     Break Time (minutes)
                   </label>
                   <input
                     type="number"
                     value={breakTime / 60}
                     onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
-                    className="w-full p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     min="1"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2 font-medium">
+                  <label className="block mb-1 md:mb-2 font-medium">
                     Countdown Time (minutes)
                   </label>
                   <input
@@ -399,20 +399,20 @@ export default function TimerApp() {
                     onChange={(e) =>
                       setCountdownTime(Number(e.target.value) * 60)
                     }
-                    className="w-full p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     min="1"
                   />
                 </div>
 
                 <div>
-                  <label className="block mb-2 font-medium">
+                  <label className="block mb-1 md:mb-2 font-medium">
                     Number of Cycles
                   </label>
                   <input
                     type="number"
                     value={cycles}
                     onChange={(e) => setCycles(Number(e.target.value))}
-                    className="w-full p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                    className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                     min="1"
                   />
                 </div>
@@ -422,7 +422,7 @@ export default function TimerApp() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={saveSettings}
-                className="bg-[#7500CA] text-white w-full py-3 rounded-lg mt-6 font-medium text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                className="bg-[#7500CA] text-white w-full py-2 md:py-3 rounded-lg mt-4 md:mt-6 font-medium text-base md:text-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Save Settings
               </motion.button>

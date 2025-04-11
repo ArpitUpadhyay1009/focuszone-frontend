@@ -17,7 +17,7 @@ const RegisterBox = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post("api/auth/register", {
+      const response = await axios.post("/api/auth/register", {
         username,
         email,
         password,
