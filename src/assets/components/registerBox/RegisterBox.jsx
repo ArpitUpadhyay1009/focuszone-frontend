@@ -23,14 +23,15 @@ const RegisterBox = () => {
         password,
       });
 
-      alert("Registered successfully! Please verify your email.");
-      navigate("/verify-otp"); // Navigate to OTP verification page
+      alert("Registered successfully! Please login.");
+      navigate("/login"); // Navigate to OTP verification page
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {
           alert("Email or Username already in use!");
         } else {
           alert(`error: ${error}`);
+          console.log(error);
           navigate("/server-error"); // Navigate to server error page
         }
       } else {
