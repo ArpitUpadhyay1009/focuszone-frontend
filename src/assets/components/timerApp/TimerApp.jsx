@@ -74,19 +74,19 @@ export default function TimerApp() {
               if (currentCycle + 1 < cycles) {
                 setIsBreak(true);
                 // Immediately save coins when earned at the end of a pomodoro session
-                saveCoinsToDatabase(1);
-                setCoins((prevCoins) => prevCoins + 1);
+                saveCoinsToDatabase(0.5);
+                setCoins((prevCoins) => prevCoins + 0.5);
                 setTime(breakTime);
               } else {
                 setIsRunning(false);
                 // Immediately save coins when earned at the end of all cycles
 
-                saveCoinsToDatabase(1);
-                setCoins((prevCoins) => prevCoins + 1);
+                saveCoinsToDatabase(0.5);
+                setCoins((prevCoins) => prevCoins + 0.5);
                 
 
-                saveCoinsToDatabase(1);
-                setCoins((prevCoins) => prevCoins + 1);
+                saveCoinsToDatabase(0.5);
+                setCoins((prevCoins) => prevCoins + 0.5);
 
                 // Auto reset after a short delay when all cycles are completed
                 setTimeout(() => {
@@ -112,8 +112,8 @@ export default function TimerApp() {
             prevTime > 1
           ) {
             // Immediately save coins when earned each minute
-            saveCoinsToDatabase(1);
-            setCoins((prevCoins) => prevCoins + 1);
+            saveCoinsToDatabase(0.5);
+            setCoins((prevCoins) => prevCoins + 0.5);
           }
 
           return mode === "stopwatch" ? prevTime + 1 : prevTime - 1;
