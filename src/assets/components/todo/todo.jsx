@@ -23,112 +23,115 @@ export default function TodoList() {
   // 📌 Fetch tasks on mount
   // ... existing code ...
 
-// ... existing code ...
+  // ... existing code ...
 
-useEffect(() => {
-  const fetchTasks = async () => {
-    try {
-      const res = await axios.get("http://localhost:3001/api/tasks", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      setTasks(
-        res.data.ongoingTasks.map((task) => {
-          let hours = "0";
-          let minutes = "0";
-          
-          if (typeof task.estimatedTime === 'string') {
-            const timeMatch = task.estimatedTime.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/i);
-            if (timeMatch) {
-              hours = timeMatch[1];
-              minutes = timeMatch[2];
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const res = await axios.get("/api/tasks", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        setTasks(
+          res.data.ongoingTasks.map((task) => {
+            let hours = "0";
+            let minutes = "0";
+
+            if (typeof task.estimatedTime === "string") {
+              const timeMatch = task.estimatedTime.match(
+                /(\d+)\s*hours?\s*(\d+)\s*minutes?/i
+              );
+              if (timeMatch) {
+                hours = timeMatch[1];
+                minutes = timeMatch[2];
+              }
             }
+
+            const date = new Date(task.dueDate).toLocaleDateString();
+
+            return {
+              id: task._id,
+              name: task.taskName,
+              date,
+              hours,
+              minutes,
+              status: "ongoing",
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Error fetching tasks:", error.message);
+      }
+    };
+
+    fetchTasks();
+  }, [token]);
+
+  const addTask = async () => {
+    if (
+      newTask.name.trim() &&
+      newTask.date &&
+      (newTask.hours || newTask.minutes)
+    ) {
+      try {
+        const estimatedTime = {
+          hours: newTask.hours || "0",
+          minutes: newTask.minutes || "0",
+        };
+
+        const res = await axios.post(
+          "/api/tasks",
+          {
+            taskName: newTask.name,
+            dueDate: newTask.date,
+            estimatedTime,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
+        );
 
-          const date = new Date(task.dueDate).toLocaleDateString();
+        let hours = "0";
+        let minutes = "0";
 
-          return {
-            id: task._id,
-            name: task.taskName,
+        if (typeof res.data.task.estimatedTime === "string") {
+          const timeMatch = res.data.task.estimatedTime.match(
+            /(\d+)\s*hours?\s*(\d+)\s*minutes?/i
+          );
+          if (timeMatch) {
+            hours = timeMatch[1];
+            minutes = timeMatch[2];
+          }
+        }
+
+        const date = new Date(res.data.task.dueDate).toLocaleDateString();
+
+        // Ensure the task ID is correctly set
+        setTasks((prev) => [
+          ...prev,
+          {
+            id: res.data.task._id, // Ensure this ID is correctly set
+            name: res.data.task.taskName,
             date,
             hours,
             minutes,
             status: "ongoing",
-          };
-        })
-      );
-    } catch (error) {
-      console.error("Error fetching tasks:", error.message);
+          },
+        ]);
+
+        setNewTask({ name: "", date: "", hours: "", minutes: "" });
+        setIsOpen(false);
+      } catch (error) {
+        console.error("Failed to add task:", error.message);
+      }
     }
   };
-
-  fetchTasks();
-}, [token]);
-
-const addTask = async () => {
-  if (
-    newTask.name.trim() &&
-    newTask.date &&
-    (newTask.hours || newTask.minutes)
-  ) {
-    try {
-      const estimatedTime = {
-        hours: newTask.hours || "0",
-        minutes: newTask.minutes || "0"
-      };
-
-      const res = await axios.post(
-        "http://localhost:3001/api/tasks",
-        {
-          taskName: newTask.name,
-          dueDate: newTask.date,
-          estimatedTime,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
-
-      let hours = "0";
-      let minutes = "0";
-      
-      if (typeof res.data.task.estimatedTime === 'string') {
-        const timeMatch = res.data.task.estimatedTime.match(/(\d+)\s*hours?\s*(\d+)\s*minutes?/i);
-        if (timeMatch) {
-          hours = timeMatch[1];
-          minutes = timeMatch[2];
-        }
-      }
-
-      const date = new Date(res.data.task.dueDate).toLocaleDateString();
-
-      // Ensure the task ID is correctly set
-      setTasks((prev) => [
-        ...prev,
-        {
-          id: res.data.task._id, // Ensure this ID is correctly set
-          name: res.data.task.taskName,
-          date,
-          hours,
-          minutes,
-          status: "ongoing",
-        },
-      ]);
-
-      setNewTask({ name: "", date: "", hours: "", minutes: "" });
-      setIsOpen(false);
-    } catch (error) {
-      console.error("Failed to add task:", error.message);
-    }
-  }
-};
-
 
   // 📌 Delete task from backend
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`http://localhost:3001/api/tasks/${id}`, {
+      await axios.delete(`/api/tasks/${id}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
       setTasks((prev) => prev.filter((task) => task.id !== id));
@@ -140,13 +143,9 @@ const addTask = async () => {
   // 📌 Mark as completed
   const toggleTaskStatus = async (id) => {
     try {
-      await axios.patch(
-        `http://localhost:3001/api/tasks/${id}/complete`,
-        null,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
+      await axios.patch(`/api/tasks/${id}/complete`, null, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       // Update the task status to "finished"
       setTasks((prev) =>
         prev.map((task) =>

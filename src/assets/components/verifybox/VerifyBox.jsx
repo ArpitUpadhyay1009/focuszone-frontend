@@ -11,13 +11,10 @@ const VerifyOTP = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/auth/verify-otp",
-        {
-          email,
-          otp,
-        }
-      );
+      const response = await axios.post("/api/auth/verify-otp", {
+        email,
+        otp,
+      });
 
       alert("Email verified successfully!");
       navigate("/login"); // Redirect to login page

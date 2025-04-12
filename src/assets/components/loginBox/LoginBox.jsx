@@ -18,13 +18,10 @@ const LoginBox = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:3001/api/auth/login",
-        {
-          identifier,
-          password,
-        }
-      );
+      const response = await axios.post("/api/auth/login", {
+        identifier,
+        password,
+      });
 
       alert("Login successful!");
       if (response.data.token) {

@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useTheme } from "../../context/ThemeContext.jsx"; // Adjust path as needed
 
-const API_URL = "http://localhost:3001/api/auth"; // Update this if needed
+// const API_URL = "/api/auth"; // Update this if needed
 
 const LevelRenders = () => {
   const { theme } = useTheme(); // Get theme from context
@@ -16,7 +16,7 @@ const LevelRenders = () => {
       if (!token) return;
 
       try {
-        const response = await axios.get(`${API_URL}/user-level`, {
+        const response = await axios.get(`/api/auth/user-level`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

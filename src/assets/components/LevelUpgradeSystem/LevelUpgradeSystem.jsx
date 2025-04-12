@@ -29,14 +29,11 @@ const LevelUpgradeSystem = () => {
         setIsLoading(true);
 
         // Fetch user level data
-        const response = await fetch(
-          "http://localhost:3001/api/auth/user-level",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+        const response = await fetch("/api/auth/user-level", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error("Failed to fetch user data");
@@ -50,7 +47,7 @@ const LevelUpgradeSystem = () => {
           coins: data.coins || 0,
           progress: 100,
         });
-        
+
         setNewLevel((data.level || 1) + 1);
       } catch (error) {
         console.error("Failed to load user data:", error);
@@ -81,14 +78,11 @@ const LevelUpgradeSystem = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:3001/api/auth/user-level",
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+      const response = await fetch("/api/auth/user-level", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch user data");
@@ -101,7 +95,7 @@ const LevelUpgradeSystem = () => {
         coins: data.coins || 0,
         progress: 100,
       });
-      
+
       setNewLevel((data.level || 1) + 1);
     } catch (error) {
       console.error("Failed to refresh user data:", error);
@@ -122,7 +116,7 @@ const LevelUpgradeSystem = () => {
       console.log("Sending upgrade request");
 
       const response = await axios.patch(
-        "http://localhost:3001/api/auth/updateLevel",
+        "/api/auth/updateLevel",
         {}, // No need to send any data, the backend will handle it
         {
           headers: {
@@ -145,10 +139,10 @@ const LevelUpgradeSystem = () => {
       setNewLevel((prevLevel) => prevLevel + 1);
       setIsUpgrading(false);
       setShowProgressPopup(false);
-      
+
       // Show congratulations popup
       setShowCongratsPopup(true);
-      
+
       // Dispatch coin update event to refresh other components
       window.dispatchEvent(new Event("coinUpdate"));
     } catch (error) {
@@ -156,7 +150,9 @@ const LevelUpgradeSystem = () => {
       setIsUpgrading(false);
       setShowProgressPopup(false);
       toast.error(
-        error.response?.data?.message || error.message || "Something went wrong. Please try again later."
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong. Please try again later."
       );
     }
   };
@@ -172,7 +168,7 @@ const LevelUpgradeSystem = () => {
     try {
       setIsUpgrading(true);
       setShowProgressPopup(true);
-      
+
       // Animate progress bar
       let progress = 0;
       const interval = setInterval(() => {
@@ -181,7 +177,7 @@ const LevelUpgradeSystem = () => {
 
         if (progress >= 100) {
           clearInterval(interval);
-          
+
           // After animation completes, call the API to upgrade level
           upgradeUserLevel();
         }
@@ -197,55 +193,52 @@ const LevelUpgradeSystem = () => {
   };
 
   // In the LevelUpgradeSystem component:
-  
+
   // Add a new state variable for max level
   const [isMaxLevel, setIsMaxLevel] = useState(false);
-  
+
   // Update the handleCloseCongratsPopup function
   const handleCloseCongratsPopup = (reachedMaxLevel = false) => {
     setShowCongratsPopup(false);
-    
+
     // Update max level state if needed
     if (reachedMaxLevel) {
       setIsMaxLevel(true);
     }
-    
+
     // Reload the page
     window.location.reload();
   };
-  
+
   // Update the useEffect that loads user data
   useEffect(() => {
     const loadUserData = async () => {
       try {
         setIsLoading(true);
-  
+
         // Fetch user level data
-        const response = await fetch(
-          "http://localhost:3001/api/auth/user-level",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
-  
+        const response = await fetch("/api/auth/user-level", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
         if (!response.ok) {
           throw new Error("Failed to fetch user data");
         }
-  
+
         const data = await response.json();
         const currentLevel = data.level || 1;
-  
+
         // Construct user data from response
         setUserData({
           level: currentLevel,
           coins: data.coins || 0,
           progress: 100,
         });
-        
+
         setNewLevel(currentLevel + 1);
-        
+
         // Check if user is at max level (50)
         if (currentLevel >= 50) {
           setIsMaxLevel(true);
@@ -259,10 +252,10 @@ const LevelUpgradeSystem = () => {
         setIsLoading(false);
       }
     };
-  
+
     loadUserData();
   }, []);
-  
+
   // Update the return statement to properly pass isMaxLevel to UpgradeButton
   return (
     <>
@@ -303,7 +296,9 @@ const LevelUpgradeSystem = () => {
             whileHover={{ scale: 1.02 }}
             className="flex items-center space-x-2"
           >
-            <span className="text-sm font-medium text-gray-700">Your coins:</span>
+            <span className="text-sm font-medium text-gray-700">
+              Your coins:
+            </span>
             <div className="flex items-center px-3 py-1 bg-amber-50 rounded-md border border-amber-200">
               <Coins className="w-4 h-4 text-amber-500 mr-1" />
               <span className="font-semibold text-amber-600">
@@ -323,7 +318,7 @@ const LevelUpgradeSystem = () => {
           />
         </div>
       </motion.div>
-      
+
       {/* Progress Popup */}
       <AnimatePresence>
         {showProgressPopup && (
@@ -339,8 +334,10 @@ const LevelUpgradeSystem = () => {
               exit={{ scale: 0.9 }}
               className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full"
             >
-              <h3 className="text-xl font-bold mb-4 text-center">Upgrading to Level {userData.level + 1}</h3>
-              
+              <h3 className="text-xl font-bold mb-4 text-center">
+                Upgrading to Level {userData.level + 1}
+              </h3>
+
               <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
                 <motion.div
                   initial={{ width: 0 }}
@@ -348,7 +345,7 @@ const LevelUpgradeSystem = () => {
                   className="h-full bg-purple-500 rounded-full"
                 />
               </div>
-              
+
               <p className="text-center text-gray-600">
                 {upgradeProgress < 100 ? "Please wait..." : "Almost done!"}
               </p>
@@ -356,9 +353,9 @@ const LevelUpgradeSystem = () => {
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* Make sure the CongratsPopup is properly included */}
-      <CongratsPopup 
+      <CongratsPopup
         isOpen={showCongratsPopup}
         onClose={handleCloseCongratsPopup}
         newLevel={newLevel}
