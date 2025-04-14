@@ -19,11 +19,6 @@ export default function TodoList() {
 
   const token = localStorage.getItem("token");
 
-  // 📌 Fetch tasks on mount
-  // 📌 Fetch tasks on mount
-  // ... existing code ...
-
-  // ... existing code ...
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -68,9 +63,7 @@ export default function TodoList() {
 
   const addTask = async () => {
     if (
-      newTask.name.trim() &&
-      newTask.date &&
-      (newTask.hours || newTask.minutes)
+      newTask.name.trim()
     ) {
       try {
         const estimatedTime = {
@@ -264,13 +257,13 @@ export default function TodoList() {
                 className="w-full p-2 border rounded mb-2"
               />
               <label>Enter date of completion:</label>
+             
               <input
                 type="date"
                 value={newTask.date}
-                onChange={(e) =>
-                  setNewTask({ ...newTask, date: e.target.value })
-                }
+                onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
                 className="w-full p-2 border rounded mb-2"
+                min={new Date().toISOString().split("T")[0]} // Set the minimum date to today's date
               />
               <label>Estimated time of completion:</label>
               <div className="flex gap-2">
@@ -278,18 +271,24 @@ export default function TodoList() {
                   type="number"
                   placeholder="Hours"
                   value={newTask.hours}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, hours: e.target.value })
-                  }
+                  min={0}
+                  max={23}
+                  onChange={(e) => {
+                    const value = Math.max(0, Math.min(23, Number(e.target.value)));
+                    setNewTask({ ...newTask, hours: value });
+                  }}
                   className="w-1/2 p-2 border rounded mb-2"
                 />
                 <input
                   type="number"
                   placeholder="Minutes"
                   value={newTask.minutes}
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, minutes: e.target.value })
-                  }
+                  min={0}
+                  max={59}
+                  onChange={(e) => {
+                    const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                    setNewTask({ ...newTask, minutes: value });
+                  }}
                   className="w-1/2 p-2 border rounded mb-2"
                 />
               </div>
