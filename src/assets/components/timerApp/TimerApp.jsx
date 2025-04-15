@@ -175,15 +175,13 @@ export default function TimerApp({ setParentPopupState }) {
         justifyContent: "center", 
         alignItems: "center",
         minHeight: "350px",
-        margin: "0 auto 24px auto",
-        paddingTop: "32px",
-        paddingBottom: "32px",
-        paddingRight: "3rem" // Increased right padding to center the component better
+        margin: "0 auto",
+        padding: "32px 24px"
       }}
     >
       {/* Mode selector with improved styling */}
       <motion.div
-        className="flex justify-between border border-[#7500CA] rounded-full p-1 mb-4 md:mb-6"
+        className="flex justify-between border border-[#7500CA] rounded-full p-1 mb-4 md:mb-6 w-full"
         initial={{ scale: 0.95 }}
         animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
@@ -260,6 +258,8 @@ export default function TimerApp({ setParentPopupState }) {
         {formatTime(time)}
       </motion.div>
 
+   
+      
       {/* Control buttons with improved styling */}
       <div className="flex justify-center items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
         <AnimatePresence mode="wait">
@@ -271,7 +271,7 @@ export default function TimerApp({ setParentPopupState }) {
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.3 }}
               onClick={startTimer}
-              className="bg-[#7500CA] text-white px-8 py-2 md:px-10 md:py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+              className="timer-control-button timer-start-button flex items-center justify-center gap-2"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -288,7 +288,7 @@ export default function TimerApp({ setParentPopupState }) {
             >
               <motion.button
                 onClick={pauseTimer}
-                className="bg-[#7500CA] text-white px-6 py-2 md:px-8 md:py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="timer-control-button timer-start-button flex items-center justify-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -297,7 +297,7 @@ export default function TimerApp({ setParentPopupState }) {
               </motion.button>
               <motion.button
                 onClick={resetTimer}
-                className="bg-[#7500CA] text-white px-6 py-2 md:px-8 md:py-3 rounded-full flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300"
+                className="timer-control-button timer-start-button flex items-center justify-center gap-2"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -307,12 +307,12 @@ export default function TimerApp({ setParentPopupState }) {
             </motion.div>
           )}
         </AnimatePresence>
-
+      
         <motion.button
           whileHover={{ scale: 1.1, rotate: 15 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsSettingsOpen(true)}
-          className="text-[#fff] hover:text-gray-200 ml-3 md:ml-4 p-2 md:p-3 rounded-full bg-[#7500CA] shadow-lg transition-all duration-300"
+          className="timer-control-button timer-settings-button flex items-center justify-center"
         >
           <Settings size={20} />
         </motion.button>

@@ -5,6 +5,7 @@ img {
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   -moz-box-shadow: none !important;
+  transition: all 2.6s ease; /* Added transition */
 }
 
 /* Ensure no shadow on hover */
@@ -12,4 +13,19 @@ img:hover {
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
   -moz-box-shadow: none !important;
+}
+
+/* Add transition for level progress elements */
+.level-progress-container,
+.level-progress-bar,
+.level-indicator,
+.level-text,
+.level-coins {
+  transition: all 2.6s ease;
+}
+
+/* Add transition for background and text colors */
+[data-theme="light"] .level-progress-container,
+[data-theme="dark"] .level-progress-container {
+  transition: background-color 2.6s ease, color 2.6s ease;
 }

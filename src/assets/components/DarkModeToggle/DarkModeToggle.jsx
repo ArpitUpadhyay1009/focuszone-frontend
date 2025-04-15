@@ -15,13 +15,13 @@ export default function DarkModeToggle() {
       {/* Toggle Button */}
       <button
         onClick={toggleTheme}
-        className={`relative flex items-center w-11 h-6 md:w-10 md:h-5 sm:w-9 sm:h-4 rounded-full p-1 transition-all duration-300 ${
+        className={`relative flex items-center w-11 h-6 md:w-10 md:h-5 sm:w-9 sm:h-4 rounded-full p-1 transition-all duration-500 ${
           isDark ? "bg-[#7500CA]" : "bg-gray-200"
         }`}
       >
         {/* Moving Circle */}
         <div
-          className={`absolute w-4 h-4 md:w-3.5 md:h-3.5 sm:w-3 sm:h-3 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+          className={`absolute w-4 h-4 md:w-3.5 md:h-3.5 sm:w-3 sm:h-3 bg-white rounded-full shadow-md transform transition-all duration-500 ${
             isDark
               ? "translate-x-[20px] md:translate-x-[18px] sm:translate-x-[14px]"
               : "translate-x-0"

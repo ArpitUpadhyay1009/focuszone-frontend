@@ -2,10 +2,10 @@ import React, { useState, useEffect } from "react";
 import Navbar from "@components/navbar/Navbar.jsx";
 import "./Home.css";
 import TimerApp from "@components/timerApp/TimerApp.jsx";
-// import LevelRenders from "../../components/levelRenders/LevelRenders";
 import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
 import LoginToUnlock from "@components/loginToUnlock/LoginToUnlock.jsx";
 import { useNavigate } from "react-router-dom";
+import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -29,27 +29,30 @@ export const Home = () => {
   };
 
   return (
-    <>
+    <div className="app-container">
+      <AnimatedBackground />
       <div className={isPopupOpen ? "blur-sm transition-all duration-300" : ""}>
         <Navbar />
       </div>
-      <div 
-        className={`flex flex-col md:flex-row flex-wrap justify-center items-center space-y-5 md:space-y-0 md:space-x-20 transition-all duration-300 ${isPopupOpen ? "blur-sm" : ""}`}
-      >
-        <div className="mt-20 ml-2 md:ml-5 lg:mt-1 lg:ml-10">
-          <TimerApp setParentPopupState={setIsPopupOpen} />
-        </div>
-        <div className="flex flex-col w-full max-w-xs md:max-w-md lg:max-w-lg mr-5 mt-0 md:mt-0">
-          <div 
-            onClick={handleLoginClick} 
-            className="cursor-pointer transition-transform duration-300 hover:scale-105 rounded-lg"
-          >
-            <LoginToUnlock />
+      <div className="container mx-auto px-4">
+        <div className={`flex flex-col md:flex-row justify-center items-center md:items-center gap-8 md:gap-12 lg:gap-16 py-6 md:py-8 transition-all duration-300 ${isPopupOpen ? "blur-sm" : ""}`}>
+          <div className="w-full max-w-md flex justify-center">
+            <TimerApp setParentPopupState={setIsPopupOpen} />
           </div>
-          <SpotifyEmbed />
+          <div className="w-full max-w-md flex flex-col items-center gap-6">
+            <div 
+              onClick={handleLoginClick} 
+              className="w-full cursor-pointer transition-transform duration-300 hover:scale-105 rounded-lg"
+            >
+              <LoginToUnlock />
+            </div>
+            <div className="w-full">
+              <SpotifyEmbed />
+            </div>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

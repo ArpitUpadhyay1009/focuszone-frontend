@@ -1,13 +1,14 @@
 @import "tailwindcss";
 [data-theme="dark"].bg-dark{
     background-color: gray;
+    transition: background-color 2.6s ease;
 }
 
 /* Add support for backdrop blur */
 .backdrop-blur {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.2s ease; /* Faster transition */
+  transition: all 2.6s ease; /* Changed to 2.6s */
 }
 
 /* Ensure dialog backdrops are properly styled */
@@ -15,14 +16,133 @@
   background-color: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.2s ease; /* Faster transition */
+  transition: all 2.6s ease; /* Changed to 2.6s */
 }
 
 /* Speed up dialog animations */
 .dialog-animation-enter {
-  animation-duration: 0.15s !important;
+  animation-duration: 2.6s !important; /* Changed to 2.6s */
 }
 
 .dialog-animation-exit {
-  animation-duration: 0.15s !important;
+  animation-duration: 2.6s !important; /* Changed to 2.6s */
+}
+
+/* Timer control buttons styling */
+.timer-control-button {
+  height: 48px; /* Fixed height for all buttons */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background-color: #7500CA;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(117, 0, 202, 0.2);
+}
+
+.timer-control-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(117, 0, 202, 0.3);
+}
+
+.timer-control-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(117, 0, 202, 0.2);
+}
+
+.timer-start-button {
+  padding: 0 2rem;
+}
+
+.timer-settings-button {
+  width: 48px; /* Make it square */
+  padding: 0;
+}
+
+/* Timer container centering */
+/* Update the timer container styles */
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.timer-card {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .timer-control-button {
+    height: 56px;
+  }
+  
+  .timer-settings-button {
+    width: 56px;
+  }
+  
+  .timer-container {
+    padding: 1.5rem;
+  }
+  
+  .timer-card {
+    max-width: 450px;
+  }
+  
+  /* Center alignment for medium screens */
+  .md\:items-start {
+    align-items: center !important;
+  }
+  
+  .md\:flex-row {
+    justify-content: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .timer-container {
+    padding: 2rem;
+  }
+  
+  .timer-card {
+    max-width: 500px;
+  }
+}
+
+@media (min-width: 768px) {
+  .timer-control-button {
+    height: 56px; /* Larger height for desktop */
+  }
+  
+  .timer-settings-button {
+    width: 56px; /* Make it square for desktop */
+  }
+  
+  .timer-container {
+    padding: 1.5rem;
+  }
+  
+  .timer-card {
+    max-width: 450px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .timer-container {
+    padding: 2rem;
+  }
+  
+  .timer-card {
+    max-width: 500px;
+  }
 }

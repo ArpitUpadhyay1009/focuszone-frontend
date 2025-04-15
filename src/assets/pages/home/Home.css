@@ -1,35 +1,78 @@
 @import "tailwindcss";
-:root {
-    --bg-image-light: url('../../images/background.png');
-    --bg-image-dark: url('../../images/darkmode-bg.png');
-    --text-color: #000000;
-  }
-  
-  [data-theme="dark"] {
-    --bg-image-light: url('../../images/background.png');
-    --bg-image-dark: url('../../images/darkmode-bg.png');
-    --text-color: #ffffff;
-    --primary-color: #bb86fc;
-  }
 
-  body {
-    background-image: var(--bg-image-light);
-    background-size: cover;
-    background-repeat: no-repeat;
-    color: var(--text-color);
-    transition: background-image 0.5s ease, color 0.7s ease;
-    height: auto;
-    width: 100vw;
+/* Remove background image references since we're using AnimatedBackground */
+:root {
+  --text-color: #000000;
+}
+
+[data-theme="dark"] {
+  --text-color: #ffffff;
+  --primary-color: #bb86fc;
+}
+
+body {
+  color: var(--text-color);
+  transition: color 2.6s ease;
+  height: auto;
+  width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+[data-theme="dark"] body {
+  height: auto;
+  width: 100%;
+  transition: color 2.6s ease;
+  color: #ffffff;
+}
+
+.app-container {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Center alignment for medium screens */
+@media (min-width: 768px) {
+  .md\:items-start {
+    align-items: center !important;
   }
   
-  [data-theme="dark"] body {
-    background-image: var(--bg-image-dark);
-    background-size: cover;
-    background-repeat: no-repeat;
-    height: auto;
-    width: 100vw;
-    transition: background-image 0.5s ease, color 0.7s ease;
-    color: #000000;
+  .md\:flex-row {
+    justify-content: center;
   }
+  
+  .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .container > div {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}
 
   

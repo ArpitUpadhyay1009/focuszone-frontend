@@ -1,1 +1,42 @@
 @import "tailwindcss";
+
+.register-box {
+  background-color: white;
+  color: black;
+  transition: background-color 2.6s ease, color 2.6s ease;
+}
+
+[data-theme="dark"] .register-box {
+  background-color: #121212;
+  color: white;
+}
+
+[data-theme="dark"] .register-text {
+  color: white;
+}
+
+[data-theme="dark"] .register-subtext {
+  color: #d1d5db;
+}
+
+.register-input {
+  transition: background-color 2.6s ease, color 2.6s ease;
+}
+
+.register-input::placeholder {
+  color: #6b7280; /* Medium grey for light mode */
+  opacity: 1; /* Ensure full visibility */
+}
+
+[data-theme="dark"] .register-input {
+  background-color: #2d2d2d;
+  color: white;
+}
+
+[data-theme="dark"] .register-input::placeholder {
+  color: #9ca3af; /* Lighter grey for dark mode */
+}
+
+[data-theme="dark"] .eye-icon {
+  color: #d1d5db;
+}

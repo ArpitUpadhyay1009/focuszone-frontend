@@ -3,10 +3,12 @@ import "./Login.css";
 import Navbar from "@components/navbar/Navbar.jsx";
 import LoginBox from "@components/loginBox/LoginBox.jsx";
 import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
+import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
 
 const Login = () => {
   return (
     <>
+      <AnimatedBackground />
       <Navbar />
       <div className="flex flex-col justify-center items-center mt-10 md:mt-20 h-screen">
         <img src="/logo.png" alt="logo" className="h-20 w-20 md:h-25 md:w-25 p-4" />

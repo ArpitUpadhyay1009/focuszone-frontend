@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Add transition for all elements in the level upgrade system */
+.level-upgrade-container,
+.level-upgrade-container * {
+  transition: all 2.6s ease;
+}
+
+/* Specific transitions for background and text colors */
+.level-upgrade-container {
+  transition: background-color 2.6s ease, color 2.6s ease;
+}
+
+/* Ensure buttons and interactive elements also have transitions */
+.upgrade-button,
+.progress-bar,
+.coin-display {
+  transition: background-color 2.6s ease, color 2.6s ease, border-color 2.6s ease;
+}

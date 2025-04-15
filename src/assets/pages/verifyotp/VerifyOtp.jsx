@@ -1,9 +1,11 @@
 import React from "react";
 import VerifyBox from "@components/verifybox/VerifyBox.jsx";
+import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
 
 const VerifyOtp = () => {
   return (
     <>
+      <AnimatedBackground />
       <img
         src="/logo.png"
         alt="logo"

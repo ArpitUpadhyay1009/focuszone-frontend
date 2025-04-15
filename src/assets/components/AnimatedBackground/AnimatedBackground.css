@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+.animated-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: -1;
+}
+
+.pill {
+  position: absolute;
+  border-radius: 9999px;
+  transition: background-color 2s ease;
+}
+
+.pill.light {
+  background-color: #FEF4DE;
+  opacity: 1;
+}
+
+.pill.dark {
+  background-color: #E1EDFF;
+  opacity: 0.4;
+}
+
+/* Ensure the background doesn't interfere with content */
+body {
+  position: relative;
+  background-image: none !important;
+  background-color: #ffffff;
+  transition: background-color 1.4s ease;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+[data-theme="dark"] body {
+  background-color: #111111;
+  transition: background-color 1.4s ease;
+  background-image: none !important;
+}

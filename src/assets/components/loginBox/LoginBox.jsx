@@ -5,10 +5,12 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
+import { useTheme } from "../../context/ThemeContext.jsx";
 import "./LoginBox.css";
 
 const LoginBox = () => {
   const { login } = useAuth();
+  const { theme } = useTheme();
   const [identifier, setIdentifier] = useState(""); // Can be email or username
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -50,8 +52,8 @@ const LoginBox = () => {
   return (
     <>
       <div className="flex justify-center items-center">
-        <div className="bg-white p-6 rounded-lg shadow-lg w-110">
-          <h2 className="text-4xl font-[Poppins] font-medium text-black mb-4 text-left">
+        <div className="login-box p-6 rounded-lg shadow-lg w-110">
+          <h2 className="text-4xl font-[Poppins] font-medium mb-4 text-left login-text">
             Login
           </h2>
           <form onSubmit={handleSubmit}>
@@ -59,13 +61,13 @@ const LoginBox = () => {
               <label className="block py-2 text-purple-700 font-[Poppins] font-medium">
                 Welcome Back,
               </label>
-              <p className="text-gray-700 py-2 font-[Poppins]">
+              <p className="login-subtext py-2 font-[Poppins]">
                 Please enter the details below to continue.
               </p>
               <input
                 type="name"
                 placeholder="Email or Username"
-                className="w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="login-input w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 onChange={(event) => setIdentifier(event.target.value)}
                 required
               />
@@ -74,7 +76,7 @@ const LoginBox = () => {
               <input
                 type={showPassword ? "text" : "password"} // Toggle input type
                 placeholder="Password"
-                className="w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10" // Right padding added
+                className="login-input w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10" // Right padding added
                 onChange={(event) => setPassword(event.target.value)}
                 required
               />
@@ -82,22 +84,10 @@ const LoginBox = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                className="absolute inset-y-0 right-3 flex items-center eye-icon"
               >
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-              {/* <a
-                href="/forgot"
-                className="text-purple-700 font-[Poppins] font-semibold block mt-2"
-              >
-                Forgot password
-              </a> */}
-              {/* <Link
-                to="/forgot"
-                className="text-purple-700 font-[Poppins] font-semibold block mt-2"
-              >
-                Forgot Password?
-              </Link> */}
             </div>
             <button
               type="submit"

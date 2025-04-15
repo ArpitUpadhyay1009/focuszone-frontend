@@ -8,6 +8,7 @@ import "./Register.css";
 import RegisterBox from "@components/registerBox/RegisterBox.jsx";
 import Logo from "@components/logo/Logo.jsx";
 import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
+import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
 
 const Register = () => {
   // const [name, setName] = useState();
@@ -35,6 +36,7 @@ const Register = () => {
 
   return (
     <>
+      <AnimatedBackground />
       <Navbar />
       <div className="flex flex-col justify-center items-center mt-10 md:mt-20 h-screen">
         <img

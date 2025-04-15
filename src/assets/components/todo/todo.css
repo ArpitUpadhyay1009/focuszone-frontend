@@ -2,13 +2,14 @@
 /* Apply only to the calendar icon */
 [data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
+    transition: filter 2.6s ease;
 }
 
 /* Add support for backdrop blur */
 .backdrop-blur {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.2s ease; /* Faster transition */
+  transition: all 2.6s ease;
 }
 
 /* Ensure dialog backdrops are properly styled */
@@ -16,15 +17,100 @@
   background-color: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 0.2s ease; /* Faster transition */
+  transition: all 2.6s ease;
 }
 
 /* Speed up dialog animations */
 .dialog-animation-enter {
-  animation-duration: 0.15s !important;
+  animation-duration: 2.6s !important;
 }
 
 .dialog-animation-exit {
-  animation-duration: 0.15s !important;
+  animation-duration: 2.6s !important;
+}
+
+/* Add task button styling */
+.add-task-button {
+  background-color: #7500CA;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(117, 0, 202, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.add-task-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(117, 0, 202, 0.3);
+}
+
+.add-task-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(117, 0, 202, 0.2);
+}
+
+/* Ripple effect for the button */
+.add-task-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.add-task-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* Modal button styling */
+.modal-button {
+  transition: all 0.3s ease;
+}
+
+.modal-button:hover {
+  transform: translateY(-2px);
+}
+
+.modal-button:active {
+  transform: translateY(0);
+}
+
+.cancel-button {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.cancel-button:hover {
+  background-color: #cbd5e0;
+}
+
+.add-button {
+  background-color: #7500CA;
+  color: white;
+}
+
+.add-button:hover {
+  background-color: #6400ae;
 }
   

@@ -12,7 +12,7 @@ const SpotifyEmbed2 = () => {
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"
-          className="frame ml-[5%] mr-[17%] mb-[10%] md:ml-[22%]" // Adjusted margin for tablet screens
+          className="frame ml-[10%]  mb-[10%] md:ml-[-20%] lg:ml-[17%]" // Adjusted margin for tablet screens
         ></iframe>
       </div>
     </>

@@ -6,15 +6,15 @@ import LogoutButton from "../logoutButton/LogoutButton.jsx";
 
 export const Navbar2 = () => {
   return (
-    <>
-      <div className="flex justify-between bg-transparent height-100vh width-100vw mt-[1em] mx-[1em]">
+    <nav className="navbar-container">
+      <div className="navbar-left">
         <Logo />
-        <div className="flex justify-between height-10vh width-10vw">
-          <DarkModeToggle />
-          <LogoutButton />
-        </div>
       </div>
-    </>
+      <div className="navbar-right">
+        <DarkModeToggle />
+        <LogoutButton />
+      </div>
+    </nav>
   );
 };
 

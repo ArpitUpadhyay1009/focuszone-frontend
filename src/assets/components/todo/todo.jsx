@@ -210,17 +210,21 @@ export default function TodoList() {
         ))}
       </ul>
 
-      {/* Add Task Button */}
+      {/* Updated Add Task Button */}
       <motion.button
-        whileTap={{ scale: 0.9 }}
-        className={`mt-4 ${
-          theme === "dark"
-            ? "bg-purple-400 border-white border-2 text-white"
-            : "bg-orange-300 border-orange-600 border-2 text-orange-500"
-        } px-4 py-2 rounded-md shadow flex items-center gap-2 mx-auto`}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className="add-task-button mt-6 px-6 py-3 rounded-full font-medium flex items-center justify-center gap-2 mx-auto"
         onClick={() => setIsOpen(true)}
       >
-        <FaPlus size={16} /> Add Task
+        <motion.div
+          initial={{ rotate: 0 }}
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <FaPlus size={16} />
+        </motion.div>
+        <span>Add Task</span>
       </motion.button>
 
       <AnimatePresence>
@@ -248,16 +252,17 @@ export default function TodoList() {
 
             {/* Modal */}
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.2 }}
+              initial={{ scale: 0.8, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 20 }}
+              transition={{ duration: 0.3, type: "spring", stiffness: 300, damping: 30 }}
               className={`relative p-6 rounded-lg shadow-md w-96 ${
                 theme === "dark" ? "bg-black text-white" : "bg-white"
               }`}
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-semibold mb-4">New Task</h2>
+              
               <label className="relative">
                 Enter task:
                 <span className="text-red-500 absolute top-0 right-[-1]">*</span> {/* Red asterisk */}
@@ -314,23 +319,23 @@ export default function TodoList() {
                   className="w-1/2 p-2 border rounded mb-2"
                 />
               </div>
-              <div className="flex justify-end gap-2">
-                <button
-                  className="bg-gray-300 px-4 py-2 rounded"
+              <div className="flex justify-end gap-2 mt-4">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="modal-button cancel-button px-4 py-2 rounded-md"
                   onClick={() => setIsOpen(false)}
                 >
                   Cancel
-                </button>
-                <button
-                  className={` px-4 py-2 rounded ${
-                    theme === "dark"
-                      ? "bg-[#7500CA] text-white"
-                      : "bg-[#7500CA] text-white"
-                  }`}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="modal-button add-button px-4 py-2 rounded-md"
                   onClick={addTask}
                 >
                   Add
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </Dialog>

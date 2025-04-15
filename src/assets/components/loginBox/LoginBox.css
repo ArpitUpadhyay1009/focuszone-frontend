@@ -1,1 +1,39 @@
 @import "tailwindcss";
+
+.login-box {
+  background-color: white;
+  color: black;
+  transition: background-color 2.6s ease, color 2.6s ease;
+}
+
+[data-theme="dark"] .login-box {
+  background-color: #121212;
+  color: white;
+}
+
+[data-theme="dark"] .login-text {
+  color: white;
+}
+
+[data-theme="dark"] .login-subtext {
+  color: #d1d5db;
+}
+
+/* Make placeholder text grey in both light and dark modes */
+.login-input::placeholder {
+  color: #6b7280; /* Medium grey for light mode */
+  opacity: 1; /* Ensure full visibility */
+}
+
+[data-theme="dark"] .login-input::placeholder {
+  color: #9ca3af; /* Lighter grey for dark mode */
+}
+
+[data-theme="dark"] .login-input {
+  background-color: #2d2d2d;
+  color: white;
+}
+
+[data-theme="dark"] .eye-icon {
+  color: #d1d5db;
+}
