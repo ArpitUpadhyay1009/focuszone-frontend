@@ -6,7 +6,7 @@ const SpotifyEmbed2 = () => {
     <>
       <div>
         <iframe
-          src="https://open.spotify.com/embed/playlist/6zCID88oNjNv9zx6puDHKj?utm_source=generator"
+          src="https://open.spotify.com/embed/playlist/0oPyDVNdgcPFAWmOYSK7O1?utm_source=generator"
           width="310" // Adjusted width for smaller screens
           height="100"
           allowfullscreen=""
