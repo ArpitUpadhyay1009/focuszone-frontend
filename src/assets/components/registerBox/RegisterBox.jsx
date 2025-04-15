@@ -10,11 +10,19 @@ const RegisterBox = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [charCount, setCharCount] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    // Password validation logic
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$#@]).{8,}$/;
+    if (!passwordPattern.test(password)) {
+      alert("Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one symbol ($, #, @).");
+      return;
+    }
 
     try {
       const response = await axios.post("/api/auth/register", {
@@ -53,11 +61,21 @@ const RegisterBox = () => {
               <label className="block font-[Poppins] text-gray-700 py-4">
                 Please enter the details below to continue.
               </label>
+              <label>{charCount > 0 && (
+                <p className="text-sm text-gray-600 mb-1">Character limit: 200</p> 
+              )}</label>
               <input
                 type="text"
                 placeholder="User Name"
                 className="w-full px-3 py-2 font-[Poppins] bg-gray-200 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                onChange={(event) => setUsername(event.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 200) {
+                    setCharCount(value.length);
+                    setUsername(value);
+                  }
+                }}
+                maxLength={200} // Limit input to 200 characters
                 required
               />
             </div>
