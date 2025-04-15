@@ -9,10 +9,12 @@ import axios from "axios";
 export default function TodoList() {
   const { theme } = useTheme();
   const [tasks, setTasks] = useState([]);
+  const [charCount, setCharCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
+  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
   const [newTask, setNewTask] = useState({
     name: "",
-    date: "",
+    date: today, // Set the default date to today's date
     hours: "",
     minutes: "",
   });
@@ -62,9 +64,12 @@ export default function TodoList() {
   }, [token]);
 
   const addTask = async () => {
-    if (
-      newTask.name.trim()
-    ) {
+    if (tasks.length >= 100) {
+      alert("You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more.");
+      return;
+    }
+
+    if (newTask.name.trim()) {
       try {
         const estimatedTime = {
           hours: newTask.hours || "0",
@@ -246,14 +251,24 @@ export default function TodoList() {
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-semibold mb-4">New Task</h2>
-              <label>Enter task:</label>
+              <label className="relative">
+                Enter task:
+                <span className="text-red-500 absolute top-0 right-[-1]">*</span> {/* Red asterisk */}
+              </label>
+              {charCount > 0 && (
+                <p className="text-sm text-gray-600 mb-1">Character limit: 200</p> 
+              )}
               <input
                 type="text"
                 placeholder="Task Name"
                 value={newTask.name}
-                onChange={(e) =>
-                  setNewTask({ ...newTask, name: e.target.value })
-                }
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value.length <= 200) {
+                    setNewTask({ ...newTask, name: value });
+                    setCharCount(value.length); // Update character count
+                  }
+                }}
                 className="w-full p-2 border rounded mb-2"
               />
               <label>Enter date of completion:</label>
@@ -272,9 +287,9 @@ export default function TodoList() {
                   placeholder="Hours"
                   value={newTask.hours}
                   min={0}
-                  max={23}
+                  max={120}
                   onChange={(e) => {
-                    const value = Math.max(0, Math.min(23, Number(e.target.value)));
+                    const value = Math.max(0, Math.min(120, Number(e.target.value)));
                     setNewTask({ ...newTask, hours: value });
                   }}
                   className="w-1/2 p-2 border rounded mb-2"
