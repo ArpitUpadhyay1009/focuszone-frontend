@@ -6,8 +6,10 @@ import ProgressBar from "../ProgressBar/ProgressBar.jsx";
 import UpgradeButton from "../UpgradeButton/UpgradeButton.jsx";
 import CongratsPopup from "../CongratsPopup/CongratsPopup.jsx";
 import axios from "axios";
+import { useTheme } from "../../context/ThemeContext.jsx";
 
 const LevelUpgradeSystem = () => {
+  const { theme } = useTheme();
   const [userData, setUserData] = useState({
     level: 1,
     coins: 300,
@@ -263,9 +265,15 @@ const LevelUpgradeSystem = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full p-6 bg-white rounded-xl shadow-sm mb-4 backdrop-blur-sm bg-opacity-90"
+        className={`w-full p-3 rounded-xl shadow-sm mb-3 backdrop-blur-sm ${
+          theme === "dark" 
+            ? "bg-black text-white bg-opacity-90" 
+            : "bg-white text-black bg-opacity-90"
+        }`}
       >
-        <h3 className="text-xl font-semibold mb-4 text-gray-800">
+        <h3 className={`text-lg font-semibold mb-2 ${
+          theme === "dark" ? "text-white" : "text-gray-800"
+        }`}>
           Level Progress
         </h3>
 
@@ -275,6 +283,7 @@ const LevelUpgradeSystem = () => {
           progress={100}
           isComplete={true}
           coinsRequired={UPGRADE_COST}
+          darkMode={theme === "dark"}
         />
 
         {/* Next level */}
@@ -283,38 +292,44 @@ const LevelUpgradeSystem = () => {
           progress={0}
           isComplete={false}
           coinsRequired={UPGRADE_COST}
+          darkMode={theme === "dark"}
         />
 
-        <div className="flex justify-between items-center mt-5">
-          <div className="text-sm text-gray-700">
+        <div className="flex justify-between items-center mt-3">
+          <div className={`text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
             <span className="font-medium">Can upgrade: </span>
-            <span className="text-upgrade-orange font-bold">
+            <span className={`font-bold ${theme === "dark" ? "text-yellow-400" : "text-upgrade-orange"}`}>
               {userData.coins >= UPGRADE_COST ? "Yes" : "No"}
             </span>
           </div>
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="flex items-center space-x-2"
+            className="flex items-center space-x-1"
           >
-            <span className="text-sm font-medium text-gray-700">
+            <span className={`text-xs font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
               Your coins:
             </span>
-            <div className="flex items-center px-3 py-1 bg-amber-50 rounded-md border border-amber-200">
-              <Coins className="w-4 h-4 text-amber-500 mr-1" />
-              <span className="font-semibold text-amber-600">
+            <div className={`flex items-center px-2 py-0.5 rounded-md border ${
+              theme === "dark" 
+                ? "bg-gray-800 border-gray-700" 
+                : "bg-amber-50 border-amber-200"
+            }`}>
+              <Coins className={`w-3 h-3 mr-1 ${theme === "dark" ? "text-yellow-400" : "text-amber-500"}`} />
+              <span className={`font-semibold ${theme === "dark" ? "text-yellow-400" : "text-amber-600"}`}>
                 {userData.coins}
               </span>
             </div>
           </motion.div>
         </div>
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-3 flex justify-center">
           <UpgradeButton
             onClick={handleUpgrade}
             isUpgrading={isUpgrading}
             coinsRequired={UPGRADE_COST}
             coinsAvailable={userData.coins}
-            isMaxLevel={isMaxLevel} // Make sure this prop is passed
+            isMaxLevel={isMaxLevel}
+            darkMode={theme === "dark"}
           />
         </div>
       </motion.div>
@@ -326,19 +341,23 @@ const LevelUpgradeSystem = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50"
           >
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full"
+              className={`p-8 rounded-xl shadow-xl max-w-md w-full ${
+                theme === "dark" ? "bg-gray-800 text-white bg-opacity-90" : "bg-white text-black bg-opacity-90"
+              }`}
             >
               <h3 className="text-xl font-bold mb-4 text-center">
                 Upgrading to Level {userData.level + 1}
               </h3>
 
-              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
+              <div className={`w-full h-4 rounded-full overflow-hidden mb-4 ${
+                theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+              }`}>
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${upgradeProgress}%` }}
@@ -346,7 +365,9 @@ const LevelUpgradeSystem = () => {
                 />
               </div>
 
-              <p className="text-center text-gray-600">
+              <p className={`text-center ${
+                theme === "dark" ? "text-gray-300" : "text-gray-600"
+              }`}>
                 {upgradeProgress < 100 ? "Please wait..." : "Almost done!"}
               </p>
             </motion.div>
@@ -359,6 +380,7 @@ const LevelUpgradeSystem = () => {
         isOpen={showCongratsPopup}
         onClose={handleCloseCongratsPopup}
         newLevel={newLevel}
+        darkMode={theme === "dark"}
       />
     </>
   );

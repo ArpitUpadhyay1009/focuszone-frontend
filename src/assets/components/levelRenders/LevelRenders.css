@@ -1,1 +1,15 @@
-@import "tailwindcss";
+/* Override any shadow styles */
+.level-render-container,
+.level-render-container *,
+img {
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}
+
+/* Ensure no shadow on hover */
+img:hover {
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+}

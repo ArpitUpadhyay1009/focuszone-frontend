@@ -233,11 +233,17 @@ export default function TodoList() {
           >
             {/* Backdrop */}
             <motion.div
-              className="fixed inset-0 bg-transparent bg-opacity-50"
+              className="fixed inset-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
               onClick={() => setIsOpen(false)}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)'
+              }}
             />
 
             {/* Modal */}
@@ -245,6 +251,7 @@ export default function TodoList() {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className={`relative p-6 rounded-lg shadow-md w-96 ${
                 theme === "dark" ? "bg-black text-white" : "bg-white"
               }`}

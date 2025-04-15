@@ -2,3 +2,27 @@
 [data-theme="dark"].bg-dark{
     background-color: gray;
 }
+
+/* Add support for backdrop blur */
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease; /* Faster transition */
+}
+
+/* Ensure dialog backdrops are properly styled */
+.dialog-backdrop {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease; /* Faster transition */
+}
+
+/* Speed up dialog animations */
+.dialog-animation-enter {
+  animation-duration: 0.15s !important;
+}
+
+.dialog-animation-exit {
+  animation-duration: 0.15s !important;
+}

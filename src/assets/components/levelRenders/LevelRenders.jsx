@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import axios from "axios";
 import { useTheme } from "../../context/ThemeContext.jsx"; // Adjust path as needed
+import "./LevelRenders.css";
 
 // const API_URL = "/api/auth"; // Update this if needed
 
@@ -42,11 +43,19 @@ const LevelRenders = () => {
   }
 
   return (
-    <img
-      src={theme === "dark" ? imageDark : imageLight}
-      alt={`Level ${level}`}
-      className="h-[500px] w-[500px] max-w-full max-h-full sm:h-[300px] sm:w-[350px] md:h-[400px] md:w-[450px] lg:h-[500px] lg:w-[500px] object-contain"
-    />
+    <div className="flex justify-center items-center">
+      <div className="relative w-full max-w-lg mx-auto">
+        <img
+          src={theme === "dark" ? imageDark : imageLight}
+          alt={`Level ${level} environment`}
+          className="w-full h-auto rounded-lg transform transition-transform duration-500 hover:scale-105"
+          style={{ maxHeight: '500px', objectFit: 'contain' }}
+        />
+        <div className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full text-sm font-bold">
+          Level {level}
+        </div>
+      </div>
+    </div>
   );
 };
 

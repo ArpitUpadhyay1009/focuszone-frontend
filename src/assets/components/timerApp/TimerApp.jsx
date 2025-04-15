@@ -6,7 +6,7 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 import "./TimerApp.css";
 import { motion, AnimatePresence } from "framer-motion";
 
-export default function TimerApp() {
+export default function TimerApp({ setParentPopupState }) {
   const [mode, setMode] = useState("pomodoro");
   const [time, setTime] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -166,9 +166,20 @@ export default function TimerApp() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`p-4 md:p-6 lg:p-8 rounded-2xl shadow-lg max-w-xs md:max-w-sm lg:max-w-md mx-auto text-center relative transition-colors duration-300 ${
+      className={`p-8 rounded-2xl shadow-lg w-full max-w-[450px] mx-auto text-center relative transition-colors duration-300 ${
         theme === "dark" ? "bg-black text-white" : "bg-white text-black"
       }`}
+      style={{ 
+        display: "flex", 
+        flexDirection: "column", 
+        justifyContent: "center", 
+        alignItems: "center",
+        minHeight: "350px",
+        margin: "0 auto 24px auto",
+        paddingTop: "32px",
+        paddingBottom: "32px",
+        paddingRight: "3rem" // Increased right padding to center the component better
+      }}
     >
       {/* Mode selector with improved styling */}
       <motion.div
@@ -178,7 +189,7 @@ export default function TimerApp() {
         transition={{ duration: 0.3 }}
       >
         <motion.button
-          className={`px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 ${
+          className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
             isBreak
               ? "bg-gray-300 text-gray-700"
               : mode === "pomodoro"
@@ -197,7 +208,7 @@ export default function TimerApp() {
           {isBreak ? "Break" : "Pomodoro"}
         </motion.button>
         <motion.button
-          className={`px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 ${
+          className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
             mode === "countdown"
               ? "bg-[#FFE3A6] text-black"
               : theme === "dark"
@@ -214,7 +225,7 @@ export default function TimerApp() {
           Countdown
         </motion.button>
         <motion.button
-          className={`px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 ${
+          className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
             mode === "stopwatch"
               ? "bg-[#FFE3A6] text-black"
               : theme === "dark"
@@ -337,11 +348,16 @@ export default function TimerApp() {
             className="fixed inset-0 flex items-center justify-center z-50"
           >
             <motion.div
-              className="fixed inset-0 bg-black bg-opacity-50"
+              className="fixed inset-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsSettingsOpen(false)}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)'
+              }}
             />
             <motion.div
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
