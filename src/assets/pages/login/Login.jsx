@@ -3,7 +3,7 @@ import "./Login.css";
 import Navbar from "@components/navbar/Navbar.jsx";
 import LoginBox from "@components/loginBox/LoginBox.jsx";
 import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
-import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
+import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 
 const Login = () => {
   return (
