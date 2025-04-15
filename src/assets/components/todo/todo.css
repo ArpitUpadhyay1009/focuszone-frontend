@@ -113,4 +113,199 @@
 .add-button:hover {
   background-color: #6400ae;
 }
+
+/* Task Manager Styling - More Compact */
+.task-manager-container {
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.task-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-list.compact {
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.task-item.dark {
+  background-color: rgba(117, 0, 202, 0.1);
+  border: 1px solid rgba(117, 0, 202, 0.3);
+}
+
+.task-item.light {
+  background-color: rgba(255, 227, 166, 0.5);
+  border: 1px solid rgba(237, 137, 54, 0.5);
+}
+
+/* Completed task styling */
+.task-item.completed.dark {
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.task-item.completed.light {
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.task-checkbox {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  position: relative;
+  appearance: none;
+  border: 2px solid #7500CA;
+  transition: all 0.2s ease;
+}
+
+.task-checkbox:checked {
+  background-color: #27ae60;
+  border-color: #27ae60;
+}
+
+.task-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 0.7rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.task-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-name {
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.task-name.finished {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.task-details {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+.task-delete {
+  background: transparent;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 50%;
+}
+
+.task-delete:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 77, 77, 0.1);
+}
+
+.add-task-button {
+  background-color: #7500CA;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(117, 0, 202, 0.3);
+}
+
+.add-task-button:hover {
+  box-shadow: 0 6px 15px rgba(117, 0, 202, 0.4);
+}
+
+.modal-button {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.add-button {
+  background-color: #7500CA;
+  color: white;
+}
+
+/* Dark mode adjustments */
+[data-theme="light"] .task-details {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .cancel-button {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* Scrollbar styling for task list */
+.task-list.compact::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-list.compact::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.task-list.compact::-webkit-scrollbar-thumb {
+  background: rgba(117, 0, 202, 0.3);
+  border-radius: 10px;
+}
+
+.task-list.compact::-webkit-scrollbar-thumb:hover {
+  background: rgba(117, 0, 202, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .task-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .task-details {
+    font-size: 0.65rem;
+  }
+}
   

@@ -146,3 +146,80 @@
     max-width: 500px;
   }
 }
+
+/* Add these styles to your existing TimerApp.css file */
+
+.timer-app-container {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+}
+
+.timer-tabs-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.tabs-wrapper {
+  display: flex;
+  background: rgba(128, 0, 128, 0.2);
+  border-radius: 9999px;
+  padding: 4px;
+  position: relative;
+  overflow: visible;
+  border: 1px solid rgba(128, 0, 128, 0.3);
+  gap: 10%; /* Adding 2% gap between tabs */
+  justify-content: space-between; /* Distribute space evenly */
+}
+
+.tab-button {
+  padding: 8px 16px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
+  min-width: 100px;
+  z-index: 1; /* Base z-index for all tabs */
+}
+
+.tab-button:hover {
+  background-color: transparent !important;
+  background: none !important;
+  box-shadow: none !important;
+  z-index: 2; /* Middle z-index when hovering */
+}
+
+.tab-button.active {
+  background: #ffecd1;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  z-index: 3; /* Highest z-index for active tab, always on top */
+}
+
+/* Dark theme adjustments */
+.dark .tabs-wrapper {
+  background: rgba(128, 0, 128, 0.4);
+  border-color: rgba(128, 0, 128, 0.5);
+}
+
+.dark .tab-button.active {
+  background: #ffecd1;
+  color: #333;
+}
+
+.timer-content {
+  padding: 1.5rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  margin-top: 0.5rem;
+}
