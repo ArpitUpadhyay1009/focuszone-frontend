@@ -373,11 +373,14 @@ export default function TimerApp() {
                   <input
                     type="number"
                     value={pomodoroTime / 60}
-                    onChange={(e) =>
-                      setPomodoroTime(Number(e.target.value) * 60)
+                    min={0}
+                    max={59}
+                    onChange={(e) =>{ const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                      setPomodoroTime(value * 60);
+                    }
+                      
                     }
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                    min="1"
                   />
                 </div>
 
@@ -388,9 +391,12 @@ export default function TimerApp() {
                   <input
                     type="number"
                     value={breakTime / 60}
-                    onChange={(e) => setBreakTime(Number(e.target.value) * 60)}
+                    min={0}
+                    max={59}
+                    onChange={(e) => { const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                      setBreakTime(value * 60);
+                      } }
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                    min="1"
                   />
                 </div>
 
@@ -401,11 +407,13 @@ export default function TimerApp() {
                   <input
                     type="number"
                     value={countdownTime / 60}
-                    onChange={(e) =>
-                      setCountdownTime(Number(e.target.value) * 60)
+                    min={0}
+                    max={59}
+                    onChange={(e) => { const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                      setCountdownTime(value * 60);
+                    }  
                     }
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                    min="1"
                   />
                 </div>
 
@@ -416,9 +424,11 @@ export default function TimerApp() {
                   <input
                     type="number"
                     value={cycles}
-                    onChange={(e) => setCycles(Number(e.target.value))}
+                    min={0}
+                    max={10}
+                    onChange={(e) => { const value = Math.max(0, Math.min(10, Number(e.target.value)));
+                      setCycles(value)} }
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                    min="1"
                   />
                 </div>
               </div>
