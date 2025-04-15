@@ -1,6 +1,6 @@
 import React from "react";
 import VerifyBox from "@components/verifybox/VerifyBox.jsx";
-import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
+import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 
 const VerifyOtp = () => {
   return (

@@ -7,7 +7,7 @@ import "@components/levelRenders/LevelRenders.css";
 import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSystem.jsx";
 import SpotifyEmbed2 from "@components/spotify2/SpotifyEmbed2.jsx";
 import TodoList from "@components/todo/todo.jsx";
-import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
+import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 
 export const Home = () => {
   return (

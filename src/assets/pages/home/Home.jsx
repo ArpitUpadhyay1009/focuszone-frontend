@@ -5,7 +5,7 @@ import TimerApp from "@components/timerApp/TimerApp.jsx";
 import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
 import LoginToUnlock from "@components/loginToUnlock/LoginToUnlock.jsx";
 import { useNavigate } from "react-router-dom";
-import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
+import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 
 export const Home = () => {
   const navigate = useNavigate();

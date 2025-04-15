@@ -2,7 +2,7 @@ import React from "react";
 import Navbar from "@components/navbar/Navbar.jsx";
 import ForgotBox from "@components/forgotBox/ForgotBox.jsx";
 import "./ForgotPassword.css";
-import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
+import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 
 const ForgotPassword = () => {
   return (

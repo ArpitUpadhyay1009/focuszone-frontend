@@ -8,7 +8,7 @@ import "./Register.css";
 import RegisterBox from "@components/registerBox/RegisterBox.jsx";
 import Logo from "@components/logo/Logo.jsx";
 import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
-import AnimatedBackground from "@components/animatedBackground/AnimatedBackground.jsx";
+import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 
 const Register = () => {
   // const [name, setName] = useState();
