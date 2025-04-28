@@ -40,6 +40,68 @@ body {
   padding: 0 1rem;
 }
 
+/* Mobile-specific styles to center LoginToUnlock */
+.w-full.max-w-md.flex.flex-col.items-center.gap-6 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0;
+}
+
+/* Ensure the login component is centered on small screens */
+@media (max-width: 767px) {
+  /* Make container take full width */
+  .container {
+    padding: 0;
+    max-width: 100%;
+  }
+  
+  /* Adjust the column layout for mobile */
+  .w-full.max-w-md.flex.flex-col.items-center.gap-6 {
+    max-width: 100%;
+    padding: 0;
+    margin-left: -7px; /* Add negative margin to compensate for right shift */
+  }
+  
+  /* Make the login component take full width */
+  .w-full.cursor-pointer.transition-transform.duration-300.hover\\:scale-105.rounded-lg {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    left: -7px; /* Shift left to compensate */
+  }
+  
+  /* Remove any max-width constraints */
+  .w-full.max-w-md.flex.flex-col.items-center.gap-6 > div:first-child {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  
+  /* Ensure the component inside takes full width */
+  .w-full.max-w-md.flex.flex-col.items-center.gap-6 > div:first-child > * {
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  /* Center Spotify component on mobile */
+  .w-full.max-w-md.flex.flex-col.items-center.gap-6 > div:last-child {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0;
+    position: relative;
+    left: -7px; /* Apply same shift as login component */
+    display: flex;
+    justify-content: center;
+  }
+}
+
 @media (min-width: 640px) {
   .container {
     padding: 0 1.5rem;
@@ -73,6 +135,50 @@ body {
     display: flex;
     justify-content: center;
   }
+  
+  /* Center Spotify component on medium screens */
+  .w-full.max-w-md.flex.flex-col.items-center.gap-6 {
+    padding-right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* Ensure Spotify component is centered */
+  .w-full.max-w-md.flex.flex-col.items-center.gap-6 > div:last-child {
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto;
+    margin-left: -12%; /* Add negative margin from the left */
+    display: flex;
+    justify-content: center;
+  }
+}
+
+/* Add these styles to fix logo dimensions */
+.auth-logo img,
+.navbar-left img,
+.logo-container img {
+  width: auto;
+  height: 40px;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+}
+
+/* Specific fix for the register/login page logo */
+.register-container img,
+.login-container img {
+  width: 120px;
+  height: 120px;
+  aspect-ratio: 1/1;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
+/* Ensure consistent logo dimensions across all pages */
+img[alt="logo"] {
+  aspect-ratio: 1/1;
+  object-fit: contain;
 }
 
   

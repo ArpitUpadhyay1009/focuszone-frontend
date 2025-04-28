@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { Timer, Pause, RefreshCcw, Settings, X, Coins } from "lucide-react";
 import { Dialog } from "@headlessui/react";
@@ -7,22 +7,89 @@ import "./TimerApp.css";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function TimerApp({ setParentPopupState }) {
-  const [mode, setMode] = useState("pomodoro");
-  const [time, setTime] = useState(25 * 60);
-  const [isRunning, setIsRunning] = useState(false);
-  const [showStart, setShowStart] = useState(true);
-  const [pomodoroTime, setPomodoroTime] = useState(25 * 60);
-  const [breakTime, setBreakTime] = useState(5 * 60);
-  const [cycles, setCycles] = useState(1);
-  const [currentCycle, setCurrentCycle] = useState(0);
-  const [isBreak, setIsBreak] = useState(false);
+  // Add timestamp tracking for accurate timing across tab switches and page reloads
+  const [timerStartedAt, setTimerStartedAt] = useState(() => {
+    return localStorage.getItem('timerStartedAt') ? parseInt(localStorage.getItem('timerStartedAt')) : null;
+  });
+  
+  const [mode, setMode] = useState(() => localStorage.getItem('timerMode') || "pomodoro");
+  const [time, setTime] = useState(() => {
+    const savedTime = localStorage.getItem('timerTime');
+    return savedTime ? parseInt(savedTime) : 25 * 60;
+  });
+  const [isRunning, setIsRunning] = useState(() => {
+    return localStorage.getItem('timerIsRunning') === 'true';
+  });
+  const [showStart, setShowStart] = useState(() => {
+    return localStorage.getItem('timerShowStart') !== 'false';
+  });
+  const [pomodoroTime, setPomodoroTime] = useState(() => {
+    const saved = localStorage.getItem('timerPomodoroTime');
+    return saved ? parseInt(saved) : 25 * 60;
+  });
+  const [breakTime, setBreakTime] = useState(() => {
+    const saved = localStorage.getItem('timerBreakTime');
+    return saved ? parseInt(saved) : 5 * 60;
+  });
+  const [cycles, setCycles] = useState(() => {
+    const saved = localStorage.getItem('timerCycles');
+    return saved ? parseInt(saved) : 1;
+  });
+  const [currentCycle, setCurrentCycle] = useState(() => {
+    const saved = localStorage.getItem('timerCurrentCycle');
+    return saved ? parseInt(saved) : 0;
+  });
+  const [isBreak, setIsBreak] = useState(() => {
+    return localStorage.getItem('timerIsBreak') === 'true';
+  });
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [countdownTime, setCountdownTime] = useState(5 * 60);
-  const [coins, setCoins] = useState(0); // New state for coins
+  const [countdownTime, setCountdownTime] = useState(() => {
+    const saved = localStorage.getItem('timerCountdownTime');
+    return saved ? parseInt(saved) : 5 * 60;
+  });
+  const [coins, setCoins] = useState(() => {
+    const saved = localStorage.getItem('timerCoins');
+    return saved ? parseFloat(saved) : 0;
+  });
+  // Track the initial time when timer starts to calculate elapsed minutes correctly
+  const [initialTime, setInitialTime] = useState(null);
+  // Track minutes elapsed to avoid awarding coins multiple times
+  const [minutesElapsed, setMinutesElapsed] = useState(0);
 
   const notificationSound = new Audio("/notification.mp3");
 
   const { theme } = useTheme();
+
+  // Format time function
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  };
+
+  // Save all state changes to localStorage
+  useEffect(() => {
+    localStorage.setItem('timerMode', mode);
+    localStorage.setItem('timerTime', time.toString());
+    localStorage.setItem('timerIsRunning', isRunning.toString());
+    localStorage.setItem('timerShowStart', showStart.toString());
+    localStorage.setItem('timerPomodoroTime', pomodoroTime.toString());
+    localStorage.setItem('timerBreakTime', breakTime.toString());
+    localStorage.setItem('timerCycles', cycles.toString());
+    localStorage.setItem('timerCurrentCycle', currentCycle.toString());
+    localStorage.setItem('timerIsBreak', isBreak.toString());
+    localStorage.setItem('timerCountdownTime', countdownTime.toString());
+    localStorage.setItem('timerCoins', coins.toString());
+    
+    if (timerStartedAt) {
+      localStorage.setItem('timerStartedAt', timerStartedAt.toString());
+    } else {
+      localStorage.removeItem('timerStartedAt');
+    }
+  }, [
+    mode, time, isRunning, showStart, pomodoroTime, breakTime, 
+    cycles, currentCycle, isBreak, countdownTime, coins, timerStartedAt
+  ]);
 
   // Function to save coins to the database
   const saveCoinsToDatabase = async (earnedCoins) => {
@@ -56,103 +123,216 @@ export default function TimerApp({ setParentPopupState }) {
     }
   };
 
+  // When page loads, recalculate time based on when timer was started
   useEffect(() => {
-    let timer;
-    if (isRunning) {
-      timer = setInterval(() => {
-        setTime((prevTime) => {
-          if (prevTime <= 1 && mode !== "stopwatch") {
-            clearInterval(timer);
-            notificationSound.play();
-
-            if (mode === "countdown") {
-              setIsRunning(false);
-              return 0;
-            }
-
-            if (mode === "pomodoro" && !isBreak) {
-              if (currentCycle + 1 < cycles) {
-                setIsBreak(true);
-                // Immediately save coins when earned at the end of a pomodoro session
+    if (isRunning && timerStartedAt) {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - timerStartedAt) / 1000);
+      
+      // Pause the timer when page is reloaded
+      setIsRunning(false);
+      setShowStart(true);
+      setTimerStartedAt(null);
+      setInitialTime(null);
+      setMinutesElapsed(0);
+      
+      if (mode === "stopwatch") {
+        // For stopwatch, add elapsed time
+        setTime(prevTime => prevTime + elapsedSeconds);
+      } else {
+        // For countdown and pomodoro, subtract elapsed time
+        const newTime = Math.max(0, time - elapsedSeconds);
+        setTime(newTime);
+        
+        // If timer should have completed while away, handle that
+        if (newTime === 0) {
+          if (mode === "pomodoro" && !isBreak) {
+            // Handle pomodoro completion
+            if (currentCycle + 1 < cycles) {
+              setIsBreak(true);
+              setTime(breakTime);
+              // Only award coins if at least 1 minute has elapsed
+              if (elapsedSeconds >= 60) {
                 saveCoinsToDatabase(0.5);
-                setCoins((prevCoins) => prevCoins + 0.5);
-                setTime(breakTime);
-              } else {
-                setIsRunning(false);
-                // Immediately save coins when earned at the end of all cycles
-
-                saveCoinsToDatabase(0.5);
-                setCoins((prevCoins) => prevCoins + 0.5);
-                
-
-                saveCoinsToDatabase(0.5);
-                setCoins((prevCoins) => prevCoins + 0.5);
-
-                // Auto reset after a short delay when all cycles are completed
-                setTimeout(() => {
-                  resetTimer();
-                  setCoins(0); // Explicitly reset coins display
-                }, 2000);
-
-                return 0;
+                setCoins(prev => prev + 0.5);
               }
             } else {
-              setIsBreak(false);
-              setCurrentCycle((prev) => prev + 1);
-              setTime(pomodoroTime);
+              // All cycles completed
+              if (elapsedSeconds >= 60) {
+                saveCoinsToDatabase(1);
+                setCoins(prev => prev + 1);
+              }
+              resetTimer();
             }
-            return prevTime;
+          } else if (mode === "pomodoro" && isBreak) {
+            // Handle break completion
+            setIsBreak(false);
+            setCurrentCycle(prev => prev + 1);
+            setTime(pomodoroTime);
           }
+        }
+      }
+    }
+  }, []);
 
-          // Award and save coins after each minute
-          if (
-            mode === "pomodoro" &&
-            !isBreak &&
-            (prevTime - 1) % 60 === 0 &&
-            prevTime > 1
-          ) {
-            // Immediately save coins when earned each minute
-            saveCoinsToDatabase(0.5);
-            setCoins((prevCoins) => prevCoins + 0.5);
-          }
+  // Main timer effect
+  useEffect(() => {
+    let timer;
+    
+    if (isRunning) {
+      // Set or update the timer start timestamp
+      if (!timerStartedAt) {
+        setTimerStartedAt(Date.now());
+      }
+      
+      timer = setInterval(() => {
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - timerStartedAt) / 1000);
+        
+        if (elapsedSeconds > 0) {
+          setTimerStartedAt(now);
+          
+          setTime(prevTime => {
+            // For stopwatch, add elapsed time
+            if (mode === "stopwatch") {
+              return prevTime + elapsedSeconds;
+            }
+            
+            // For countdown and pomodoro, subtract elapsed time
+            const newTime = Math.max(0, prevTime - elapsedSeconds);
+            
+            // Handle timer completion
+            if (newTime === 0 && prevTime > 0) {
+              clearInterval(timer);
+              notificationSound.play();
+              
+              if (mode === "countdown") {
+                setIsRunning(false);
+                setShowStart(true);
+                return 0;
+              }
 
-          return mode === "stopwatch" ? prevTime + 1 : prevTime - 1;
-        });
+              if (mode === "pomodoro" && !isBreak) {
+                if (currentCycle + 1 < cycles) {
+                  setIsBreak(true);
+                  // Only award coins if the timer ran for at least 1 minute
+                  if (initialTime && (initialTime - newTime) >= 60) {
+                    saveCoinsToDatabase(0.5);
+                    setCoins((prevCoins) => prevCoins + 0.5);
+                  }
+                  return breakTime;
+                } else {
+                  setIsRunning(false);
+                  setShowStart(true);
+                  // Only award coins if the timer ran for at least 1 minute
+                  if (initialTime && (initialTime - newTime) >= 60) {
+                    saveCoinsToDatabase(0.5);
+                    setCoins((prevCoins) => prevCoins + 0.5);
+                    
+                    saveCoinsToDatabase(0.5);
+                    setCoins((prevCoins) => prevCoins + 0.5);
+                  }
+
+                  // Auto reset after a short delay when all cycles are completed
+                  setTimeout(() => {
+                    resetTimer();
+                    setCoins(0); // Explicitly reset coins display
+                  }, 2000);
+
+                  return 0;
+                }
+              } else if (mode === "pomodoro" && isBreak) {
+                setIsBreak(false);
+                setCurrentCycle((prev) => prev + 1);
+                return pomodoroTime;
+              }
+            }
+            
+            // Award coins for each minute in pomodoro mode
+            if (mode === "pomodoro" && !isBreak && initialTime) {
+              // Calculate total minutes elapsed since timer started
+              const totalMinutesElapsed = Math.floor((initialTime - newTime) / 60);
+              
+              // Only award coins when crossing a new minute threshold and at least 1 minute has passed
+              if (totalMinutesElapsed > minutesElapsed && totalMinutesElapsed > 0) {
+                saveCoinsToDatabase(0.5);
+                setCoins(prev => prev + 0.5);
+                setMinutesElapsed(totalMinutesElapsed);
+              }
+            }
+            
+            return newTime;
+          });
+        }
       }, 1000);
     } else {
+      // Clear timer start timestamp when paused
+      setTimerStartedAt(null);
       clearInterval(timer);
     }
+    
     return () => clearInterval(timer);
-  }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime]);
+  }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime, timerStartedAt, initialTime, minutesElapsed]);
 
   const startTimer = () => {
     setIsRunning(true);
     setShowStart(false);
+    
+    // Start timer with 1 second less to avoid immediate coin award
+    if (mode === "pomodoro" && !isBreak && time === pomodoroTime) {
+      setTime(prevTime => Math.max(0, prevTime - 1));
+    }
+    
+    setTimerStartedAt(Date.now());
+    setInitialTime(time);
+    setMinutesElapsed(0);
   };
 
   const pauseTimer = () => {
     setIsRunning(false);
     setShowStart(true);
+    setTimerStartedAt(null);
   };
 
   const resetTimer = () => {
     setIsRunning(false);
+    setShowStart(true);
     setIsBreak(false);
     setCurrentCycle(0);
+    setTimerStartedAt(null);
+    setInitialTime(null);
+    setMinutesElapsed(0);
+    
     if (mode === "pomodoro") setTime(pomodoroTime);
     if (mode === "countdown") setTime(countdownTime);
     if (mode === "stopwatch") setTime(0);
-    setShowStart(true);
-    setCoins(0); // Reset coins when resetting the timer
-
-    // Dispatch the coinUpdate event when resetting
+    setCoins(0);
+    
     window.dispatchEvent(new Event("coinUpdate"));
   };
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  // Update handleModeChange to work with timestamps
+  const handleModeChange = (newMode) => {
+    // Pause current timer
+    setIsRunning(false);
+    setShowStart(true);
+    setTimerStartedAt(null);
+    setInitialTime(null);
+    setMinutesElapsed(0);
+    
+    // Set new mode
+    setMode(newMode);
+    
+    // Set appropriate time for the new mode
+    if (newMode === "pomodoro") {
+      setTime(pomodoroTime);
+      setIsBreak(false);
+      setCurrentCycle(0);
+    } else if (newMode === "countdown") {
+      setTime(countdownTime);
+    } else if (newMode === "stopwatch") {
+      setTime(0);
+    }
   };
 
   const saveSettings = () => {
@@ -196,12 +376,10 @@ export default function TimerApp({ setParentPopupState }) {
               ? "bg-black text-white"
               : "bg-white text-black"
           }`}
-          onClick={() => {
-            setMode("pomodoro");
-            setTime(pomodoroTime);
-          }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          onClick={() => handleModeChange("pomodoro")}
+          whileHover={{ y: -2 }}
+          whileTap={{ y: 1 }}
+          transition={{ duration: 0 }}
         >
           {isBreak ? "Break" : "Pomodoro"}
         </motion.button>
@@ -213,12 +391,10 @@ export default function TimerApp({ setParentPopupState }) {
               ? "bg-black text-white"
               : "bg-white text-black"
           }`}
-          onClick={() => {
-            setMode("countdown");
-            setTime(countdownTime);
-          }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          onClick={() => handleModeChange("countdown")}
+          whileHover={{ y: -2 }}
+          whileTap={{ y: 1 }}
+          transition={{ duration: 0 }}
         >
           Countdown
         </motion.button>
@@ -230,12 +406,10 @@ export default function TimerApp({ setParentPopupState }) {
               ? "bg-black text-white"
               : "bg-white text-black"
           }`}
-          onClick={() => {
-            setMode("stopwatch");
-            setTime(0);
-          }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
+          onClick={() => handleModeChange("stopwatch")}
+          whileHover={{ y: -2 }}
+          whileTap={{ y: 1 }}
+          transition={{ duration: 0 }}
         >
           Timer
         </motion.button>
@@ -258,48 +432,86 @@ export default function TimerApp({ setParentPopupState }) {
         {formatTime(time)}
       </motion.div>
 
-   
-      
       {/* Control buttons with improved styling */}
       <div className="flex justify-center items-center space-x-3 md:space-x-4 mb-4 md:mb-6">
         <AnimatePresence mode="wait">
           {showStart ? (
-            <motion.button
-              key="start"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.3 }}
-              onClick={startTimer}
-              className="timer-control-button timer-start-button flex items-center justify-center gap-2"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <motion.div
+              key="start-controls"
+              className="flex space-x-5 md:space-x-6"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 1 }}
+              transition={{ duration: 0 }}
             >
-              <Timer size={20} />
-              <span className="text-base md:text-lg font-medium">Start</span>
-            </motion.button>
+              <motion.button
+                key="resume"
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 1 }}
+                transition={{ duration: 0 }}
+                onClick={startTimer}
+                className="timer-control-button timer-start-button flex items-center justify-center gap-2 w-[130px] md:w-[150px]"
+                whileHover={{ y: -2 }}
+                whileTap={{ y: 1 }}
+              >
+                <Timer size={20} />
+                <span className="text-base md:text-lg font-medium">
+                  {time > 0 && (isRunning === false && time !== (mode === 'pomodoro' ? pomodoroTime : (mode === 'countdown' ? countdownTime : 0))) 
+                    ? "Resume" 
+                    : "Start"}
+                </span>
+              </motion.button>
+              
+              {/* Show Reset button when timer is paused (not at initial state) */}
+              {time > 0 && time !== (mode === 'pomodoro' ? pomodoroTime : (mode === 'countdown' ? countdownTime : 0)) && (
+                <motion.button
+                  key="reset"
+                  onClick={resetTimer}
+                  className="timer-control-button timer-reset-button flex items-center justify-center gap-2 w-[120px] md:w-[140px]"
+                  whileHover={{ y: -2 }}
+                  whileTap={{ y: 1 }}
+                  initial={{ opacity: 1 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 1 }}
+                  transition={{ duration: 0 }}
+                >
+                  <RefreshCcw size={20} />
+                  <span className="text-base md:text-lg font-medium">Reset</span>
+                </motion.button>
+              )}
+            </motion.div>
           ) : (
             <motion.div
               key="controls"
-              className="flex space-x-3 md:space-x-4"
-              initial={{ opacity: 0 }}
+              className="flex space-x-5 md:space-x-6"
+              initial={{ opacity: 1 }}
               animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 1 }}
+              transition={{ duration: 0 }}
             >
               <motion.button
                 onClick={pauseTimer}
-                className="timer-control-button timer-start-button flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="timer-control-button timer-start-button flex items-center justify-center gap-2 w-[120px] md:w-[140px]"
+                whileHover={{ y: -2 }}
+                whileTap={{ y: 1 }}
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 1 }}
+                transition={{ duration: 0 }}
               >
                 <Pause size={20} />
                 <span className="text-base md:text-lg font-medium">Pause</span>
               </motion.button>
               <motion.button
                 onClick={resetTimer}
-                className="timer-control-button timer-start-button flex items-center justify-center gap-2"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="timer-control-button timer-start-button flex items-center justify-center gap-2 w-[120px] md:w-[140px]"
+                whileHover={{ y: -2 }}
+                whileTap={{ y: 1 }}
+                initial={{ opacity: 1 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 1 }}
+                transition={{ duration: 0 }}
               >
                 <RefreshCcw size={20} />
                 <span className="text-base md:text-lg font-medium">Reset</span>
@@ -312,7 +524,7 @@ export default function TimerApp({ setParentPopupState }) {
           whileHover={{ scale: 1.1, rotate: 15 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsSettingsOpen(true)}
-          className="timer-control-button timer-settings-button flex items-center justify-center"
+          className="timer-control-button timer-settings-button flex items-center justify-center ml-2" // Added margin-left
         >
           <Settings size={20} />
         </motion.button>
@@ -391,11 +603,10 @@ export default function TimerApp({ setParentPopupState }) {
                     value={pomodoroTime / 60}
                     min={0}
                     max={59}
-                    onChange={(e) =>{ const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                    onChange={(e) =>{ 
+                      const value = Math.max(0, Math.min(59, Number(e.target.value)));
                       setPomodoroTime(value * 60);
-                    }
-                      
-                    }
+                    }}
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   />
                 </div>
@@ -409,9 +620,10 @@ export default function TimerApp({ setParentPopupState }) {
                     value={breakTime / 60}
                     min={0}
                     max={59}
-                    onChange={(e) => { const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                    onChange={(e) => { 
+                      const value = Math.max(0, Math.min(59, Number(e.target.value)));
                       setBreakTime(value * 60);
-                      } }
+                    }}
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   />
                 </div>
@@ -425,10 +637,10 @@ export default function TimerApp({ setParentPopupState }) {
                     value={countdownTime / 60}
                     min={0}
                     max={59}
-                    onChange={(e) => { const value = Math.max(0, Math.min(59, Number(e.target.value)));
+                    onChange={(e) => { 
+                      const value = Math.max(0, Math.min(59, Number(e.target.value)));
                       setCountdownTime(value * 60);
-                    }  
-                    }
+                    }}
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   />
                 </div>
@@ -442,8 +654,10 @@ export default function TimerApp({ setParentPopupState }) {
                     value={cycles}
                     min={0}
                     max={10}
-                    onChange={(e) => { const value = Math.max(0, Math.min(10, Number(e.target.value)));
-                      setCycles(value)} }
+                    onChange={(e) => { 
+                      const value = Math.max(0, Math.min(10, Number(e.target.value)));
+                      setCycles(value);
+                    }}
                     className="w-full p-2 md:p-3 border border-gray-300 rounded-lg transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:outline-none"
                   />
                 </div>

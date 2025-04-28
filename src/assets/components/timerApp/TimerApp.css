@@ -51,6 +51,21 @@
   box-shadow: 0 2px 4px rgba(117, 0, 202, 0.2);
 }
 
+/* Ensure the reset button has proper styling */
+.timer-reset-button {
+  padding: 0 1.5rem;
+  margin-left: 0.5rem;
+  background-color: #7500CA;
+}
+
+/* Ensure buttons are properly aligned when multiple are shown */
+.timer-controls-container {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
 .timer-start-button {
   padding: 0 2rem;
 }

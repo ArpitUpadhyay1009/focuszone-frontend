@@ -25,7 +25,7 @@ export const Home = () => {
   }, []);
 
   const handleLoginClick = () => {
-    navigate("/login");
+    navigate("/Register");
   };
 
   return (
