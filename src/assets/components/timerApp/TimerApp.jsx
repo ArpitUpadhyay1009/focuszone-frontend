@@ -341,6 +341,20 @@ export default function TimerApp({ setParentPopupState }) {
     if (mode === "countdown") setTime(countdownTime);
   };
 
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        pauseTimer(); // Pause the timer when the tab is not visible
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
