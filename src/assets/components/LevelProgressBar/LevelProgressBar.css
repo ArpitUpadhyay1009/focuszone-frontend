@@ -1,0 +1,95 @@
+.level-progress-container {
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: #000000;
+  color: white;
+  padding: 1.5rem;
+}
+
+.level-progress-container h2 {
+  margin-bottom: 12px;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Ensure the progress bars have smooth transitions */
+.level-progress-bar {
+  height: 0.5rem;
+  background-color: #374151;
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.level-progress-fill {
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+}
+
+.level-progress-fill.completed {
+  background-color: #10B981;
+}
+
+.level-progress-fill.next {
+  background-color: #6B7280;
+}
+
+/* Style for the upgrade button */
+.upgrade-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F97316;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 500;
+  margin: 1rem auto;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: fit-content;
+}
+
+.upgrade-button:hover {
+  transform: scale(1.05);
+  background-color: #EA580C;
+}
+
+.coin-pill {
+  display: flex;
+  align-items: center;
+  background-color: #FB923C;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  margin-left: 0.5rem;
+}
+
+/* Style for the coin display */
+.coin-display {
+  display: flex;
+  align-items: center;
+  background-color: #1F2937;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+}
+
+.coin-display:hover {
+  transform: scale(1.05);
+}
+
+/* Status row */
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.can-upgrade {
+  color: #FBBF24;
+  font-weight: 500;
+}

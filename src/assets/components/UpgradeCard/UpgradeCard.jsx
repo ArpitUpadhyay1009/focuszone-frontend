@@ -238,23 +238,25 @@ const UpgradeCard = () => {
           </motion.span>
         </div>
 
-        {/* Upgrade button */}
-        <div className="flex justify-end">
+        {/* Upgrade button - centered and styled like the screenshot */}
+        <div className="flex justify-center items-center mb-4">
           <motion.button
             whileHover={{ scale: canUpgrade ? 1.05 : 1 }}
             whileTap={{ scale: canUpgrade ? 0.95 : 1 }}
             onClick={handleUpgrade}
             disabled={!canUpgrade || isUpgrading}
-            className={`px-6 py-3 rounded-full flex items-center gap-2 shadow-lg transition-all duration-300 ${
+            className={`px-6 py-3 rounded-full flex items-center gap-2 shadow-lg ${
               canUpgrade && !isUpgrading
-                ? "bg-yellow-400 text-black hover:bg-yellow-500"
+                ? "bg-orange-500 text-white hover:bg-orange-600"
                 : "bg-gray-300 text-gray-600 cursor-not-allowed"
             }`}
           >
             <ArrowUp size={20} />
-            <span className="font-medium">
-              {isUpgrading ? "Upgrading..." : "Upgrade"}
-            </span>
+            <span className="font-medium">Upgrade</span>
+            <div className="bg-orange-400 px-2 py-1 rounded-full flex items-center ml-1">
+              <Coins size={14} className="mr-1" />
+              <span>{coinsRequired}</span>
+            </div>
           </motion.button>
         </div>
       </motion.div>
@@ -305,3 +307,20 @@ const UpgradeCard = () => {
 };
 
 export default UpgradeCard;
+
+// Add this to the upgrade success handler in UpgradeCard.jsx
+// Find the section where the upgrade is successful and add this line:
+
+// After successful upgrade
+setUserData((prev) => ({
+  ...prev,
+  currentLevel: prev.currentLevel + 1,
+  nextLevel: prev.nextLevel + 1,
+}));
+
+// Dispatch event to notify level was upgraded
+window.dispatchEvent(new Event('levelUpgraded'));
+
+// Show congrats popup
+setShowCongratsPopup(true);
+setNewLevel(userData.currentLevel + 1);
