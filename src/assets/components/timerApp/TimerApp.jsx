@@ -175,23 +175,25 @@ export default function TimerApp({ setParentPopupState }) {
     }
   }, []);
 
-  // Main timer effect
+  // Main timer effect - modify this useEffect
   useEffect(() => {
     let timer;
+    let lastUpdateTime = Date.now();
     
     if (isRunning) {
       // Set or update the timer start timestamp
       if (!timerStartedAt) {
         setTimerStartedAt(Date.now());
+        lastUpdateTime = Date.now();
       }
       
       timer = setInterval(() => {
         const now = Date.now();
-        const elapsedSeconds = Math.floor((now - timerStartedAt) / 1000);
+        // Calculate actual elapsed time since last update
+        const elapsedSeconds = Math.floor((now - lastUpdateTime) / 1000);
+        lastUpdateTime = now;
         
         if (elapsedSeconds > 0) {
-          setTimerStartedAt(now);
-          
           setTime(prevTime => {
             // For stopwatch, add elapsed time
             if (mode === "stopwatch") {
@@ -274,6 +276,89 @@ export default function TimerApp({ setParentPopupState }) {
     return () => clearInterval(timer);
   }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime, timerStartedAt, initialTime, minutesElapsed]);
 
+  // Replace the visibility change effect with this improved version
+  useEffect(() => {
+    let visibilityChangeTime = null;
+    
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        // Store the time when the tab became hidden
+        visibilityChangeTime = Date.now();
+      } else if (document.visibilityState === 'visible' && isRunning && visibilityChangeTime) {
+        // Tab is visible again and timer was running
+        const now = Date.now();
+        const hiddenTime = now - visibilityChangeTime;
+        
+        // If the tab was hidden for more than 1 second
+        if (hiddenTime > 1000) {
+          // Calculate elapsed seconds while hidden
+          const elapsedSeconds = Math.floor(hiddenTime / 1000);
+          
+          // Update the timer based on the elapsed time
+          setTime(prevTime => {
+            if (mode === "stopwatch") {
+              return prevTime + elapsedSeconds;
+            } else {
+              // For countdown and pomodoro
+              const newTime = Math.max(0, prevTime - elapsedSeconds);
+              
+              // Handle timer completion if it should have completed while hidden
+              if (newTime === 0 && prevTime > 0) {
+                notificationSound.play();
+                
+                if (mode === "countdown") {
+                  setIsRunning(false);
+                  setShowStart(true);
+                  return 0;
+                }
+                
+                if (mode === "pomodoro" && !isBreak) {
+                  if (currentCycle + 1 < cycles) {
+                    setIsBreak(true);
+                    return breakTime;
+                  } else {
+                    setIsRunning(false);
+                    setShowStart(true);
+                    setTimeout(() => resetTimer(), 2000);
+                    return 0;
+                  }
+                } else if (mode === "pomodoro" && isBreak) {
+                  setIsBreak(false);
+                  setCurrentCycle(prev => prev + 1);
+                  return pomodoroTime;
+                }
+              }
+              
+              // Award coins for elapsed time in pomodoro mode
+              if (mode === "pomodoro" && !isBreak && initialTime) {
+                const totalMinutesElapsed = Math.floor((initialTime - newTime) / 60);
+                if (totalMinutesElapsed > minutesElapsed && totalMinutesElapsed > 0) {
+                  const newCoins = (totalMinutesElapsed - minutesElapsed) * 0.5;
+                  saveCoinsToDatabase(newCoins);
+                  setCoins(prev => prev + newCoins);
+                  setMinutesElapsed(totalMinutesElapsed);
+                }
+              }
+              
+              return newTime;
+            }
+          });
+          
+          // Update the timer start timestamp to now
+          setTimerStartedAt(now);
+        }
+        
+        visibilityChangeTime = null;
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime, initialTime, minutesElapsed]);
+
   const startTimer = () => {
     setIsRunning(true);
     setShowStart(false);
@@ -341,10 +426,17 @@ export default function TimerApp({ setParentPopupState }) {
     if (mode === "countdown") setTime(countdownTime);
   };
 
+  // Replace the current visibility change effect with this one
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') {
-        pauseTimer(); // Pause the timer when the tab is not visible
+      // Instead of pausing the timer, we'll just let it continue running
+      // The timestamp-based approach will handle time tracking correctly
+      
+      // If the timer is running and the tab becomes visible again, 
+      // we'll update the UI to reflect the correct time
+      if (document.visibilityState === 'visible' && isRunning && timerStartedAt) {
+        // The timer will continue running with the existing timestamp logic
+        // No need to pause or reset anything
       }
     };
 
@@ -353,7 +445,7 @@ export default function TimerApp({ setParentPopupState }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, []);
+  }, [isRunning, timerStartedAt]);
 
   return (
     <motion.div
@@ -442,6 +534,11 @@ export default function TimerApp({ setParentPopupState }) {
             ? "text-white"
             : "text-black"
         }`}
+        style={{ 
+          fontFamily: "'Inter', 'SF Mono', 'Roboto Mono', 'Consolas', monospace",
+          letterSpacing: "0.05em",
+          fontVariantNumeric: "tabular-nums"
+        }}
       >
         {formatTime(time)}
       </motion.div>

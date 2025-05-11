@@ -1,4 +1,12 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&family=Roboto+Mono&display=swap');
+
+/* Add a specific class for the timer display with clean zeros */
+.timer-display {
+  font-family: 'Courier Prime', 'Roboto Mono', monospace;
+  letter-spacing: 0.05em;
+}
+
 [data-theme="dark"].bg-dark{
     background-color: gray;
     transition: background-color 2.6s ease;
@@ -238,3 +246,21 @@
   backdrop-filter: blur(10px);
   margin-top: 0.5rem;
 }
+
+@import "tailwindcss";
+
+/* Import Digital-7 font */
+@font-face {
+  font-family: 'Digital-7';
+  src: url('/fonts/digital-7.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Alternative monospace fonts without slashed zeros */
+.clean-mono {
+  font-family: 'Digital-7', 'Courier New', 'Courier Prime', monospace;
+  letter-spacing: 0.05em;
+}
+
