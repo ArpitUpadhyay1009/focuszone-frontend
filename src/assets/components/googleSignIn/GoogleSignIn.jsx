@@ -1,4 +1,3 @@
-// src/components/GoogleLoginButton.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
@@ -6,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import "./GoogleSignIn.css";
 
 const GoogleLoginButton = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+
   const handleSuccess = async (credentialResponse) => {
     try {
       const { credential } = credentialResponse;
@@ -17,16 +17,20 @@ const GoogleLoginButton = () => {
 
       const { token, user } = response.data;
 
-      // Save token and user info (optional: context, localStorage)
+      // Save token and user info
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-    //   console.log("✅ Logged in:", user);
-      navigate("/home")      // Redirect or show success toast
+      // ✅ Redirect based on role
+      if (user.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/home");
+      }
 
     } catch (err) {
-    //   console.error("❌ Login failed", err.response?.data || err.message);
-      alert("Login failed. Try again.");
+      console.error("❌ Google login failed", err.response?.data || err.message);
+      alert("Google login failed. Try again.");
     }
   };
 

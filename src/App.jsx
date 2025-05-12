@@ -7,6 +7,7 @@ import Register from "@pages/register/Register.jsx";
 import ForgotPassword from "@pages/forgotPassword/ForgotPassword.jsx";
 import ResetPassword from "@pages/resetPassword/ResetPassword.jsx";
 import VerifyOtp from "@pages/verifyotp/VerifyOtp.jsx";
+import AdminDashboard from "@pages/admin/AdminDashboard";
 function App() {
   return (
     <>
@@ -19,6 +20,7 @@ function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/home" element={<Dashboard />} />
+          <Route path="/admin" element={<AdminDashboard />} />
         </Routes>
       </BrowserRouter>
     </>
