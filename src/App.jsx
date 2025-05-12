@@ -5,6 +5,7 @@ import Dashboard from "@pages/dashboard/Dashboard.jsx";
 import Login from "@pages/login/Login.jsx";
 import Register from "@pages/register/Register.jsx";
 import ForgotPassword from "@pages/forgotPassword/ForgotPassword.jsx";
+import ResetPassword from "@pages/resetPassword/ResetPassword.jsx";
 import VerifyOtp from "@pages/verifyotp/VerifyOtp.jsx";
 function App() {
   return (
@@ -14,7 +15,8 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/forgot" element={<ForgotPassword />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
           <Route path="/home" element={<Dashboard />} />
         </Routes>

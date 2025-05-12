@@ -14,13 +14,14 @@ const RegisterBox = () => {
   const [password, setPassword] = useState("");
   const [charCount, setCharCount] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [isPasswordFocused, setIsPasswordFocused] = useState(false); // New state
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     // Password validation logic
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$#@]).{8,}$/;
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$#!@]).{8,}$/;
     if (!passwordPattern.test(password)) {
       alert("Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one symbol ($, #, @).");
       return;
@@ -33,8 +34,8 @@ const RegisterBox = () => {
         password,
       });
 
-      alert("Registered successfully! Please login.");
-      navigate("/login"); // Navigate to OTP verification page
+      alert("Registered successfully! Please verify.");
+      navigate("/verify-otp"); // Navigate to OTP verification page
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {
@@ -96,6 +97,8 @@ const RegisterBox = () => {
                 placeholder="Password"
                 className="register-input w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10" // Right padding added
                 onChange={(event) => setPassword(event.target.value)}
+                onFocus={() => setIsPasswordFocused(true)}
+                onBlur={() => setIsPasswordFocused(false)}
                 required
               />
               {/* Eye Icon Inside the Input Box */}
@@ -107,6 +110,15 @@ const RegisterBox = () => {
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
+            {isPasswordFocused && (
+              <p className="text-sm text-gray-600 mb-4">
+                Password must be at least 8 characters long and include:<br />
+                - At least one uppercase letter<br />
+                - At least one lowercase letter<br />
+                - At least one digit<br />
+                - One of these symbols: $ @ ! #
+              </p>
+            )}
             <button
               type="submit"
               className="w-full bg-purple-700 font-[Poppins] text-white py-2 rounded-lg cursor-pointer hover:bg-purple-800 transition shadow-[0px_-4px_10px_rgba(128,0,128,0.3)]"

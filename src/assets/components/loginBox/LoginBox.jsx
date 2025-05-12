@@ -96,16 +96,14 @@ const LoginBox = () => {
               Login
             </button>
           </form>
-          <div className="flex justify-center items-center mt-4">
-            <p className="text-gray-700 font-[Poppins]">
-              Don't have an account?
-            </p>
+          <div className="flex justify-between mt-4">
             <Link
               to="/register"
               className="text-purple-700 font-[Poppins] ml-2"
             >
               Register
             </Link>
+            <Link to="/forgot-password" className="text-purple-700 font-[Poppins] ml-2">Forgot Password</Link>
           </div>
         </div>
       </div>
