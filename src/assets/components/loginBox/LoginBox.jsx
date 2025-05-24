@@ -4,6 +4,7 @@ import axios from "axios";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTheme } from "../../context/ThemeContext.jsx";
+import Confetti from "react-confetti";
 import "./LoginBox.css";
 
 const LoginBox = () => {
@@ -12,6 +13,7 @@ const LoginBox = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -23,18 +25,20 @@ const LoginBox = () => {
         password,
       });
 
-      alert("Login successful!");
       const { token, user } = response.data;
 
       if (token && user) {
         login(user, token);
+        setShowSuccess(true);
 
-        // 🧭 Redirect based on user role
-        if (user.role === "admin") {
-          navigate("/admin");
-        } else {
-          navigate("/home");
-        }
+        setTimeout(() => {
+          setShowSuccess(false);
+          if (user.role === "admin") {
+            navigate("/admin");
+          } else {
+            navigate("/home");
+          }
+        }, 2000);
       } else {
         console.error("Login failed: No token or user received");
       }
@@ -112,6 +116,19 @@ const LoginBox = () => {
             Forgot Password
           </Link>
         </div>
+        {showSuccess && (
+          <>
+            <Confetti
+              width={window.innerWidth}
+              height={window.innerHeight}
+            />
+            <div className="popup-message">
+              <div className="popup-content">
+                <h3>Login Successful!</h3>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
