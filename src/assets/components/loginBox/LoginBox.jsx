@@ -23,6 +23,8 @@ const LoginBox = () => {
       const response = await axios.post("/api/auth/login", {
         identifier,
         password,
+        // Request a persistent session (48 hours)
+        rememberMe: true
       });
 
       const { token, user } = response.data;

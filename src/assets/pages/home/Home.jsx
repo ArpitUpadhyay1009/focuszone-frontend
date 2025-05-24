@@ -46,7 +46,7 @@ export const Home = () => {
             >
               <LoginToUnlock />
             </div>
-            <div className="w-full">
+            <div className="w-full mt-20">
               <SpotifyEmbed />
             </div>
           </div>

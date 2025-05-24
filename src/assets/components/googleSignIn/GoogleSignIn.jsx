@@ -2,10 +2,12 @@ import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext"; // Add this import
 import "./GoogleSignIn.css";
 
 const GoogleLoginButton = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // Get login function from context
 
   const handleSuccess = async (credentialResponse) => {
     try {
@@ -13,13 +15,13 @@ const GoogleLoginButton = () => {
 
       const response = await axios.post("/api/auth/google-login", {
         idToken: credential,
+        rememberMe: true // Request persistent session
       });
 
       const { token, user } = response.data;
 
-      // Save token and user info
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
+      // Store user data and token
+      login(user, token);
 
       // ✅ Redirect based on role
       if (user.role === "admin") {
