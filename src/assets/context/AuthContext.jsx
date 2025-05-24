@@ -1,5 +1,6 @@
 import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
+import Cookies from 'js-cookie';
 
 const AuthContext = createContext();
 
@@ -11,7 +12,8 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const token = localStorage.getItem("token");
+        // Get token from cookie instead of localStorage
+        const token = Cookies.get("token");
         
         if (token) {
           // Verify token with the server
@@ -22,18 +24,22 @@ export const AuthProvider = ({ children }) => {
           });
           
           if (response.data.valid) {
-            setUser(JSON.parse(localStorage.getItem("user")));
+            // Get user data from cookie
+            const userData = Cookies.get("user");
+            if (userData) {
+              setUser(JSON.parse(userData));
+            }
           } else {
             // Token is invalid or expired
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
+            Cookies.remove("token");
+            Cookies.remove("user");
           }
         }
       } catch (error) {
         console.error("Session verification failed:", error);
         // Clear invalid session data
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
+        Cookies.remove("token");
+        Cookies.remove("user");
       } finally {
         setLoading(false);
       }
@@ -43,14 +49,16 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (userData, token) => {
-    // Set session expiration to 48 hours from now
-    const expiresAt = new Date();
-    expiresAt.setHours(expiresAt.getHours() + 48);
+    // Set cookie options for 48 hours
+    const cookieOptions = { 
+      expires: 2, // 2 days
+      secure: process.env.NODE_ENV === 'production', // Only use HTTPS in production
+      sameSite: 'strict' // Protect against CSRF
+    };
     
-    // Store user data, token and expiration
-    localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("token", token);
-    localStorage.setItem("sessionExpires", expiresAt.toISOString());
+    // Store user data and token in cookies
+    Cookies.set("user", JSON.stringify(userData), cookieOptions);
+    Cookies.set("token", token, cookieOptions);
     
     // Update auth state
     setUser(userData);
@@ -58,7 +66,7 @@ export const AuthProvider = ({ children }) => {
     // Set up session with the server
     try {
       await axios.post("/api/auth/persist-session", 
-        { expiresAt: expiresAt.toISOString() },
+        { expiresIn: '48h' },
         { headers: { Authorization: `Bearer ${token}` }}
       );
     } catch (error) {
@@ -67,7 +75,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    const token = localStorage.getItem("token");
+    const token = Cookies.get("token");
     
     // Notify server about logout
     if (token) {
@@ -76,37 +84,13 @@ export const AuthProvider = ({ children }) => {
       }).catch(err => console.error("Logout error:", err));
     }
     
-    // Clear local storage
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    localStorage.removeItem("sessionExpires");
+    // Clear cookies
+    Cookies.remove("user");
+    Cookies.remove("token");
     
     // Update auth state
     setUser(null);
   };
-
-  // Check if session is expired
-  useEffect(() => {
-    const checkSessionExpiration = () => {
-      const expiresAt = localStorage.getItem("sessionExpires");
-      
-      if (expiresAt) {
-        const now = new Date();
-        const expiration = new Date(expiresAt);
-        
-        if (now > expiration) {
-          // Session expired, log out
-          logout();
-        }
-      }
-    };
-    
-    // Check on load and periodically
-    checkSessionExpiration();
-    const interval = setInterval(checkSessionExpiration, 60000); // Check every minute
-    
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
