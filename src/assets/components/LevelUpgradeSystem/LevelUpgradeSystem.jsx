@@ -284,6 +284,7 @@ const LevelUpgradeSystem = () => {
           isComplete={true}
           coinsRequired={UPGRADE_COST}
           darkMode={theme === "dark"}
+
         />
 
         {/* Next level */}
@@ -293,6 +294,7 @@ const LevelUpgradeSystem = () => {
           isComplete={false}
           coinsRequired={UPGRADE_COST}
           darkMode={theme === "dark"}
+          userCoins = {userData.coins}
         />
 
         <div className="flex justify-between items-center mt-3">
