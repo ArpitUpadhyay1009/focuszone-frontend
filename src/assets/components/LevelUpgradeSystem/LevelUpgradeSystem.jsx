@@ -298,42 +298,51 @@ const LevelUpgradeSystem = () => {
         />
 
         <div className="flex justify-between items-center mt-3">
-          <div className={`text-xs ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-            <span className="font-medium">Can upgrade: </span>
-            <span className={`font-bold ${theme === "dark" ? "text-yellow-400" : "text-upgrade-orange"}`}>
-              {userData.coins >= UPGRADE_COST ? "Yes" : "No"}
-            </span>
-          </div>
           <motion.div
             whileHover={{ scale: 1.02 }}
             className="flex items-center space-x-1"
           >
-            <span className={`text-xs font-medium ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+            <span
+              className={`text-xs font-medium ${
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            }`}
+            >
               Your coins:
             </span>
-            <div className={`flex items-center px-2 py-0.5 rounded-md border ${
-              theme === "dark" 
-                ? "bg-gray-800 border-gray-700" 
+            <div
+              className={`flex items-center px-2 py-0.5 rounded-md border ${
+                theme === "dark"
+                ? "bg-gray-800 border-gray-700"
                 : "bg-amber-50 border-amber-200"
-            }`}>
-              <Coins className={`w-3 h-3 mr-1 ${theme === "dark" ? "text-yellow-400" : "text-amber-500"}`} />
-              <span className={`font-semibold ${theme === "dark" ? "text-yellow-400" : "text-amber-600"}`}>
-                {userData.coins}
-              </span>
-            </div>
-          </motion.div>
+              }`}
+            >
+            <Coins
+              className={`w-3 h-3 mr-1 ${
+              theme === "dark" ? "text-yellow-400" : "text-amber-500"
+              }`}
+            />
+          <span
+            className={`font-semibold ${
+            theme === "dark" ? "text-yellow-400" : "text-amber-600"
+          }`}
+          >
+          {userData.coins}
+          </span>
         </div>
+      </motion.div>
 
-        <div className="mt-3 flex justify-center">
-          <UpgradeButton
-            onClick={handleUpgrade}
-            isUpgrading={isUpgrading}
-            coinsRequired={UPGRADE_COST}
-            coinsAvailable={userData.coins}
-            isMaxLevel={isMaxLevel}
-            darkMode={theme === "dark"}
-          />
-        </div>
+    <div className="flex items-center">
+      <UpgradeButton
+        onClick={handleUpgrade}
+        isUpgrading={isUpgrading}
+        coinsRequired={UPGRADE_COST}
+        coinsAvailable={userData.coins}
+        isMaxLevel={isMaxLevel}
+        darkMode={theme === "dark"}
+        small={true}
+        />
+    </div>
+  </div>
       </motion.div>
 
       {/* Progress Popup */}

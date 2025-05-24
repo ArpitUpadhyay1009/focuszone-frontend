@@ -7,6 +7,7 @@ const UpgradeButton = ({
   coinsRequired,
   coinsAvailable,
   isMaxLevel = false,
+  small = false,
 }) => {
   const canUpgrade = coinsAvailable >= coinsRequired && !isMaxLevel;
 
@@ -24,27 +25,29 @@ const UpgradeButton = ({
       }}
       onClick={canUpgrade ? onClick : undefined}
       disabled={isUpgrading || !canUpgrade}
-      className={`flex items-center justify-center px-6 py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow ${
-        isMaxLevel
-          ? "bg-gray-400 text-white cursor-not-allowed"
-          : canUpgrade
-          ? "bg-orange-500 text-white"
-          : "bg-gray-500 text-white"
-      }`}
+      className={`flex items-center justify-center rounded-xl font-medium shadow-lg hover:shadow-xl transition-shadow
+        ${small ? "px-4 py-2 text-sm" : "px-6 py-3 text-base"}
+        ${
+          isMaxLevel
+            ? "bg-gray-400 text-white cursor-not-allowed"
+            : canUpgrade
+            ? "bg-orange-500 text-white"
+            : "bg-gray-500 text-white"
+        }`}
     >
       {isMaxLevel ? (
         <>
-          <Trophy className="w-5 h-5 mr-2" />
+          <Trophy className={`${small ? "w-4 h-4 mr-1" : "w-5 h-5 mr-2"}`} />
           Max Level
         </>
       ) : (
         <>
           <motion.div
-            className="mr-2"
+            className={small ? "mr-1.5" : "mr-2"}
             animate={{ y: [0, -2, 0] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
           >
-            <ArrowUp className="w-5 h-5" />
+            <ArrowUp className={small ? "w-4 h-4" : "w-5 h-5"} />
           </motion.div>
           Upgrade
           <div
@@ -52,9 +55,9 @@ const UpgradeButton = ({
               canUpgrade
                 ? "bg-orange-300 text-orange-600 border-1 border-orange-600"
                 : "bg-gray-400 text-gray-500 border-1 border-gray-500"
-            } bg-opacity-20 px-2 py-1 rounded-md`}
+            } bg-opacity-20 rounded-md ${small ? "px-1.5 py-0.5 text-sm" : "px-2 py-1"}`}
           >
-            <Coins className="w-4 h-4 mr-1" />
+            <Coins className={`${small ? "w-3.5 h-3.5 mr-1" : "w-4 h-4 mr-1"}`} />
             <span>{coinsRequired}</span>
           </div>
         </>
