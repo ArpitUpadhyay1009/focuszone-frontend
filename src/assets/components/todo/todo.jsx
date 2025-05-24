@@ -12,12 +12,11 @@ export default function TodoList() {
   const [charCount, setCharCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+  const today = new Date().toISOString().split("T")[0];
   const [newTask, setNewTask] = useState({
     name: "",
-    date: today, // Set the default date to today's date
-    hours: "",
-    minutes: "",
+    date: today,
+    pomodoros: "",
   });
 
   const token = localStorage.getItem("token");
@@ -31,20 +30,12 @@ export default function TodoList() {
         });
         setTasks(
           res.data.ongoingTasks.map((task) => {
-            let hours = "0";
-            let minutes = "0";
+            let pomodoros = "0";
 
-            if (typeof task.estimatedTime === "string") {
-              const timeMatch = task.estimatedTime.match(
-                /(\d+)\s*hours?\s*(\d+)\s*minutes?/i
-              );
-              if (timeMatch) {
-                hours = timeMatch[1];
-                minutes = timeMatch[2];
-              }
+            if (typeof task.estimatedPomodoros === "string") {
+              pomodoros = task.estimatedPomodoros;
             }
 
-            // Ensure we have a valid date or use current date
             let date;
             try {
               date = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : new Date().toLocaleDateString();
@@ -56,8 +47,7 @@ export default function TodoList() {
               id: task._id,
               name: task.taskName,
               date,
-              hours,
-              minutes,
+              pomodoros,
               status: task.status || "ongoing",
             };
           })
@@ -84,20 +74,12 @@ export default function TodoList() {
 
     if (newTask.name.trim()) {
       try {
-        const estimatedTime = {
-          hours: newTask.hours || "0",
-          minutes: newTask.minutes || "0",
-        };
-
-        // Ensure we have a valid date or use current date
-        const taskDate = newTask.date || today;
-
         const res = await axios.post(
           "/api/tasks",
           {
             taskName: newTask.name,
-            dueDate: taskDate,
-            estimatedTime,
+            dueDate: newTask.date,
+            estimatedPomodoros: newTask.pomodoros || "0",
           },
           {
             headers: {
@@ -106,20 +88,12 @@ export default function TodoList() {
           }
         );
 
-        let hours = "0";
-        let minutes = "0";
+        let pomodoros = "0";
 
-        if (typeof res.data.task.estimatedTime === "string") {
-          const timeMatch = res.data.task.estimatedTime.match(
-            /(\d+)\s*hours?\s*(\d+)\s*minutes?/i
-          );
-          if (timeMatch) {
-            hours = timeMatch[1];
-            minutes = timeMatch[2];
-          }
+        if (typeof res.data.task.estimatedPomodoros === "string") {
+          pomodoros = res.data.task.estimatedPomodoros;
         }
 
-        // Ensure we have a valid date from the response or use current date
         let date;
         try {
           date = res.data.task.dueDate ? new Date(res.data.task.dueDate).toLocaleDateString() : new Date().toLocaleDateString();
@@ -127,20 +101,18 @@ export default function TodoList() {
           date = new Date().toLocaleDateString();
         }
 
-        // Ensure the task ID is correctly set
         setTasks((prev) => [
           ...prev,
           {
-            id: res.data.task._id, // Ensure this ID is correctly set
+            id: res.data.task._id,
             name: res.data.task.taskName,
             date,
-            hours,
-            minutes,
+            pomodoros,
             status: "ongoing",
           },
         ]);
 
-        setNewTask({ name: "", date: today, hours: "", minutes: "" });
+        setNewTask({ name: "", date: today, pomodoros: "" });
         setIsOpen(false);
       } catch (error) {
         console.error("Failed to add task:", error.message);
@@ -148,65 +120,9 @@ export default function TodoList() {
     }
   };
 
-  // 📌 Delete task from backend
-  const deleteTask = async (id) => {
-    try {
-      // Log the ID for debugging
-      console.log("Attempting to delete task with ID:", id);
-      
-      // Check if the ID is valid
-      if (!id) {
-        console.error("Invalid task ID");
-        return;
-      }
-      
-      // Make the API call with proper error handling
-      const response = await axios.delete(`/api/tasks/${id}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      
-      // If successful, update the UI
-      if (response.status === 200 || response.status === 204) {
-        setTasks((prev) => prev.filter((task) => task.id !== id));
-        console.log("Task deleted successfully");
-      }
-    } catch (error) {
-      // More detailed error logging
-      console.error("Failed to delete task:", error.response ? {
-        status: error.response.status,
-        data: error.response.data,
-        url: error.config.url
-      } : error.message);
-      
-      // Even if the API call fails, remove the task from UI for better UX
-      setTasks((prev) => prev.filter((task) => task.id !== id));
-    }
-  };
-
-  // 📌 Mark as completed
-  const toggleTaskStatus = async (id) => {
-    try {
-      await axios.patch(`/api/tasks/${id}/complete`, null, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      // Update the task status to "finished" but don't remove it
-      setTasks((prev) =>
-        prev.map((task) =>
-          task.id === id 
-            ? { ...task, status: task.status === "finished" ? "ongoing" : "finished" } 
-            : task
-        )
-      );
-      // Removed the setTimeout that was deleting the task
-    } catch (error) {
-      console.error("Failed to complete task:", error.message);
-    }
-  };
-
   return (
     <div className="task-manager-container p-4 max-w-lg mx-auto text-center">
       <h2 className="text-xl font-bold mb-3">Task Manager</h2>
-      
       <AnimatePresence>
         {isLoading ? (
           <motion.div
@@ -255,15 +171,10 @@ export default function TodoList() {
                     <p className={`task-name ${task.status === "finished" ? "finished" : ""}`}>
                       {task.name}
                     </p>
-                    
                     <p className="task-details">
                       {task.status === "finished"
                         ? "Completed"
-                        : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Time: ${
-                            task.hours === "0" && task.minutes === "0" 
-                              ? "Unlimited" 
-                              : `${task.hours}h ${task.minutes}m`
-                          }`}
+                        : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.pomodoros}`}
                     </p>
                   </div>
                   <motion.button
@@ -281,7 +192,6 @@ export default function TodoList() {
         )}
       </AnimatePresence>
 
-      {/* Updated Add Task Button */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -298,7 +208,6 @@ export default function TodoList() {
         <span>Add Task</span>
       </motion.button>
 
-      {/* Your existing dialog code */}
       <AnimatePresence>
         {isOpen && (
           <Dialog
@@ -307,7 +216,6 @@ export default function TodoList() {
             open={isOpen}
             onClose={() => setIsOpen(false)}
           >
-            {/* Backdrop */}
             <motion.div
               className="fixed inset-0"
               initial={{ opacity: 0 }}
@@ -322,7 +230,6 @@ export default function TodoList() {
               }}
             />
 
-            {/* Modal */}
             <motion.div
               initial={{ scale: 0.8, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -334,10 +241,9 @@ export default function TodoList() {
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="text-lg font-semibold mb-3">New Task</h2>
-              
               <label className="relative">
                 Enter task:
-                <span className="text-red-500 absolute top-0 right-[-1]">*</span> {/* Red asterisk */}
+                <span className="text-red-500 absolute top-0 right-[-1]">*</span>
               </label>
               {charCount > 0 && (
                 <p className="text-sm text-gray-600 mb-1">Character limit: 200</p> 
@@ -350,47 +256,32 @@ export default function TodoList() {
                   const value = e.target.value;
                   if (value.length <= 200) {
                     setNewTask({ ...newTask, name: value });
-                    setCharCount(value.length); // Update character count
+                    setCharCount(value.length);
                   }
                 }}
                 className="w-full p-2 border rounded mb-2"
               />
               <label>Enter date of completion:</label>
-             
               <input
                 type="date"
                 value={newTask.date || today}
                 onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
                 className="w-full p-2 border rounded mb-2"
-                min={new Date().toISOString().split("T")[0]} // Set the minimum date to today's date
+                min={new Date().toISOString().split("T")[0]}
               />
-              <label>Estimated time of completion:</label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder="Hours"
-                  value={newTask.hours}
-                  min={0}
-                  max={120}
-                  onChange={(e) => {
-                    const value = Math.max(0, Math.min(120, Number(e.target.value)));
-                    setNewTask({ ...newTask, hours: value });
-                  }}
-                  className="w-1/2 p-2 border rounded mb-2"
-                />
-                <input
-                  type="number"
-                  placeholder="Minutes"
-                  value={newTask.minutes}
-                  min={0}
-                  max={59}
-                  onChange={(e) => {
-                    const value = Math.max(0, Math.min(59, Number(e.target.value)));
-                    setNewTask({ ...newTask, minutes: value });
-                  }}
-                  className="w-1/2 p-2 border rounded mb-2"
-                />
-              </div>
+              <label>Estimated number of pomodoros:</label>
+              <input
+                type="number"
+                placeholder="Pomodoros"
+                value={newTask.pomodoros}
+                min={0}
+                max={100}
+                onChange={(e) => {
+                  const value = Math.max(0, Math.min(100, Number(e.target.value)));
+                  setNewTask({ ...newTask, pomodoros: value });
+                }}
+                className="w-full p-2 border rounded mb-2"
+              />
               <div className="flex justify-end gap-2 mt-3">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
