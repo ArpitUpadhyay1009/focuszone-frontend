@@ -175,189 +175,225 @@ export default function TimerApp({ setParentPopupState }) {
     }
   }, []);
 
-  // Main timer effect - modify this useEffect
+  // Main timer effect - using requestAnimationFrame for better accuracy
   useEffect(() => {
-    let timer;
-    let lastUpdateTime = Date.now();
+    let animationFrameId;
+    let lastUpdateTime = null;
     
-    if (isRunning) {
-      // Set or update the timer start timestamp
-      if (!timerStartedAt) {
-        setTimerStartedAt(Date.now());
-        lastUpdateTime = Date.now();
+    const updateTimer = () => {
+      const now = Date.now();
+      
+      // Initialize lastUpdateTime on first run
+      if (!lastUpdateTime) {
+        lastUpdateTime = now;
       }
       
-      timer = setInterval(() => {
-        const now = Date.now();
-        // Calculate actual elapsed time since last update
-        const elapsedSeconds = Math.floor((now - lastUpdateTime) / 1000);
-        lastUpdateTime = now;
+      // Calculate elapsed time since last update
+      const deltaTime = now - lastUpdateTime;
+      
+      // Update time every second (1000ms)
+      if (deltaTime >= 1000) {
+        const secondsToUpdate = Math.floor(deltaTime / 1000);
+        lastUpdateTime = now - (deltaTime % 1000); // Keep remainder for accuracy
         
-        if (elapsedSeconds > 0) {
-          setTime(prevTime => {
-            // For stopwatch, add elapsed time
-            if (mode === "stopwatch") {
-              return prevTime + elapsedSeconds;
+        setTime(prevTime => {
+          // For stopwatch, add elapsed time
+          if (mode === "stopwatch") {
+            return prevTime + secondsToUpdate;
+          }
+          
+          // For countdown and pomodoro, subtract elapsed time
+          const newTime = Math.max(0, prevTime - secondsToUpdate);
+          
+          // Handle timer completion
+          if (newTime === 0 && prevTime > 0) {
+            notificationSound.play();
+            
+            if (mode === "countdown") {
+              setIsRunning(false);
+              setShowStart(true);
+              return 0;
             }
-            
-            // For countdown and pomodoro, subtract elapsed time
-            const newTime = Math.max(0, prevTime - elapsedSeconds);
-            
-            // Handle timer completion
-            if (newTime === 0 && prevTime > 0) {
-              clearInterval(timer);
-              notificationSound.play();
-              
-              if (mode === "countdown") {
+
+            if (mode === "pomodoro" && !isBreak) {
+              if (currentCycle + 1 < cycles) {
+                setIsBreak(true);
+                // Only award coins if the timer ran for at least 1 minute
+                if (initialTime && (initialTime - newTime) >= 60) {
+                  saveCoinsToDatabase(0.5);
+                  setCoins((prevCoins) => prevCoins + 0.5);
+                }
+                return breakTime;
+              } else {
                 setIsRunning(false);
                 setShowStart(true);
+                // Only award coins if the timer ran for at least 1 minute
+                if (initialTime && (initialTime - newTime) >= 60) {
+                  saveCoinsToDatabase(0.5);
+                  setCoins((prevCoins) => prevCoins + 0.5);
+                  
+                  saveCoinsToDatabase(0.5);
+                  setCoins((prevCoins) => prevCoins + 0.5);
+                }
+
+                // Auto reset after a short delay when all cycles are completed
+                setTimeout(() => {
+                  resetTimer();
+                  setCoins(0); // Explicitly reset coins display
+                }, 2000);
+
                 return 0;
               }
-
-              if (mode === "pomodoro" && !isBreak) {
-                if (currentCycle + 1 < cycles) {
-                  setIsBreak(true);
-                  // Only award coins if the timer ran for at least 1 minute
-                  if (initialTime && (initialTime - newTime) >= 60) {
-                    saveCoinsToDatabase(0.5);
-                    setCoins((prevCoins) => prevCoins + 0.5);
-                  }
-                  return breakTime;
-                } else {
-                  setIsRunning(false);
-                  setShowStart(true);
-                  // Only award coins if the timer ran for at least 1 minute
-                  if (initialTime && (initialTime - newTime) >= 60) {
-                    saveCoinsToDatabase(0.5);
-                    setCoins((prevCoins) => prevCoins + 0.5);
-                    
-                    saveCoinsToDatabase(0.5);
-                    setCoins((prevCoins) => prevCoins + 0.5);
-                  }
-
-                  // Auto reset after a short delay when all cycles are completed
-                  setTimeout(() => {
-                    resetTimer();
-                    setCoins(0); // Explicitly reset coins display
-                  }, 2000);
-
-                  return 0;
-                }
-              } else if (mode === "pomodoro" && isBreak) {
-                setIsBreak(false);
-                setCurrentCycle((prev) => prev + 1);
-                return pomodoroTime;
-              }
+            } else if (mode === "pomodoro" && isBreak) {
+              setIsBreak(false);
+              setCurrentCycle((prev) => prev + 1);
+              return pomodoroTime;
             }
+          }
+          
+          // Award coins for each minute in pomodoro mode
+          if (mode === "pomodoro" && !isBreak && initialTime) {
+            // Calculate total minutes elapsed since timer started
+            const totalMinutesElapsed = Math.floor((initialTime - newTime) / 60);
             
-            // Award coins for each minute in pomodoro mode
-            if (mode === "pomodoro" && !isBreak && initialTime) {
-              // Calculate total minutes elapsed since timer started
-              const totalMinutesElapsed = Math.floor((initialTime - newTime) / 60);
-              
-              // Only award coins when crossing a new minute threshold and at least 1 minute has passed
-              if (totalMinutesElapsed > minutesElapsed && totalMinutesElapsed > 0) {
-                saveCoinsToDatabase(0.5);
-                setCoins(prev => prev + 0.5);
-                setMinutesElapsed(totalMinutesElapsed);
-              }
+            // Only award coins when crossing a new minute threshold and at least 1 minute has passed
+            if (totalMinutesElapsed > minutesElapsed && totalMinutesElapsed > 0) {
+              saveCoinsToDatabase(0.5);
+              setCoins(prev => prev + 0.5);
+              setMinutesElapsed(totalMinutesElapsed);
             }
-            
-            return newTime;
-          });
-        }
-      }, 1000);
-    } else {
-      // Clear timer start timestamp when paused
-      setTimerStartedAt(null);
-      clearInterval(timer);
+          }
+          
+          return newTime;
+        });
+      }
+      
+      // Continue the animation loop if timer is running
+      if (isRunning) {
+        animationFrameId = requestAnimationFrame(updateTimer);
+      }
+    };
+    
+    // Start the animation loop if timer is running
+    if (isRunning) {
+      // Initialize or update the timer start timestamp
+      if (!timerStartedAt) {
+        setTimerStartedAt(Date.now());
+      }
+      
+      lastUpdateTime = Date.now();
+      animationFrameId = requestAnimationFrame(updateTimer);
     }
     
-    return () => clearInterval(timer);
+    // Cleanup function
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime, timerStartedAt, initialTime, minutesElapsed]);
 
-  // Replace the visibility change effect with this improved version
+  // Enhanced visibility change handler to work with requestAnimationFrame
   useEffect(() => {
     let visibilityChangeTime = null;
     
     const handleVisibilityChange = () => {
+      const now = Date.now();
+      
       if (document.visibilityState === 'hidden') {
         // Store the time when the tab became hidden
-        visibilityChangeTime = Date.now();
-      } else if (document.visibilityState === 'visible' && isRunning && visibilityChangeTime) {
+        visibilityChangeTime = now;
+      } else if (document.visibilityState === 'visible' && isRunning) {
         // Tab is visible again and timer was running
-        const now = Date.now();
-        const hiddenTime = now - visibilityChangeTime;
-        
-        // If the tab was hidden for more than 1 second
-        if (hiddenTime > 1000) {
-          // Calculate elapsed seconds while hidden
-          const elapsedSeconds = Math.floor(hiddenTime / 1000);
+        if (visibilityChangeTime) {
+          const hiddenDuration = now - visibilityChangeTime;
           
-          // Update the timer based on the elapsed time
-          setTime(prevTime => {
+          // Only update if the tab was hidden for a significant amount of time
+          if (hiddenDuration > 1000) {
             if (mode === "stopwatch") {
-              return prevTime + elapsedSeconds;
+              // For stopwatch, add the elapsed time
+              const elapsedSeconds = Math.floor(hiddenDuration / 1000);
+              setTime(prevTime => prevTime + elapsedSeconds);
             } else {
-              // For countdown and pomodoro
-              const newTime = Math.max(0, prevTime - elapsedSeconds);
+              // For countdown and pomodoro, calculate what the time should be now
+              const elapsedSeconds = Math.floor(hiddenDuration / 1000);
               
-              // Handle timer completion if it should have completed while hidden
-              if (newTime === 0 && prevTime > 0) {
-                notificationSound.play();
+              setTime(prevTime => {
+                const newTime = Math.max(0, prevTime - elapsedSeconds);
                 
-                if (mode === "countdown") {
-                  setIsRunning(false);
-                  setShowStart(true);
-                  return 0;
-                }
-                
-                if (mode === "pomodoro" && !isBreak) {
-                  if (currentCycle + 1 < cycles) {
-                    setIsBreak(true);
-                    return breakTime;
+                // Handle timer completion if it should have completed while hidden
+                if (newTime === 0 && prevTime > 0) {
+                  // Timer completed while tab was hidden
+                  if (mode === "pomodoro" && !isBreak) {
+                    // Award coins for completed pomodoro
+                    const newCoins = Math.floor((initialTime || pomodoroTime) / 60) * 0.5;
+                    saveCoinsToDatabase(newCoins);
+                    setCoins(prev => prev + newCoins);
+                    
+                    // Handle cycle completion
+                    if (currentCycle < cycles - 1) {
+                      setIsBreak(true);
+                      return breakTime;
+                    } else {
+                      // All cycles completed
+                      setIsRunning(false);
+                      setShowStart(true);
+                      setIsBreak(false);
+                      setCurrentCycle(0);
+                      return pomodoroTime;
+                    }
+                  } else if (mode === "pomodoro" && isBreak) {
+                    // Break completed
+                    setIsBreak(false);
+                    setCurrentCycle(prev => prev + 1);
+                    return pomodoroTime;
                   } else {
+                    // Countdown completed
                     setIsRunning(false);
                     setShowStart(true);
-                    setTimeout(() => resetTimer(), 2000);
                     return 0;
                   }
-                } else if (mode === "pomodoro" && isBreak) {
-                  setIsBreak(false);
-                  setCurrentCycle(prev => prev + 1);
-                  return pomodoroTime;
                 }
-              }
+                
+                return newTime;
+              });
               
-              // Award coins for elapsed time in pomodoro mode
+              // Update minutes elapsed for coin calculation
               if (mode === "pomodoro" && !isBreak && initialTime) {
-                const totalMinutesElapsed = Math.floor((initialTime - newTime) / 60);
-                if (totalMinutesElapsed > minutesElapsed && totalMinutesElapsed > 0) {
-                  const newCoins = (totalMinutesElapsed - minutesElapsed) * 0.5;
-                  saveCoinsToDatabase(newCoins);
-                  setCoins(prev => prev + newCoins);
+                const totalElapsedTime = initialTime - time + elapsedSeconds;
+                const totalMinutesElapsed = Math.floor(totalElapsedTime / 60);
+                
+                if (totalMinutesElapsed > minutesElapsed) {
+                  const newCoinsToAdd = (totalMinutesElapsed - minutesElapsed) * 0.5;
+                  saveCoinsToDatabase(newCoinsToAdd);
+                  setCoins(prev => prev + newCoinsToAdd);
                   setMinutesElapsed(totalMinutesElapsed);
                 }
               }
-              
-              return newTime;
             }
-          });
-          
-          // Update the timer start timestamp to now
-          setTimerStartedAt(now);
+            
+            // Update the timer start timestamp to now
+            setTimerStartedAt(now);
+          }
         }
         
         visibilityChangeTime = null;
       }
     };
-
+    
+    // Use both visibilitychange and focus/blur events for better cross-browser support
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+    window.addEventListener('blur', () => {
+      visibilityChangeTime = Date.now();
+    });
     
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+      window.removeEventListener('blur', () => {});
     };
-  }, [isRunning, mode, isBreak, cycles, currentCycle, pomodoroTime, breakTime, initialTime, minutesElapsed]);
+  }, [isRunning, mode, isBreak, time, initialTime, pomodoroTime, breakTime, cycles, currentCycle, minutesElapsed]);
 
   const startTimer = () => {
     setIsRunning(true);
@@ -425,27 +461,6 @@ export default function TimerApp({ setParentPopupState }) {
     if (mode === "pomodoro") setTime(pomodoroTime);
     if (mode === "countdown") setTime(countdownTime);
   };
-
-  // Replace the current visibility change effect with this one
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      // Instead of pausing the timer, we'll just let it continue running
-      // The timestamp-based approach will handle time tracking correctly
-      
-      // If the timer is running and the tab becomes visible again, 
-      // we'll update the UI to reflect the correct time
-      if (document.visibilityState === 'visible' && isRunning && timerStartedAt) {
-        // The timer will continue running with the existing timestamp logic
-        // No need to pause or reset anything
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [isRunning, timerStartedAt]);
 
   return (
     <motion.div
@@ -534,11 +549,6 @@ export default function TimerApp({ setParentPopupState }) {
             ? "text-white"
             : "text-black"
         }`}
-        style={{ 
-          fontFamily: "'Inter', 'SF Mono', 'Roboto Mono', 'Consolas', monospace",
-          letterSpacing: "0.05em",
-          fontVariantNumeric: "tabular-nums"
-        }}
       >
         {formatTime(time)}
       </motion.div>

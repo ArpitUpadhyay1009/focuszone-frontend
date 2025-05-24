@@ -16,7 +16,7 @@
 .backdrop-blur {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 2.6s ease; /* Changed to 2.6s */
+  transition: all 0.3s ease; /* Changed from 2.6s to 0.3s */
 }
 
 /* Ensure dialog backdrops are properly styled */
@@ -24,16 +24,16 @@
   background-color: rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: all 2.6s ease; /* Changed to 2.6s */
+  transition: all 0.3s ease; /* Changed from 2.6s to 0.3s */
 }
 
 /* Speed up dialog animations */
 .dialog-animation-enter {
-  animation-duration: 2.6s !important; /* Changed to 2.6s */
+  animation-duration: 0.3s !important; /* Changed from 2.6s to 0.3s */
 }
 
 .dialog-animation-exit {
-  animation-duration: 2.6s !important; /* Changed to 2.6s */
+  animation-duration: 0.3s !important; /* Changed from 2.6s to 0.3s */
 }
 
 /* Timer control buttons styling */

@@ -79,6 +79,22 @@ const LevelProgressBar = ({
           <span>{coinsRequired}</span>
         </div>
       </motion.button>
+      
+      // Inside your component where the popup is rendered
+      {showProgressPopup && (
+        <div className="upgrading-overlay">
+          <div className="upgrading-popup">
+            <h3>Upgrading to Level {userData.nextLevel}</h3>
+            <div className="upgrading-progress-bar">
+              <div 
+                className="upgrading-progress-fill" 
+                style={{ width: `${upgradeProgress}%` }}
+              />
+            </div>
+            <p>{upgradeProgress < 100 ? "Please wait..." : "Almost done!"}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
