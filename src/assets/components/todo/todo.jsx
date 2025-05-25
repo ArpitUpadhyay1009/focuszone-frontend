@@ -28,6 +28,7 @@ export default function TodoList() {
         const res = await axios.get("/api/tasks", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
+        console.log("Fetched tasks:", res.data.ongoingTasks);
         setTasks(
           res.data.ongoingTasks.map((task) => {
             let pomodoros = "0";
@@ -45,7 +46,7 @@ export default function TodoList() {
 
             return {
               id: task._id,
-              name: task.taskName,
+              taskName: task.taskName,
               date,
               pomodoros,
               status: task.status || "ongoing",
@@ -120,6 +121,45 @@ export default function TodoList() {
     }
   };
 
+  const toggleTaskStatus = async (taskId) => {
+    try {
+      const res = await axios.patch(
+        `/api/tasks/${taskId}/toggle`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+  
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? { ...task, status: task.status === "finished" ? "ongoing" : "finished" }
+            : task
+        )
+      );
+    } catch (error) {
+      console.error("Error toggling task status:", error.message);
+    }
+  };
+  
+  const deleteTask = async (taskId) => {
+    try {
+      await axios.delete(`/api/tasks/${taskId}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+  
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    } catch (error) {
+      console.error("Error deleting task:", error.message);
+    }
+  };
+  
+
   return (
     <div className="task-manager-container p-4 max-w-lg mx-auto text-center">
       <h2 className="text-xl font-bold mb-3">Task Manager</h2>
@@ -169,7 +209,7 @@ export default function TodoList() {
                   />
                   <div className="task-content">
                     <p className={`task-name ${task.status === "finished" ? "finished" : ""}`}>
-                      {task.name}
+                      {task.taskName}
                     </p>
                     <p className="task-details">
                       {task.status === "finished"
