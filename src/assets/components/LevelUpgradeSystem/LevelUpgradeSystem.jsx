@@ -23,7 +23,32 @@ const LevelUpgradeSystem = () => {
   const [newLevel, setNewLevel] = useState(1);
 
   // The cost to upgrade a level (fixed at 150 coins)
-  const UPGRADE_COST = 150;
+
+var UPGRADE_COST=0;
+async function fetchUpgradableLevels() {
+  try {
+    const response = await axios.get("/api/auth/can-level-upgrade", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`
+      }
+    });
+
+    const data = response.data;
+
+    console.log("Max Level Upgrades:", data.maxLevelUpgrades);
+    console.log("Current Level:", data.currentLevel);
+    UPGRADE_COST = data.upgradeCost;
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching upgradable levels:", error.response?.data?.message || error.message);
+  }
+}
+
+fetchUpgradableLevels()
+
+  
 
   useEffect(() => {
     const loadUserData = async () => {
