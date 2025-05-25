@@ -28,7 +28,6 @@ const LevelUpgradeSystem = () => {
   const fetchUpgradableLevels = async () => {
   try {
     const token = localStorage.getItem("token");
-    console.log("Auth token:", token); // Debug log
 
     if (!token) {
       console.error("No token found in localStorage.");
@@ -40,8 +39,6 @@ const LevelUpgradeSystem = () => {
         Authorization: `Bearer ${token}`,
       },
     });
-
-    console.log("API response:", response.data);
 
     const { upgradeCost } = response.data;
     setUpgradeCost(upgradeCost);
