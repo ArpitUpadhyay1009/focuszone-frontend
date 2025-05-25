@@ -4,7 +4,7 @@ import { CheckCircle, Coins } from "lucide-react";
 const ProgressBar = ({
   level,
   isComplete,
-  coinsRequired = 150,
+  coinsRequired,
   darkMode = false,
   userCoins
 }) => {

@@ -21,9 +21,39 @@ const LevelUpgradeSystem = () => {
   const [showProgressPopup, setShowProgressPopup] = useState(false);
   const [showCongratsPopup, setShowCongratsPopup] = useState(false);
   const [newLevel, setNewLevel] = useState(1);
+  const [upgradeCost, setUpgradeCost] = useState(null);
 
+  
   // The cost to upgrade a level (fixed at 150 coins)
-  const UPGRADE_COST = 150;
+  const fetchUpgradableLevels = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No token found in localStorage.");
+      return;
+    }
+
+    const response = await axios.get("/api/auth/can-level-upgrade", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const { upgradeCost } = response.data;
+    setUpgradeCost(upgradeCost);
+    console.log("Set upgradeCost:", upgradeCost);
+  } catch (error) {
+    console.error("Error fetching upgrade cost:", error.response?.data || error.message);
+  }
+};
+
+
+
+  useEffect(() => {
+  fetchUpgradableLevels();
+}, []);
+
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -134,7 +164,7 @@ const LevelUpgradeSystem = () => {
       setUserData((prev) => ({
         ...prev,
         level: prev.level + 1,
-        coins: prev.coins - UPGRADE_COST,
+        coins: prev.coins - upgradeCost,
         progress: 100,
       }));
 
@@ -160,9 +190,9 @@ const LevelUpgradeSystem = () => {
   };
 
   const handleUpgrade = async () => {
-    if (userData.coins < UPGRADE_COST) {
+    if (userData.coins < upgradeCost) {
       toast.error(
-        `Not enough coins! You need ${UPGRADE_COST} coins to upgrade.`
+        `Not enough coins! You need ${upgradeCost} coins to upgrade.`
       );
       return;
     }
@@ -282,7 +312,7 @@ const LevelUpgradeSystem = () => {
           level={userData.level}
           progress={100}
           isComplete={true}
-          coinsRequired={UPGRADE_COST}
+          coinsRequired={upgradeCost}
           darkMode={theme === "dark"}
 
         />
@@ -292,7 +322,7 @@ const LevelUpgradeSystem = () => {
           level={userData.level + 1}
           progress={0}
           isComplete={false}
-          coinsRequired={UPGRADE_COST}
+          coinsRequired={upgradeCost}
           darkMode={theme === "dark"}
           userCoins = {userData.coins}
         />
@@ -335,7 +365,7 @@ const LevelUpgradeSystem = () => {
       <UpgradeButton
         onClick={handleUpgrade}
         isUpgrading={isUpgrading}
-        coinsRequired={UPGRADE_COST}
+        coinsRequired={upgradeCost}
         coinsAvailable={userData.coins}
         isMaxLevel={isMaxLevel}
         darkMode={theme === "dark"}
