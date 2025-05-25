@@ -21,34 +21,42 @@ const LevelUpgradeSystem = () => {
   const [showProgressPopup, setShowProgressPopup] = useState(false);
   const [showCongratsPopup, setShowCongratsPopup] = useState(false);
   const [newLevel, setNewLevel] = useState(1);
-
-  // The cost to upgrade a level (fixed at 150 coins)
-
-var UPGRADE_COST=0;
-async function fetchUpgradableLevels() {
-  try {
-    const response = await axios.get("/api/auth/can-level-upgrade", {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
-      }
-    });
-
-    const data = response.data;
-
-    console.log("Max Level Upgrades:", data.maxLevelUpgrades);
-    console.log("Current Level:", data.currentLevel);
-    UPGRADE_COST = data.upgradeCost;
-
-    return data;
-  } catch (error) {
-    console.error("Error fetching upgradable levels:", error.response?.data?.message || error.message);
-  }
-}
-
-fetchUpgradableLevels()
+  const [upgradeCost, setUpgradeCost] = useState(null);
 
   
+  // The cost to upgrade a level (fixed at 150 coins)
+  const fetchUpgradableLevels = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    console.log("Auth token:", token); // Debug log
+
+    if (!token) {
+      console.error("No token found in localStorage.");
+      return;
+    }
+
+    const response = await axios.get("/api/auth/can-level-upgrade", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log("API response:", response.data);
+
+    const { upgradeCost } = response.data;
+    setUpgradeCost(upgradeCost);
+    console.log("Set upgradeCost:", upgradeCost);
+  } catch (error) {
+    console.error("Error fetching upgrade cost:", error.response?.data || error.message);
+  }
+};
+
+
+
+  useEffect(() => {
+  fetchUpgradableLevels();
+}, []);
+
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -159,7 +167,7 @@ fetchUpgradableLevels()
       setUserData((prev) => ({
         ...prev,
         level: prev.level + 1,
-        coins: prev.coins - UPGRADE_COST,
+        coins: prev.coins - upgradeCost,
         progress: 100,
       }));
 
@@ -185,9 +193,9 @@ fetchUpgradableLevels()
   };
 
   const handleUpgrade = async () => {
-    if (userData.coins < UPGRADE_COST) {
+    if (userData.coins < upgradeCost) {
       toast.error(
-        `Not enough coins! You need ${UPGRADE_COST} coins to upgrade.`
+        `Not enough coins! You need ${upgradeCost} coins to upgrade.`
       );
       return;
     }
@@ -307,7 +315,7 @@ fetchUpgradableLevels()
           level={userData.level}
           progress={100}
           isComplete={true}
-          coinsRequired={UPGRADE_COST}
+          coinsRequired={upgradeCost}
           darkMode={theme === "dark"}
 
         />
@@ -317,7 +325,7 @@ fetchUpgradableLevels()
           level={userData.level + 1}
           progress={0}
           isComplete={false}
-          coinsRequired={UPGRADE_COST}
+          coinsRequired={upgradeCost}
           darkMode={theme === "dark"}
           userCoins = {userData.coins}
         />
@@ -360,7 +368,7 @@ fetchUpgradableLevels()
       <UpgradeButton
         onClick={handleUpgrade}
         isUpgrading={isUpgrading}
-        coinsRequired={UPGRADE_COST}
+        coinsRequired={upgradeCost}
         coinsAvailable={userData.coins}
         isMaxLevel={isMaxLevel}
         darkMode={theme === "dark"}
