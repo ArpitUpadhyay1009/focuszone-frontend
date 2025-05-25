@@ -72,7 +72,7 @@ export default function TodoList() {
       alert("You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more.");
       return;
     }
-
+  
     if (newTask.name.trim()) {
       try {
         const res = await axios.post(
@@ -88,31 +88,34 @@ export default function TodoList() {
             },
           }
         );
-
+  
         let pomodoros = "0";
-
-        if (typeof res.data.task.estimatedPomodoros === "string") {
+  
+        if (res.data.task.estimatedPomodoros) {
           pomodoros = res.data.task.estimatedPomodoros;
         }
-
+  
+        console.log("Pomodoros from API:", res.data.task.estimatedPomodoros);
+        console.log("Pomodoros set in state:", pomodoros);
+  
         let date;
         try {
           date = res.data.task.dueDate ? new Date(res.data.task.dueDate).toLocaleDateString() : new Date().toLocaleDateString();
         } catch (e) {
           date = new Date().toLocaleDateString();
         }
-
+  
         setTasks((prev) => [
           ...prev,
           {
             id: res.data.task._id,
-            name: res.data.task.taskName,
+            taskName: res.data.task.taskName,
             date,
-            pomodoros,
+            pomodoros, // Ensure this is set correctly
             status: "ongoing",
           },
         ]);
-
+  
         setNewTask({ name: "", date: today, pomodoros: "" });
         setIsOpen(false);
       } catch (error) {
