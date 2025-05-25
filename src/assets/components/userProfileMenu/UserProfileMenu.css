@@ -79,3 +79,83 @@
 .profile-button:hover {
   transform: scale(1.05);
 }
+
+/* Completed tasks styling */
+.completed-tasks-container {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Scrollbar styling for completed tasks */
+.completed-tasks-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.completed-tasks-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+[data-theme="dark"] .completed-tasks-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.completed-tasks-container::-webkit-scrollbar-thumb {
+  background: rgba(117, 0, 202, 0.3);
+  border-radius: 10px;
+}
+
+.completed-tasks-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(117, 0, 202, 0.5);
+}
+
+/* Task item styling */
+.task-item {
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  margin-bottom: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+/* Light mode task styling */
+[data-theme="light"] .task-item {
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+}
+
+[data-theme="light"] .task-item:hover {
+  background-color: #e5e7eb;
+  transform: translateY(-2px);
+}
+
+/* Dark mode task styling */
+[data-theme="dark"] .task-item {
+  background-color: rgba(117, 0, 202, 0.1);
+  border: 1px solid rgba(117, 0, 202, 0.2);
+  color: #f9fafb;
+}
+
+[data-theme="dark"] .task-item:hover {
+  background-color: rgba(117, 0, 202, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Task details styling */
+[data-theme="light"] .task-details {
+  color: #6b7280;
+}
+
+[data-theme="dark"] .task-details {
+  color: #d1d5db;
+}
+
+/* Back button styling */
+.back-button {
+  color: #7500CA;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  text-decoration: underline;
+}

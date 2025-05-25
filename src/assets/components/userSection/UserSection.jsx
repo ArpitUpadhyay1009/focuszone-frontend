@@ -4,24 +4,29 @@ import { useAuth } from "../../context/AuthContext";
 
 const UserSection = () => {
   const [users, setUsers] = useState([]);
+  const [yourCoins, setYourCoins] = useState(0);
   const { token } = useAuth();
 
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchUserData = async () => {
       try {
-        const res = await axios.get("/api/admin/users", {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const response = await axios.get("/api/auth/user-level", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setUsers(res.data);
-      } catch (err) {
-        console.error("Error fetching users:", err);
+        setYourCoins(response.data.coins);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
-
-    fetchUsers();
-  }, [token]);
+    
+    // Call the fetchUserData function
+    fetchUserData();
+  }, []);  // Added missing closing bracket for useEffect
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -30,7 +35,7 @@ const UserSection = () => {
           <h2 className="text-lg font-semibold mb-2">{user.username}</h2>
           <p>✅ Verified: {user.isVerified ? "Yes" : "No"}</p>
           <p>🏆 Level: {user.level}</p>
-          <p>🪙 Coins: {user.coins}</p>
+          <p>🪙 Coins: {yourCoins}</p>
           <p>📌 Total Tasks: {user.totalTasks}</p>
           <p>⏱ Avg Focus Time: {user.avgFocusTime} min</p>
           <p>📅 Logins Today: {user.loginCountToday}</p>

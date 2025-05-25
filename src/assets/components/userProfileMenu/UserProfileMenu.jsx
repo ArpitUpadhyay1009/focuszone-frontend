@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext"; // Add this import
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -36,20 +37,159 @@ AvatarFallback.displayName = "AvatarFallback";
 
 const UserProfileMenu = () => {
   const { user, logout } = useAuth();
+  const { theme } = useTheme(); // Add this line to get the current theme
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [userStats, setUserStats] = useState({
+    totalTime: "0h 0m",
+    totalCoinsEarned: 0,
+    yourCoins: 0,
+    coinsSpent: 0,
+    completedTasks: 0,
+  });
+  
 
-  // Mock data - replace with actual data from your backend
-  const userStats = {
-    totalTime: "24h 35m",
-    totalCoinsEarned: 1250,
-    yourCoins: 850,
-    coinsSpent: 400,
-    completedTasks: 42,
+  // Fetch user stats from the backend
+  const fetchUserStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+  
+      const response = await axios.get(`/api/user/stats`, {
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        }
+      });
+  
+      if (response.data) {
+        // Format the time from minutes to hours and minutes
+        const totalMinutes = response.data.totalTime || 0;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        
+        setUserStats({
+          totalTime: `${hours}h ${minutes}m`,
+          totalCoinsEarned: response.data.totalCoinsEarned || 0,
+          yourCoins: response.data.currentCoins || 0,
+          coinsSpent: response.data.coinsSpent || 0,
+          completedTasks: response.data.completedTasksCount || 0,
+        });
+        
+        // If coins are 0, try the user-level endpoint as a fallback
+        if (response.data.currentCoins === 0) {
+          try {
+            const levelResponse = await axios.get("/api/auth/user-level", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+            
+            if (levelResponse.data && levelResponse.data.coins > 0) {
+              setUserStats(prev => ({
+                ...prev,
+                yourCoins: levelResponse.data.coins
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching user level data:", error);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user stats:", error.message);
+      
+      // If the first endpoint fails, try the user-level endpoint
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        const levelResponse = await axios.get("/api/auth/user-level", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (levelResponse.data && levelResponse.data.coins !== undefined) {
+          setUserStats(prev => ({
+            ...prev,
+            yourCoins: levelResponse.data.coins
+          }));
+        }
+      } catch (fallbackError) {
+        console.error("Error in fallback coin fetch:", fallbackError);
+      }
+    }
+  };
+
+  // Update user stats in the database
+  const updateUserStats = async (statsData) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found");
+        return;
+      }
+
+      await axios.post(`/api/user/stats/update`, statsData, {
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        }
+      });
+      
+      // Refresh stats after update
+      fetchUserStats();
+    } catch (error) {
+      console.error("Error updating user stats:", error.message);
+    }
+  };
+
+  // Fetch stats when component mounts
+  useEffect(() => {
+    fetchUserStats();
+    // Also fetch completed tasks count on mount
+    fetchCompletedTasks();
+    
+    // Add event listeners for real-time coin updates
+    const handleCoinUpdate = () => {
+      console.log("Coin update event detected, refreshing stats...");
+      fetchUserStats();
+    };
+    
+    // Listen for the same event that UpgradeCard uses
+    window.addEventListener('coinUpdate', handleCoinUpdate);
+    
+    // Clean up event listeners when component unmounts
+    return () => {
+      window.removeEventListener('coinUpdate', handleCoinUpdate);
+    };
+  }, []);
+
+  // Example function to update stats (can be called from timer completion, coin transactions, etc.)
+  const handleStatsUpdate = (type, value) => {
+    const statsUpdate = {};
+    
+    switch(type) {
+      case 'time':
+        statsUpdate.timeSpent = value; // value in minutes
+        break;
+      case 'coinsEarned':
+        statsUpdate.coinsEarned = value;
+        break;
+      case 'coinsSpent':
+        statsUpdate.coinsSpent = value;
+        break;
+      default:
+        return;
+    }
+    
+    updateUserStats(statsUpdate);
   };
 
   const handleLogout = () => {
@@ -79,13 +219,44 @@ const UserProfileMenu = () => {
       });
 
       if (response.data && response.data.completedTasks) {
-        setCompletedTasks(response.data.completedTasks);
+        const tasks = response.data.completedTasks;
+        setCompletedTasks(tasks);
+        
+        // Calculate and store the number of completed tasks
+        const compTasks = tasks.length;
+        console.log("Number of completed tasks:", compTasks);
+        
+        // Update the userStats with the accurate count
+        setUserStats(prev => ({
+          ...prev,
+          completedTasks: compTasks
+        }));
+        
+        // Also fetch this count on initial load
+        return compTasks;
       } else {
         setCompletedTasks([]);
+        const compTasks = 0;
+        
+        // Update userStats with zero completed tasks
+        setUserStats(prev => ({
+          ...prev,
+          completedTasks: 0
+        }));
+        
+        return 0;
       }
     } catch (error) {
       console.error("Error fetching completed tasks:", error.message);
       setCompletedTasks([]);
+      
+      // Set completedTasks to 0 in case of error
+      setUserStats(prev => ({
+        ...prev,
+        completedTasks: 0
+      }));
+      
+      return 0;
     } finally {
       setLoading(false);
     }
@@ -140,7 +311,6 @@ const UserProfileMenu = () => {
             className="profile-dropdown absolute right-0 mt-2 w-64 rounded-lg shadow-lg overflow-hidden z-50"
           >
             <div className="profile-header p-4 border-b">
-              {/* Display username from database instead of "User" */}
               <p className="text-lg font-semibold">{user?.username || user?.displayName || "User"}</p>
               <p className="text-sm opacity-75">{user?.email}</p>
             </div>
@@ -168,16 +338,20 @@ const UserProfileMenu = () => {
                         key={task._id}
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="task-item p-2 rounded-md bg-opacity-10 bg-[#7500CA] flex items-center"
+                        className={`task-item p-2 rounded-md flex items-center ${
+                          theme === 'dark' 
+                            ? 'bg-opacity-20 bg-[#7500CA] border border-[#7500CA] border-opacity-30 text-white' 
+                            : 'bg-opacity-10 bg-[#7500CA] border border-[#7500CA] border-opacity-20 text-gray-800'
+                        }`}
                       >
-                        <div className="mr-2 text-[#7500CA]">
+                        <div className={`mr-2 ${theme === 'dark' ? 'text-purple-300' : 'text-[#7500CA]'}`}>
                           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                             <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                           </svg>
                         </div>
                         <div className="flex-1 overflow-hidden">
                           <p className="text-sm font-medium truncate">{task.taskName}</p>
-                          <div className="flex justify-between text-xs opacity-70">
+                          <div className={`flex justify-between text-xs ${theme === 'dark' ? 'opacity-80' : 'opacity-70'}`}>
                             {task.dueDate && (
                               <span>
                                 Due: {new Date(task.dueDate).toLocaleDateString()}
@@ -192,7 +366,9 @@ const UserProfileMenu = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-center py-4 text-sm opacity-70">No completed tasks found</p>
+                  <p className={`text-center py-4 text-sm ${theme === 'dark' ? 'opacity-80' : 'opacity-70'}`}>
+                    No completed tasks found
+                  </p>
                 )}
               </div>
             ) : (
