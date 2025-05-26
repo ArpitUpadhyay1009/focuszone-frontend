@@ -1,0 +1,21 @@
+{
+  "name": "FocusZone",
+  "short_name": "FocusZone",
+  "description": "Boost your productivity with our focus timer and task management tools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#7500CA",
+  "icons": [
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
