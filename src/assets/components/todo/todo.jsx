@@ -13,6 +13,7 @@ export default function TodoList() {
   const [charCount, setCharCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [intermediateTasks, setIntermediateTasks] = useState([]);
   const today = new Date().toISOString().split("T")[0];
   const [newTask, setNewTask] = useState({
     name: "",
@@ -144,6 +145,13 @@ export default function TodoList() {
             : task
         )
       );
+      setIntermediateTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task._id === taskId
+            ? { ...task, status: task.status === "ongoing" ? "finished" : "ongoing" }
+            : task
+        )
+      );
     } catch (error) {
       console.error("Error toggling task status:", error.message);
     }
@@ -151,6 +159,7 @@ export default function TodoList() {
   
   const deleteTask = async (taskId) => {
     try {
+      console.log("Trying to delete:", taskId);
       await axios.delete(`/api/tasks/${taskId}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -158,6 +167,7 @@ export default function TodoList() {
       });
   
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+      setIntermediateTasks((prevTasks) => prevTasks.filter((task) => task._id!== taskId));
     } catch (error) {
       console.error("Error deleting task:", error.message);
     }
@@ -180,21 +190,61 @@ export default function TodoList() {
   
     return `${formattedHours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
   }
-  function handleTaskCompletion(taskId) {
-    setTasks(prevTasks => prevTasks.map(task => {
-      if (task.id === taskId) {
-        if (!task.completed) {
-          confetti({
-            particleCount: 100,
-            spread: 70,
-            origin: { y: 0.6 }
-          });
+  async function handleTaskCompletion(taskId) {
+    try {
+      // Call backend to toggle task
+      await axios.patch(`/api/tasks/${taskId}/toggle`);
+  
+      // Then update local state
+      setTasks(prevTasks => prevTasks.map(task => {
+        if (task.id === taskId) {
+          if (!task.completed) {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 }
+            });
+          }
+          return { ...task, completed: !task.completed };
         }
-        return { ...task, completed: !task.completed };
-      }
-      return task;
-    }));
+        setIntermediateTasks(prevTasks => prevTasks.map(task => {
+          if (task.id === taskId) {
+            if (!task.completed) {
+              confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+              });
+            }
+            return { ...task, completed: !task.completed };
+          }
+        return task;
+      }));
+        return task;
+      }));
+    } catch (error) {
+      console.error("Error toggling task:", error.response?.data || error.message);
+    }
   }
+
+  useEffect(() => {
+    const fetchIntermediateTasks = async () => {
+      try {
+        const response = await fetch('/api/tasks/intermediate', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // Ensure you have the token available
+          }
+        });
+        const data = await response.json();
+        setIntermediateTasks(data.intermediateTasks);
+      } catch (error) {
+        console.error('Error fetching intermediate tasks:', error);
+      }
+    };
+    fetchIntermediateTasks();
+  }, []);
 
   return (
     <>
@@ -287,6 +337,44 @@ export default function TodoList() {
           </motion.div>
           <span>Add Task</span>
         </motion.button>
+
+        <h2 className="text-xl font-bold mb-3 mt-3">Completed tasks</h2>
+
+        <motion.ul>
+              {intermediateTasks.map((task) => (
+                <motion.li
+                  key={task._id}
+                  className={`task-item ${theme === "dark" ? "dark" : "light"}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <input
+                      type="checkbox"
+                      name={`task-${task.id}`}
+                      checked={task.status === "finished" && task.completed}
+                      onChange={() => {toggleTaskStatus(task._id);
+                        handleTaskCompletion(task._id);
+                      }}
+                      className="task-checkbox"
+                    />
+                  <div className="task-content">
+                    <p className="task-name">{task.taskName}</p>
+                    <p className="task-details">Due: {task.dueDate} | Est. Pomodoros: {task.estimatedPomodoros}</p>
+                  </div>
+                  <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => deleteTask(task._id)}
+                      className="task-delete"
+                    >
+                      <FaTrash size={14} />
+                    </motion.button>
+                </motion.li>
+              ))}
+          </motion.ul>
 
         <AnimatePresence>
           {isOpen && (
