@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
-import Navbar from "@components/Navbar/Navbar.jsx";
+import Navbar from "@components/navbar/Navbar.jsx";
 import { Eye, EyeOff } from 'lucide-react';
 import "@components/registerBox/RegisterBox.css";
 
