@@ -52,6 +52,7 @@ const LoginBox = () => {
           alert("Please verify your email first!");
           navigate("/verify-otp");
         } else {
+          console.log(error)
           alert("Server error! Please try again later.");
           navigate("/server-error");
         }
