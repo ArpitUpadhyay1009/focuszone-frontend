@@ -373,7 +373,7 @@ export default function TodoList() {
                         handleIntermediateTaskCompletion(task._id);
                         setTimeout(() => {
                           window.location.reload();
-                      }, 1000);
+                      }, 500);
                       }}
                       className="task-checkbox"
                     />
