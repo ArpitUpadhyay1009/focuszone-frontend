@@ -128,38 +128,6 @@ const UserProfileMenu = () => {
     }
   };
 
-  // New function to specifically fetch coins spent
-  const fetchCoinsSpent = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-  
-      const response = await axios.get(`/api/user-activity/coins-spent`, {
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        }
-      });
-  
-      if (response.data && response.data.coinsSpent !== undefined) {
-        console.log("Coins spent data:", response.data.coinsSpent);
-        
-        // Update only the coinsSpent field in userStats
-        setUserStats(prev => ({
-          ...prev,
-          coinsSpent: response.data.coinsSpent
-        }));
-        
-        return response.data.coinsSpent;
-      }
-    } catch (error) {
-      console.error("Error fetching coins spent:", error.message);
-      return null;
-    }
-  };
-
   // Update user stats in the database
   const updateUserStats = async (statsData) => {
     try {
@@ -184,37 +152,22 @@ const UserProfileMenu = () => {
 
   // Fetch stats when component mounts
   useEffect(() => {
-    // Initialize all data in sequence
-    const initializeData = async () => {
-      try {
-        // First get completed tasks count
-        await fetchCompletedTasks();
-        // Then get coins spent
-        await fetchCoinsSpent();
-        // Then get other stats
-        await fetchUserStats();
-      } catch (error) {
-        console.error("Error initializing data:", error);
-      }
-    };
-    
-    initializeData();
+    fetchUserStats();
+    // Also fetch completed tasks count on mount
+    fetchCompletedTasks();
     
     // Add event listeners for real-time coin updates
     const handleCoinUpdate = () => {
       console.log("Coin update event detected, refreshing stats...");
       fetchUserStats();
-      fetchCoinsSpent(); // Also refresh coins spent
     };
     
     // Listen for the same event that UpgradeCard uses
     window.addEventListener('coinUpdate', handleCoinUpdate);
-    window.addEventListener('coinSpent', fetchCoinsSpent); // Add listener for coin spent events
     
     // Clean up event listeners when component unmounts
     return () => {
       window.removeEventListener('coinUpdate', handleCoinUpdate);
-      window.removeEventListener('coinSpent', fetchCoinsSpent);
     };
   }, []);
 

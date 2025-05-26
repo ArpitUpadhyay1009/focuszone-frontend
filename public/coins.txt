@@ -62,101 +62,65 @@ const UserProfileMenu = () => {
         return;
       }
   
-      const response = await axios.get(`/api/user/stats`, {
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        }
-      });
-  
-      if (response.data) {
-        // Format the time from minutes to hours and minutes
-        const totalMinutes = response.data.totalTime || 0;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        
-        setUserStats({
-          totalTime: `${hours}h ${minutes}m`,
-          totalCoinsEarned: response.data.totalCoinsEarned || 0,
-          yourCoins: response.data.currentCoins || 0,
-          coinsSpent: response.data.coinsSpent || 0,
-          completedTasks: response.data.completedTasksCount || 0,
+      // Initialize default stats
+      let stats = {
+        totalTime: "0h 0m",
+        totalCoinsEarned: 0,
+        yourCoins: 0,
+        coinsSpent: 0,
+        completedTasks: 0,
+      };
+      
+      // Try to fetch user activity data first
+      try {
+        const activityResponse = await axios.get(`/api/user-activity`, {
+          headers: { 
+            Authorization: `Bearer ${token}` // Make sure token format matches middleware expectation
+          },
+          withCredentials: true // Include cookies in the request
         });
         
-        // If coins are 0, try the user-level endpoint as a fallback
-        if (response.data.currentCoins === 0) {
-          try {
-            const levelResponse = await axios.get("/api/auth/user-level", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            
-            if (levelResponse.data && levelResponse.data.coins > 0) {
-              setUserStats(prev => ({
-                ...prev,
-                yourCoins: levelResponse.data.coins
-              }));
-            }
-          } catch (error) {
-            console.error("Error fetching user level data:", error);
-          }
+        if (activityResponse.data) {
+          console.log("User activity data:", activityResponse.data);
+          
+          // Format the time from minutes to hours and minutes
+          const totalMinutes = activityResponse.data.totalTimeSpent || 0;
+          const hours = Math.floor(totalMinutes / 60);
+          const minutes = totalMinutes % 60;
+          
+          stats = {
+            ...stats,
+            totalTime: `${hours}h ${minutes}m`,
+            totalCoinsEarned: activityResponse.data.totalCoinsEarned || 0,
+            coinsSpent: activityResponse.data.coinsSpent || 0,
+          };
         }
+      } catch (activityError) {
+        console.error("Error fetching user activity:", activityError.message);
       }
-    } catch (error) {
-      console.error("Error fetching user stats:", error.message);
       
-      // If the first endpoint fails, try the user-level endpoint
+      // Try to fetch user level data for coins
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        
         const levelResponse = await axios.get("/api/auth/user-level", {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`
           },
+          withCredentials: true // Include cookies in the request
         });
         
         if (levelResponse.data && levelResponse.data.coins !== undefined) {
-          setUserStats(prev => ({
-            ...prev,
-            yourCoins: levelResponse.data.coins
-          }));
+          stats.yourCoins = levelResponse.data.coins;
+          console.log("User coins from level data:", levelResponse.data.coins);
         }
-      } catch (fallbackError) {
-        console.error("Error in fallback coin fetch:", fallbackError);
+      } catch (levelError) {
+        console.error("Error fetching user level data:", levelError.message);
       }
-    }
-  };
-
-  // New function to specifically fetch coins spent
-  const fetchCoinsSpent = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.error("No token found");
-        return;
-      }
-  
-      const response = await axios.get(`/api/user-activity/coins-spent`, {
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        }
-      });
-  
-      if (response.data && response.data.coinsSpent !== undefined) {
-        console.log("Coins spent data:", response.data.coinsSpent);
-        
-        // Update only the coinsSpent field in userStats
-        setUserStats(prev => ({
-          ...prev,
-          coinsSpent: response.data.coinsSpent
-        }));
-        
-        return response.data.coinsSpent;
-      }
+      
+      // Update the state with all collected data
+      setUserStats(stats);
+      
     } catch (error) {
-      console.error("Error fetching coins spent:", error.message);
-      return null;
+      console.error("Error in fetchUserStats:", error.message);
     }
   };
 
@@ -184,37 +148,22 @@ const UserProfileMenu = () => {
 
   // Fetch stats when component mounts
   useEffect(() => {
-    // Initialize all data in sequence
-    const initializeData = async () => {
-      try {
-        // First get completed tasks count
-        await fetchCompletedTasks();
-        // Then get coins spent
-        await fetchCoinsSpent();
-        // Then get other stats
-        await fetchUserStats();
-      } catch (error) {
-        console.error("Error initializing data:", error);
-      }
-    };
-    
-    initializeData();
+    fetchUserStats();
+    // Also fetch completed tasks count on mount
+    fetchCompletedTasks();
     
     // Add event listeners for real-time coin updates
     const handleCoinUpdate = () => {
       console.log("Coin update event detected, refreshing stats...");
       fetchUserStats();
-      fetchCoinsSpent(); // Also refresh coins spent
     };
     
     // Listen for the same event that UpgradeCard uses
     window.addEventListener('coinUpdate', handleCoinUpdate);
-    window.addEventListener('coinSpent', fetchCoinsSpent); // Add listener for coin spent events
     
     // Clean up event listeners when component unmounts
     return () => {
       window.removeEventListener('coinUpdate', handleCoinUpdate);
-      window.removeEventListener('coinSpent', fetchCoinsSpent);
     };
   }, []);
 
@@ -262,7 +211,8 @@ const UserProfileMenu = () => {
       const response = await axios.get(`/api/tasks/completed`, {
         headers: { 
           Authorization: `Bearer ${token}` 
-        }
+        },
+        withCredentials: true
       });
 
       if (response.data && response.data.completedTasks) {
@@ -279,11 +229,9 @@ const UserProfileMenu = () => {
           completedTasks: compTasks
         }));
         
-        // Also fetch this count on initial load
         return compTasks;
       } else {
         setCompletedTasks([]);
-        const compTasks = 0;
         
         // Update userStats with zero completed tasks
         setUserStats(prev => ({
@@ -308,6 +256,29 @@ const UserProfileMenu = () => {
       setLoading(false);
     }
   };
+
+  // Fetch stats when component mounts
+  useEffect(() => {
+    // First fetch completed tasks to get the accurate count
+    fetchCompletedTasks().then(() => {
+      // Then fetch other user stats
+      fetchUserStats();
+    });
+    
+    // Add event listeners for real-time coin updates
+    const handleCoinUpdate = () => {
+      console.log("Coin update event detected, refreshing stats...");
+      fetchUserStats();
+    };
+    
+    // Listen for the same event that UpgradeCard uses
+    window.addEventListener('coinUpdate', handleCoinUpdate);
+    
+    // Clean up event listeners when component unmounts
+    return () => {
+      window.removeEventListener('coinUpdate', handleCoinUpdate);
+    };
+  }, []);
 
   // Handle click on completed tasks stat
   const handleCompletedTasksClick = () => {

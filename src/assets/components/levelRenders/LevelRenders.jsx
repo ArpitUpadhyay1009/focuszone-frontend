@@ -90,24 +90,48 @@ const LevelRenders = () => {
     };
 
     // Function to fetch next level data after upgrade
+    // Update the fetchNextLevelData function
     const fetchNextLevelData = async (currentLevel) => {
       const token = localStorage.getItem("token");
       if (!token) return;
-
+    
       try {
-        const nextLevel = currentLevel + 1;
-        const response = await axios.get(`/api/auth/level-preview/${nextLevel}`, {
+        // Instead of using a separate endpoint, use the user-level endpoint with a query parameter
+        const response = await axios.get(`/api/auth/user-level?preview=${currentLevel + 1}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
+    
         if (response.data) {
-          preloadImage(response.data.imageLight);
-          preloadImage(response.data.imageDark);
+          // Store next level images
           setNextImageLight(response.data.imageLight);
           setNextImageDark(response.data.imageDark);
+          
+          // Optionally cache in localStorage for faster access during level up
+          localStorage.setItem('nextLevelLight', response.data.imageLight);
+          localStorage.setItem('nextLevelDark', response.data.imageDark);
         }
       } catch (error) {
         console.error("Error fetching next level data:", error);
+        
+        // Fallback: Try to use the images array directly if API fails
+        // This assumes you have access to the images array or can import it
+        try {
+          // Get images from your backend's image array (adjust index as needed)
+          const nextLevel = currentLevel + 1;
+          if (nextLevel <= 50) { // Assuming max level is 50
+            // These URLs should match your backend structure
+            const lightImageUrl = `https://res.cloudinary.com/dkn0u8kw1/image/upload/v1741326548/level_${nextLevel}_day_jlr7g2.png`;
+            const darkImageUrl = `https://res.cloudinary.com/dkn0u8kw1/image/upload/v1741326548/level_${nextLevel}_night_jlr7g2.png`;
+            
+            setNextImageLight(lightImageUrl);
+            setNextImageDark(darkImageUrl);
+            
+            localStorage.setItem('nextLevelLight', lightImageUrl);
+            localStorage.setItem('nextLevelDark', darkImageUrl);
+          }
+        } catch (fallbackError) {
+          console.error("Fallback image loading also failed:", fallbackError);
+        }
       }
     };
 
