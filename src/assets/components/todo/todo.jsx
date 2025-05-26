@@ -207,19 +207,6 @@ export default function TodoList() {
           }
           return { ...task, completed: !task.completed };
         }
-        setIntermediateTasks(prevTasks => prevTasks.map(task => {
-          if (task.id === taskId) {
-            if (!task.completed) {
-              confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 }
-              });
-            }
-            return { ...task, completed: !task.completed };
-          }
-        return task;
-      }));
         return task;
       }));
     } catch (error) {
@@ -245,6 +232,30 @@ export default function TodoList() {
     };
     fetchIntermediateTasks();
   }, []);
+
+  async function handleIntermediateTaskCompletion(taskId) {
+    try {
+        // Call backend to toggle task
+        await axios.patch(`/api/${taskId}/toggle`);
+
+        // Then update local state
+        setIntermediateTasks(prevTasks => prevTasks.map(task => {
+            if (task._id === taskId) {
+                if (!task.completed) {
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 }
+                    });
+                }
+                return { ...task, completed: !task.completed };
+            }
+            return task;
+        }));
+    } catch (error) {
+        console.error("Error toggling intermediate task:", error.response?.data || error.message);
+    }
+}
 
   return (
     <>
@@ -294,6 +305,9 @@ export default function TodoList() {
                       checked={task.status === "finished" && task.completed}
                       onChange={() => {toggleTaskStatus(task.id);
                         handleTaskCompletion(task.id);
+                        setTimeout(() => {
+                          window.location.reload();
+                      }, 1000);
                       }}
                       className="task-checkbox"
                     />
@@ -354,15 +368,18 @@ export default function TodoList() {
                   <input
                       type="checkbox"
                       name={`task-${task.id}`}
-                      checked={task.status === "finished" && task.completed}
+                      checked={task.status === "ongoing" && task.completed}
                       onChange={() => {toggleTaskStatus(task._id);
-                        handleTaskCompletion(task._id);
+                        handleIntermediateTaskCompletion(task._id);
+                        setTimeout(() => {
+                          window.location.reload();
+                      }, 1000);
                       }}
                       className="task-checkbox"
                     />
                   <div className="task-content">
                     <p className="task-name">{task.taskName}</p>
-                    <p className="task-details">Due: {task.dueDate} | Est. Pomodoros: {task.estimatedPomodoros}</p>
+                    <p className="task-details">completed</p>
                   </div>
                   <motion.button
                       whileHover={{ scale: 1.1 }}
