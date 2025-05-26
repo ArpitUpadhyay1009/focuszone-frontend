@@ -62,54 +62,44 @@ const UserProfileMenu = () => {
         return;
       }
   
-      const response = await axios.get(`/api/user/stats`, {
-        headers: { 
-          Authorization: `Bearer ${token}` 
-        }
-      });
-  
-      if (response.data) {
-        // Format the time from minutes to hours and minutes
-        const totalMinutes = response.data.totalTime || 0;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
-        
-        setUserStats({
-          totalTime: `${hours}h ${minutes}m`,
-          totalCoinsEarned: response.data.totalCoinsEarned || 0,
-          yourCoins: response.data.currentCoins || 0,
-          coinsSpent: response.data.coinsSpent || 0,
-          completedTasks: response.data.completedTasksCount || 0,
+      // Initialize default stats
+      let stats = {
+        totalTime: "0h 0m",
+        totalCoinsEarned: 0,
+        yourCoins: 0,
+        coinsSpent: 0,
+        completedTasks: 0,
+      };
+      
+      // Try to fetch user activity data first
+      try {
+        const activityResponse = await axios.get(`/api/user-activity`, {
+          headers: { 
+            Authorization: `Bearer ${token}` 
+          }
         });
         
-        // If coins are 0, try the user-level endpoint as a fallback
-        if (response.data.currentCoins === 0) {
-          try {
-            const levelResponse = await axios.get("/api/auth/user-level", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-            
-            if (levelResponse.data && levelResponse.data.coins > 0) {
-              setUserStats(prev => ({
-                ...prev,
-                yourCoins: levelResponse.data.coins
-              }));
-            }
-          } catch (error) {
-            console.error("Error fetching user level data:", error);
-          }
+        if (activityResponse.data) {
+          console.log("User activity data:", activityResponse.data);
+          
+          // Format the time from minutes to hours and minutes
+          const totalMinutes = activityResponse.data.totalTimeSpent || 0;
+          const hours = Math.floor(totalMinutes / 60);
+          const minutes = totalMinutes % 60;
+          
+          stats = {
+            ...stats,
+            totalTime: `${hours}h ${minutes}m`,
+            totalCoinsEarned: activityResponse.data.totalCoinsEarned || 0,
+            coinsSpent: activityResponse.data.coinsSpent || 0,
+          };
         }
+      } catch (activityError) {
+        console.error("Error fetching user activity:", activityError.message);
       }
-    } catch (error) {
-      console.error("Error fetching user stats:", error.message);
       
-      // If the first endpoint fails, try the user-level endpoint
+      // Try to fetch user level data for coins
       try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        
         const levelResponse = await axios.get("/api/auth/user-level", {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -117,14 +107,18 @@ const UserProfileMenu = () => {
         });
         
         if (levelResponse.data && levelResponse.data.coins !== undefined) {
-          setUserStats(prev => ({
-            ...prev,
-            yourCoins: levelResponse.data.coins
-          }));
+          stats.yourCoins = levelResponse.data.coins;
+          console.log("User coins from level data:", levelResponse.data.coins);
         }
-      } catch (fallbackError) {
-        console.error("Error in fallback coin fetch:", fallbackError);
+      } catch (levelError) {
+        console.error("Error fetching user level data:", levelError.message);
       }
+      
+      // Update the state with all collected data
+      setUserStats(stats);
+      
+    } catch (error) {
+      console.error("Error in fetchUserStats:", error.message);
     }
   };
 
