@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }) => {
     // Store user data and token in cookies
     Cookies.set("user", JSON.stringify(userData), cookieOptions);
     Cookies.set("token", token, cookieOptions);
+    localStorage.setItem("token", token);
     
     // Update auth state
     setUser(userData);

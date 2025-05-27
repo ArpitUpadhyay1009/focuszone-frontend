@@ -30,6 +30,7 @@ const LoginBox = () => {
       const { token, user } = response.data;
 
       if (token && user) {
+        localStorage.setItem("token", token);
         login(user, token);
         setShowSuccess(true);
 
