@@ -16,8 +16,12 @@ const ForgotPassword = () => {
     setError('');
     try {
       const res = await axios.post(`/api/auth/forgot-password`, { email });
+      if(res.status === 200){
+        alert(res.data.message);
+      }
       navigate('/reset-password', { state: { email } });
     } catch (err) {
+      console.log(err);
       setError(err.response?.data?.message || 'Something went wrong');
     }
   };
