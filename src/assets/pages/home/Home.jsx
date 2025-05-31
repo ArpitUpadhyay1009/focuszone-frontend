@@ -42,12 +42,14 @@ export const Home = () => {
           <div className="w-full max-w-md flex flex-col items-center gap-6">
             <div 
               onClick={handleLoginClick} 
-              className="w-full cursor-pointer transition-transform duration-300 hover:scale-105 rounded-lg"
+              className="w-full cursor-pointer transition-transform duration-300 hover:scale-105 rounded-lg relative z-10"
             >
               <LoginToUnlock />
             </div>
-            <div className="w-full mt-20">
-              <SpotifyEmbed />
+            <div className="w-full mt-100 relative z-0">
+              <div className="pointer-events-auto">
+                <SpotifyEmbed />
+              </div>
             </div>
           </div>
         </div>

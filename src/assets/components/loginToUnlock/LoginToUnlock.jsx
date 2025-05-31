@@ -7,7 +7,7 @@ const LoginToUnlock = () => {
       <img
         src="/LoginToUnlock.png"
         alt="render"
-        className="h-[500px] w-[500px] max-w-full max-h-full sm:h-[300px] sm:w-[350px] md:h-[400px] md:w-[450px] lg:h-[500px] lg:w-[500px] object-contain"
+        className="h-[400px] w-[400px] max-w-full max-h-full sm:h-[250px] sm:w-[300px] md:h-[300px] md:w-[350px] lg:h-[400px] lg:w-[400px] object-contain"
       />
     </>
   );
