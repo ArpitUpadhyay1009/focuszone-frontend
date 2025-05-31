@@ -46,14 +46,14 @@ const UserProfileMenu = () => {
   const [loading, setLoading] = useState(false);
   const [userStats, setUserStats] = useState({
     totalTime: "0h 0m",
-    totalCoinsEarned: 0,
+    totalCoinsEarned: 0, // This will be updated
     yourCoins: 0,
     coinsSpent: 0,
     completedTasks: 0,
   });
   
 
-  // Fetch user stats from the backend
+  // Existing fetchUserStats (you might keep this for other stats or modify it)
   const fetchUserStats = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -62,27 +62,27 @@ const UserProfileMenu = () => {
         return;
       }
   
-      const response = await axios.get(`/api/user/stats`, {
+      // Assuming /api/user/stats fetches OTHER stats but not totalCoinsEarned
+      const response = await axios.get(`/api/user/stats`, { 
         headers: { 
           Authorization: `Bearer ${token}` 
         }
       });
   
       if (response.data) {
-        // Format the time from minutes to hours and minutes
         const totalMinutes = response.data.totalTime || 0;
         const hours = Math.floor(totalMinutes / 60);
         const minutes = totalMinutes % 60;
         
-        setUserStats({
+        setUserStats(prev => ({ // Use prev to ensure we don't overwrite totalCoinsEarned if fetched separately
+          ...prev,
           totalTime: `${hours}h ${minutes}m`,
-          totalCoinsEarned: response.data.totalCoinsEarned || 0,
+          // totalCoinsEarned: response.data.totalCoinsEarned || 0, // Remove or ensure this doesn't conflict
           yourCoins: response.data.currentCoins || 0,
-          coinsSpent: response.data.coinsSpent || 0,
-          completedTasks: response.data.completedTasksCount || 0,
-        });
+          // coinsSpent: response.data.coinsSpent || 0, // Potentially fetched by fetchCoinsSpent
+          completedTasks: response.data.completedTasksCount || 0, // Potentially fetched by fetchCompletedTasks
+        }));
         
-        // If coins are 0, try the user-level endpoint as a fallback
         if (response.data.currentCoins === 0) {
           try {
             const levelResponse = await axios.get("/api/auth/user-level", {
@@ -104,8 +104,6 @@ const UserProfileMenu = () => {
       }
     } catch (error) {
       console.error("Error fetching user stats:", error.message);
-      
-      // If the first endpoint fails, try the user-level endpoint
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -128,7 +126,43 @@ const UserProfileMenu = () => {
     }
   };
 
-  // New function to specifically fetch coins spent
+  // New function to fetch total coins earned
+  const fetchTotalCoinsEarned = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found for total coins earned");
+        return;
+      }
+
+      // Replace with your actual endpoint if different
+      const response = await axios.get(`/api/user-activity/total-coins-earned`, { 
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        }
+      });
+
+      if (response.data && response.data.totalCoinsEarned !== undefined) {
+        setUserStats(prev => ({
+          ...prev,
+          totalCoinsEarned: response.data.totalCoinsEarned
+        }));
+      } else {
+        setUserStats(prev => ({
+            ...prev,
+            totalCoinsEarned: 0 // Default to 0 if not found or error
+          }));
+      }
+    } catch (error) {
+      console.error("Error fetching total coins earned:", error.message);
+      setUserStats(prev => ({
+        ...prev,
+        totalCoinsEarned: 0 // Default to 0 on error
+      }));
+    }
+  };
+
+  // Existing fetchCoinsSpent function (remains the same)
   const fetchCoinsSpent = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -192,7 +226,8 @@ const UserProfileMenu = () => {
         // Then get coins spent
         await fetchCoinsSpent();
         // Then get other stats
-        await fetchUserStats();
+        await fetchUserStats(); // Fetches other general stats
+        await fetchTotalCoinsEarned(); // Add this line to fetch total coins earned
       } catch (error) {
         console.error("Error initializing data:", error);
       }
@@ -204,14 +239,14 @@ const UserProfileMenu = () => {
     const handleCoinUpdate = () => {
       console.log("Coin update event detected, refreshing stats...");
       fetchUserStats();
-      fetchCoinsSpent(); // Also refresh coins spent
+      fetchCoinsSpent();
+      fetchTotalCoinsEarned(); // Also refresh total coins earned on update
     };
     
     // Listen for the same event that UpgradeCard uses
     window.addEventListener('coinUpdate', handleCoinUpdate);
-    window.addEventListener('coinSpent', fetchCoinsSpent); // Add listener for coin spent events
+    window.addEventListener('coinSpent', fetchCoinsSpent);
     
-    // Clean up event listeners when component unmounts
     return () => {
       window.removeEventListener('coinUpdate', handleCoinUpdate);
       window.removeEventListener('coinSpent', fetchCoinsSpent);

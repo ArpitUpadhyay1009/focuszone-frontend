@@ -55,6 +55,13 @@ export default function TimerApp({ setParentPopupState }) {
   const [initialTime, setInitialTime] = useState(null);
   // Track minutes elapsed to avoid awarding coins multiple times
   const [minutesElapsed, setMinutesElapsed] = useState(0);
+  const [pauseStartTime, setPauseStartTime] = useState(() => {
+    return localStorage.getItem('timerPauseStartTime') ? parseInt(localStorage.getItem('timerPauseStartTime')) : null;
+  });
+  const [totalPausedTime, setTotalPausedTime] = useState(() => {
+    const saved = localStorage.getItem('timerTotalPausedTime');
+    return saved ? parseInt(saved) : 0;
+  });
 
   const notificationSound = new Audio("/notification.mp3");
 
@@ -80,15 +87,22 @@ export default function TimerApp({ setParentPopupState }) {
     localStorage.setItem('timerIsBreak', isBreak.toString());
     localStorage.setItem('timerCountdownTime', countdownTime.toString());
     localStorage.setItem('timerCoins', coins.toString());
+    localStorage.setItem('timerTotalPausedTime', totalPausedTime.toString());
     
     if (timerStartedAt) {
       localStorage.setItem('timerStartedAt', timerStartedAt.toString());
     } else {
       localStorage.removeItem('timerStartedAt');
     }
+    if (pauseStartTime) {
+      localStorage.setItem('timerPauseStartTime', pauseStartTime.toString());
+    } else {
+      localStorage.removeItem('timerPauseStartTime');
+    }
   }, [
     mode, time, isRunning, showStart, pomodoroTime, breakTime, 
-    cycles, currentCycle, isBreak, countdownTime, coins, timerStartedAt
+    cycles, currentCycle, isBreak, countdownTime, coins, timerStartedAt,
+    totalPausedTime, pauseStartTime // Added new state variables to dependency array
   ]);
 
   // Function to save coins to the database
@@ -399,6 +413,12 @@ export default function TimerApp({ setParentPopupState }) {
     setIsRunning(true);
     setShowStart(false);
     
+    if (pauseStartTime) {
+      const currentPauseDuration = Date.now() - pauseStartTime;
+      setTotalPausedTime(prev => prev + currentPauseDuration);
+      setPauseStartTime(null);
+    }
+    
     // Start timer with 1 second less to avoid immediate coin award
     if (mode === "pomodoro" && !isBreak && time === pomodoroTime) {
       setTime(prevTime => Math.max(0, prevTime - 1));
@@ -413,6 +433,7 @@ export default function TimerApp({ setParentPopupState }) {
     setIsRunning(false);
     setShowStart(true);
     setTimerStartedAt(null);
+    setPauseStartTime(Date.now()); // Record pause start time
   };
 
   const resetTimer = () => {
@@ -423,6 +444,8 @@ export default function TimerApp({ setParentPopupState }) {
     setTimerStartedAt(null);
     setInitialTime(null);
     setMinutesElapsed(0);
+    setPauseStartTime(null); // Reset pause start time
+    setTotalPausedTime(0); // Reset total paused time
     
     if (mode === "pomodoro") setTime(pomodoroTime);
     if (mode === "countdown") setTime(countdownTime);
