@@ -46,8 +46,8 @@ export const Home = () => {
             >
               <LoginToUnlock />
             </div>
-            <div className="w-full mt-100 relative z-0">
-              <div className="pointer-events-auto">
+            <div className="w-full relative z-0">
+              <div className="pointer-events-auto mt-[15%]">
                 <SpotifyEmbed />
               </div>
             </div>

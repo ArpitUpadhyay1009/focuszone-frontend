@@ -257,6 +257,62 @@ export default function TodoList() {
     }
 }
 
+async function refetchCurrentTasks() {
+  // Example using fetch API
+  setIsLoading(true);
+      try {
+        const res = await axios.get("/api/tasks", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        console.log("Fetched tasks:", res.data.ongoingTasks);
+        setTasks(
+          res.data.ongoingTasks.map((task) => {
+            let pomodoros = "0";
+
+            if (typeof task.estimatedPomodoros === "string") {
+              pomodoros = task.estimatedPomodoros;
+            }
+
+            let date;
+            try {
+              date = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : new Date().toLocaleDateString();
+            } catch (e) {
+              date = new Date().toLocaleDateString();
+            }
+
+            return {
+              id: task._id,
+              taskName: task.taskName,
+              date,
+              pomodoros,
+              status: task.status || "ongoing",
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Error fetching tasks:", error.message);
+      } finally {
+        setIsLoading(false);
+      }
+}
+
+async function refetchIntermediateTasks() {
+  // Example using fetch API
+  try {
+    const response = await fetch('/api/tasks/intermediate', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}` // Ensure you have the token available
+      }
+    });
+    const data = await response.json();
+    setIntermediateTasks(data.intermediateTasks);
+  } catch (error) {
+    console.error('Error fetching intermediate tasks:', error);
+  }
+}
+
   return (
     <>
       <div className="todo-container flex flex-col items-center">
@@ -306,8 +362,9 @@ export default function TodoList() {
                       onChange={() => {toggleTaskStatus(task.id);
                         handleTaskCompletion(task.id);
                         setTimeout(() => {
-                          window.location.reload();
-                      }, 1000);
+                          refetchIntermediateTasks();
+                          refetchCurrentTasks();
+                      }, 1500);
                       }}
                       className="task-checkbox"
                     />
@@ -358,7 +415,7 @@ export default function TodoList() {
               {intermediateTasks.map((task) => (
                 <motion.li
                   key={task._id}
-                  className={`task-item ${theme === "dark" ? "dark" : "light"}`}
+                  className={`checked-item ${theme === "dark" ? "dark" : "light"}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, x: -100 }}
@@ -368,17 +425,18 @@ export default function TodoList() {
                   <input
                       type="checkbox"
                       name={`task-${task.id}`}
-                      checked={task.status === "ongoing" && task.completed}
+                      checked={task.status === "ongoing" && !task.completed}
                       onChange={() => {toggleTaskStatus(task._id);
                         handleIntermediateTaskCompletion(task._id);
                         setTimeout(() => {
-                          window.location.reload();
+                          refetchCurrentTasks();
+                          refetchIntermediateTasks();
                       }, 500);
                       }}
-                      className="task-checkbox"
+                      className="checked-checkbox"
                     />
                   <div className="task-content">
-                    <p className="task-name">{task.taskName}</p>
+                    <p className="checked-name">{task.taskName}</p>
                     <p className="task-details">completed</p>
                   </div>
                   <motion.button

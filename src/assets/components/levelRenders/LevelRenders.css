@@ -28,7 +28,6 @@ img:hover {
 /* Add hover effect to make the room grow */
 .flex.justify-center.items-center img:hover {
   transform: scale(1.6) !important; /* Grow even larger on hover */
-  cursor: pointer; /* Change cursor to indicate interactivity */
 }
 
 /* Adjust the container for the larger image */
