@@ -62,10 +62,47 @@ export default function TimerApp({ setParentPopupState }) {
     const saved = localStorage.getItem('timerTotalPausedTime');
     return saved ? parseInt(saved) : 0;
   });
+  const [lastSavedTimeOnReset, setLastSavedTimeOnReset] = useState(0); // To track time for reset
 
   const notificationSound = new Audio("/notification.mp3");
 
   const { theme } = useTheme();
+
+  // Function to save time spent to the database
+  const saveTimeSpentToDatabase = async (timeSpentInSecondsValue) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found, user might not be logged in");
+        return;
+      }
+      // Ensure we are not sending zero or negative values, unless it's a specific reset scenario (which we handle separately)
+      if (typeof timeSpentInSecondsValue !== 'number' || timeSpentInSecondsValue <= 0) {
+        console.warn("Invalid or zero timeSpentInSecondsValue, not saving:", timeSpentInSecondsValue);
+        return;
+      }
+
+      console.log(`Attempting to save ${timeSpentInSecondsValue} seconds.`);
+      const response = await axios.post(
+        "/api/user-activity/update-time-spent", 
+        { timeSpentInSeconds: timeSpentInSecondsValue },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("Time spent saved:", response.data);
+      // Dispatch an event to notify UserProfileMenu to refresh stats
+      window.dispatchEvent(new Event("statsUpdate")); 
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Error saving time spent:",
+        error.response?.data || error.message
+      );
+    }
+  };
 
   // Format time function
   const formatTime = (seconds) => {
@@ -141,53 +178,83 @@ export default function TimerApp({ setParentPopupState }) {
   useEffect(() => {
     if (isRunning && timerStartedAt) {
       const now = Date.now();
-      const elapsedSeconds = Math.floor((now - timerStartedAt) / 1000);
-      
-      // Pause the timer when page is reloaded
-      setIsRunning(false);
-      setShowStart(true);
-      setTimerStartedAt(null);
-      setInitialTime(null);
-      setMinutesElapsed(0);
+      const elapsedSecondsWhileAway = Math.floor((now - timerStartedAt) / 1000);
       
       if (mode === "stopwatch") {
-        // For stopwatch, add elapsed time
-        setTime(prevTime => prevTime + elapsedSeconds);
-      } else {
-        // For countdown and pomodoro, subtract elapsed time
-        const newTime = Math.max(0, time - elapsedSeconds);
-        setTime(newTime);
+        setTime(prevTime => prevTime + elapsedSecondsWhileAway);
+      } else { // For countdown and pomodoro
+        const currentTimeSnapshot = time; // Capture current time before any async updates
+        const remainingTimeAfterAway = currentTimeSnapshot - elapsedSecondsWhileAway;
         
-        // If timer should have completed while away, handle that
-        if (newTime === 0) {
-          if (mode === "pomodoro" && !isBreak) {
-            // Handle pomodoro completion
-            if (currentCycle + 1 < cycles) {
-              setIsBreak(true);
-              setTime(breakTime);
-              // Only award coins if at least 1 minute has elapsed
-              if (elapsedSeconds >= 60) {
-                saveCoinsToDatabase(1); // Should be 1
-                setCoins(prev => prev + 1); // Should be 1
+        if (remainingTimeAfterAway <= 0) {
+          // Timer completed while away
+          setTime(0);
+          setIsRunning(false); 
+          setShowStart(true);
+          notificationSound.play().catch(e => console.log("Error playing sound:", e));
+
+          if (mode === "pomodoro") {
+            if (!isBreak) {
+              console.log(`Pomodoro session finished while away. Elapsed: ${elapsedSecondsWhileAway}s, Original Pomodoro Time: ${pomodoroTime}s`);
+              // Save the actual pomodoroTime, not elapsedSecondsWhileAway if it's longer
+              saveTimeSpentToDatabase(pomodoroTime); 
+              if (pomodoroTime >= 60) { 
+                saveCoinsToDatabase(0.5); 
+                setCoins(prev => prev + 0.5);
+              }
+
+              if (currentCycle + 1 < cycles) {
+                setCurrentCycle(prev => prev + 1);
+                setIsBreak(true);
+                setTime(breakTime);
+              } else {
+                console.log("All Pomodoro cycles completed while away.");
+                setParentPopupState(true); 
+                resetTimer(); 
               }
             } else {
-              // All cycles completed
-              if (elapsedSeconds >= 60) {
-                saveCoinsToDatabase(1);
-                setCoins(prev => prev + 1);
+              // Break finished while away
+              console.log("Break finished while away.");
+              setIsBreak(false);
+              // setCurrentCycle(prev => prev + 1); // This was potentially problematic if resetTimer is called next
+              // Let resetTimer handle currentCycle or ensure correct order if transitioning to next pomodoro
+              if (currentCycle +1 < cycles) { // Check if it was the last break before final pomodoro
+                setCurrentCycle(prev => prev + 1);
+                setTime(pomodoroTime);
+                 // Decide if next pomodoro should auto-start
+                 // setIsRunning(true);
+                 // setTimerStartedAt(Date.now());
+              } else {
+                console.log("All cycles and final break completed while away.");
+                setParentPopupState(true);
+                resetTimer();
               }
-              resetTimer();
             }
-          } else if (mode === "pomodoro" && isBreak) {
-            // Handle break completion
-            setIsBreak(false);
-            setCurrentCycle(prev => prev + 1);
-            setTime(pomodoroTime);
           }
+          // Clear timerStartedAt from localStorage as the session effectively ended or transitioned
+          localStorage.removeItem('timerStartedAt');
+        } else {
+          // Timer did NOT complete while away, just update the time
+          setTime(remainingTimeAfterAway);
+          // Save the partial time elapsed while away if it's a pomodoro session
+          if (mode === "pomodoro" && !isBreak && elapsedSecondsWhileAway > 0) {
+            saveTimeSpentToDatabase(elapsedSecondsWhileAway);
+            // Award coins for minutes elapsed while away (for this partial, non-completed segment)
+            const minutesPassedWhileAway = Math.floor(elapsedSecondsWhileAway / 60);
+            if (minutesPassedWhileAway > 0) {
+              const newCoins = minutesPassedWhileAway * 0.5; 
+              saveCoinsToDatabase(newCoins);
+              setCoins(prev => prev + newCoins);
+              setMinutesElapsed(prev => prev + minutesPassedWhileAway);
+            }
+          }
+          // If timer is still running and was running from localStorage, ensure timerStartedAt is updated for the main timer
+          // This might already be handled by the main timer's logic or visibility change handler
+          // For now, we assume the main timer will pick up the new 'time' and 'isRunning' state correctly.
         }
       }
     }
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount/load
 
   // Main timer effect - using requestAnimationFrame for better accuracy
   useEffect(() => {
@@ -213,12 +280,18 @@ export default function TimerApp({ setParentPopupState }) {
         setTime(prevTime => {
           // For stopwatch, add elapsed time
           if (mode === "stopwatch") {
+            setLastSavedTimeOnReset(prev => prev + secondsToUpdate); // Track time for reset
             return prevTime + secondsToUpdate;
           }
           
           // For countdown and pomodoro, subtract elapsed time
           const newTime = Math.max(0, prevTime - secondsToUpdate);
           
+          if (mode === "pomodoro" && !isBreak && prevTime > newTime) {
+             // Increment time for reset only when pomodoro is active and time is decreasing
+            setLastSavedTimeOnReset(prev => prev + (prevTime - newTime)); 
+          }
+
           // Handle timer completion
           if (newTime === 0 && prevTime > 0) {
             notificationSound.play();
@@ -237,9 +310,11 @@ export default function TimerApp({ setParentPopupState }) {
                   console.log("Awarding 0.5 coins for pomodoro cycle completion (visible)");
                   saveCoinsToDatabase(0.5); 
                   setCoins((prevCoins) => prevCoins + 0.5); 
+                  saveTimeSpentToDatabase(pomodoroTime); 
+                  setLastSavedTimeOnReset(0); // Reset after saving full pomodoro
                 }
                 return breakTime;
-              } else {
+              } else { // This is the final cycle
                 setIsRunning(false);
                 setShowStart(true);
                 // Only award coins if the timer ran for at least 1 minute
@@ -248,6 +323,10 @@ export default function TimerApp({ setParentPopupState }) {
                   saveCoinsToDatabase(0.5); 
                   setCoins((prevCoins) => prevCoins + 0.5); 
                 }
+                
+                // Save time for the final cycle
+                saveTimeSpentToDatabase(pomodoroTime);
+                setLastSavedTimeOnReset(0); // Reset after saving full pomodoro
 
                 // Auto reset after a short delay when all cycles are completed
                 setTimeout(() => {
@@ -344,6 +423,7 @@ export default function TimerApp({ setParentPopupState }) {
                     const newCoins = Math.floor((initialTime || pomodoroTime) / 60) * 1; // Ensure 1 coin per minute
                     saveCoinsToDatabase(newCoins);
                     setCoins(prev => prev + newCoins);
+                    saveTimeSpentToDatabase(pomodoroTime); // Save full pomodoro duration
                     
                     // Handle cycle completion
                     if (currentCycle < cycles - 1) {
@@ -383,6 +463,7 @@ export default function TimerApp({ setParentPopupState }) {
                   saveCoinsToDatabase(newCoinsToAdd);
                   setCoins(prev => prev + newCoinsToAdd);
                   setMinutesElapsed(totalMinutesElapsed);
+                  // Time is saved upon full cycle completion, not per minute for hidden state to keep it simple
                 }
               }
             }
@@ -437,19 +518,29 @@ export default function TimerApp({ setParentPopupState }) {
     setPauseStartTime(Date.now()); // Record pause start time
   };
 
-  const resetTimer = () => {
+  const resetTimer = (newMode = null) => {
     setIsRunning(false);
+    setTimerStartedAt(null); // Reset the timer start time
+
+    // Save any accumulated time from lastSavedTimeOnReset before resetting
+    if (lastSavedTimeOnReset > 0) { 
+      saveTimeSpentToDatabase(lastSavedTimeOnReset); // Corrected: save seconds directly
+      setLastSavedTimeOnReset(0); // Reset after saving
+    }
     setShowStart(true);
     setIsBreak(false);
     setCurrentCycle(0);
-    setTimerStartedAt(null);
+    // timerStartedAt is already set to null above
     setInitialTime(null);
     setMinutesElapsed(0);
     setPauseStartTime(null); // Reset pause start time
     setTotalPausedTime(0); // Reset total paused time
     
-    if (mode === "pomodoro") setTime(pomodoroTime);
-    if (mode === "countdown") setTime(countdownTime);
+    // Ensure pomodoroTime, countdownTime have valid defaults if not loaded from settings
+    // This is more of a general robustness check for your settings logic.
+    // For now, we assume pomodoroTime and countdownTime are correctly populated from state.
+    if (mode === "pomodoro") setTime(pomodoroTime || 25 * 60); // Fallback if pomodoroTime is 0/null
+    if (mode === "countdown") setTime(countdownTime || 10 * 60); // Fallback if countdownTime is 0/null
     if (mode === "stopwatch") setTime(0);
     setCoins(0);
     

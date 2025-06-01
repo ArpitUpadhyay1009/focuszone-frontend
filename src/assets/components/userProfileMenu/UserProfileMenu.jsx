@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext"; // Add this import
+import { useTheme } from "../../context/ThemeContext";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
@@ -37,7 +37,7 @@ AvatarFallback.displayName = "AvatarFallback";
 
 const UserProfileMenu = () => {
   const { user, logout } = useAuth();
-  const { theme } = useTheme(); // Add this line to get the current theme
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -45,15 +45,45 @@ const UserProfileMenu = () => {
   const [completedTasks, setCompletedTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [userStats, setUserStats] = useState({
-    totalTime: "0h 0m",
-    totalCoinsEarned: 0, // This will be updated
+    totalTime: "0h 0m", // This will be updated by fetchTotalFocusTime
+    totalCoinsEarned: 0,
     yourCoins: 0,
     coinsSpent: 0,
     completedTasks: 0,
   });
-  
 
-  // Existing fetchUserStats (you might keep this for other stats or modify it)
+  const fetchTotalFocusTime = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        console.error("No token found for total focus time");
+        setUserStats(prev => ({ ...prev, totalTime: "0h 0m" }));
+        return;
+      }
+
+      const response = await axios.get(`/api/user-activity/total-time-spent`, {
+        headers: { 
+          Authorization: `Bearer ${token}` 
+        }
+      });
+
+      if (response.data && response.data.totalTimeSpent !== undefined) {
+        const totalSeconds = response.data.totalTimeSpent;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        setUserStats(prev => ({
+          ...prev,
+          totalTime: `${hours}h ${minutes}m`
+        }));
+      } else {
+        setUserStats(prev => ({ ...prev, totalTime: "0h 0m" }));
+      }
+    } catch (error) {
+      console.error("Error fetching total focus time:", error.message);
+      setUserStats(prev => ({ ...prev, totalTime: "0h 0m" }));
+    }
+  };
+  
   const fetchUserStats = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -62,7 +92,6 @@ const UserProfileMenu = () => {
         return;
       }
   
-      // Assuming /api/user/stats fetches OTHER stats but not totalCoinsEarned
       const response = await axios.get(`/api/user/stats`, { 
         headers: { 
           Authorization: `Bearer ${token}` 
@@ -70,17 +99,15 @@ const UserProfileMenu = () => {
       });
   
       if (response.data) {
-        const totalMinutes = response.data.totalTime || 0;
-        const hours = Math.floor(totalMinutes / 60);
-        const minutes = totalMinutes % 60;
+        // const totalMinutes = response.data.totalTime || 0; // totalTime is now handled by fetchTotalFocusTime
+        // const hours = Math.floor(totalMinutes / 60);
+        // const minutes = totalMinutes % 60;
         
-        setUserStats(prev => ({ // Use prev to ensure we don't overwrite totalCoinsEarned if fetched separately
+        setUserStats(prev => ({ 
           ...prev,
-          totalTime: `${hours}h ${minutes}m`,
-          // totalCoinsEarned: response.data.totalCoinsEarned || 0, // Remove or ensure this doesn't conflict
+          // totalTime: `${hours}h ${minutes}m`, // Removed, handled by fetchTotalFocusTime
           yourCoins: response.data.currentCoins || 0,
-          // coinsSpent: response.data.coinsSpent || 0, // Potentially fetched by fetchCoinsSpent
-          completedTasks: response.data.completedTasksCount || 0, // Potentially fetched by fetchCompletedTasks
+          completedTasks: response.data.completedTasksCount || 0, 
         }));
         
         if (response.data.currentCoins === 0) {
@@ -126,7 +153,6 @@ const UserProfileMenu = () => {
     }
   };
 
-  // New function to fetch total coins earned
   const fetchTotalCoinsEarned = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -135,7 +161,6 @@ const UserProfileMenu = () => {
         return;
       }
 
-      // Replace with your actual endpoint if different
       const response = await axios.get(`/api/user-activity/total-coins-earned`, { 
         headers: { 
           Authorization: `Bearer ${token}` 
@@ -150,19 +175,18 @@ const UserProfileMenu = () => {
       } else {
         setUserStats(prev => ({
             ...prev,
-            totalCoinsEarned: 0 // Default to 0 if not found or error
+            totalCoinsEarned: 0 
           }));
       }
     } catch (error) {
       console.error("Error fetching total coins earned:", error.message);
       setUserStats(prev => ({
         ...prev,
-        totalCoinsEarned: 0 // Default to 0 on error
+        totalCoinsEarned: 0 
       }));
     }
   };
 
-  // Existing fetchCoinsSpent function (remains the same)
   const fetchCoinsSpent = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -178,14 +202,10 @@ const UserProfileMenu = () => {
       });
   
       if (response.data && response.data.coinsSpent !== undefined) {
-        console.log("Coins spent data:", response.data.coinsSpent);
-        
-        // Update only the coinsSpent field in userStats
         setUserStats(prev => ({
           ...prev,
           coinsSpent: response.data.coinsSpent
         }));
-        
         return response.data.coinsSpent;
       }
     } catch (error) {
@@ -194,7 +214,7 @@ const UserProfileMenu = () => {
     }
   };
 
-  // Update user stats in the database
+  // Update user stats in the database (This seems to be for general stats, not total time)
   const updateUserStats = async (statsData) => {
     try {
       const token = localStorage.getItem("token");
@@ -209,25 +229,20 @@ const UserProfileMenu = () => {
         }
       });
       
-      // Refresh stats after update
-      fetchUserStats();
+      fetchUserStats(); // Refresh general stats after update
     } catch (error) {
       console.error("Error updating user stats:", error.message);
     }
   };
 
-  // Fetch stats when component mounts
   useEffect(() => {
-    // Initialize all data in sequence
     const initializeData = async () => {
       try {
-        // First get completed tasks count
         await fetchCompletedTasks();
-        // Then get coins spent
         await fetchCoinsSpent();
-        // Then get other stats
-        await fetchUserStats(); // Fetches other general stats
-        await fetchTotalCoinsEarned(); // Add this line to fetch total coins earned
+        await fetchUserStats(); 
+        await fetchTotalCoinsEarned(); 
+        await fetchTotalFocusTime(); // Fetch total focus time on initial load
       } catch (error) {
         console.error("Error initializing data:", error);
       }
@@ -235,44 +250,24 @@ const UserProfileMenu = () => {
     
     initializeData();
     
-    // Add event listeners for real-time coin updates
-    const handleCoinUpdate = () => {
-      console.log("Coin update event detected, refreshing stats...");
-      fetchUserStats();
-      fetchCoinsSpent();
-      fetchTotalCoinsEarned(); // Also refresh total coins earned on update
+    const handleStatsAndCoinUpdate = async () => {
+      console.log("Stats or Coin update event detected, refreshing stats...");
+      await fetchUserStats();
+      await fetchCoinsSpent();
+      await fetchTotalCoinsEarned();
+      await fetchTotalFocusTime(); // Crucially, refresh total focus time here
     };
     
-    // Listen for the same event that UpgradeCard uses
-    window.addEventListener('coinUpdate', handleCoinUpdate);
-    window.addEventListener('coinSpent', fetchCoinsSpent);
+    window.addEventListener('coinUpdate', handleStatsAndCoinUpdate);
+    window.addEventListener('coinSpent', handleStatsAndCoinUpdate); // Assuming coinSpent also implies a general stats refresh
+    window.addEventListener('statsUpdate', handleStatsAndCoinUpdate); // Listen for statsUpdate from TimerApp
     
     return () => {
-      window.removeEventListener('coinUpdate', handleCoinUpdate);
-      window.removeEventListener('coinSpent', fetchCoinsSpent);
+      window.removeEventListener('coinUpdate', handleStatsAndCoinUpdate);
+      window.removeEventListener('coinSpent', handleStatsAndCoinUpdate);
+      window.removeEventListener('statsUpdate', handleStatsAndCoinUpdate);
     };
   }, []);
-
-  // Example function to update stats (can be called from timer completion, coin transactions, etc.)
-  const handleStatsUpdate = (type, value) => {
-    const statsUpdate = {};
-    
-    switch(type) {
-      case 'time':
-        statsUpdate.timeSpent = value; // value in minutes
-        break;
-      case 'coinsEarned':
-        statsUpdate.coinsEarned = value;
-        break;
-      case 'coinsSpent':
-        statsUpdate.coinsSpent = value;
-        break;
-      default:
-        return;
-    }
-    
-    updateUserStats(statsUpdate);
-  };
 
   const handleLogout = () => {
     logout();
@@ -304,23 +299,15 @@ const UserProfileMenu = () => {
         const tasks = response.data.completedTasks;
         setCompletedTasks(tasks);
         
-        // Calculate and store the number of completed tasks
         const compTasks = tasks.length;
-        console.log("Number of completed tasks:", compTasks);
-        
-        // Update the userStats with the accurate count
         setUserStats(prev => ({
           ...prev,
           completedTasks: compTasks
         }));
         
-        // Also fetch this count on initial load
         return compTasks;
       } else {
         setCompletedTasks([]);
-        const compTasks = 0;
-        
-        // Update userStats with zero completed tasks
         setUserStats(prev => ({
           ...prev,
           completedTasks: 0
@@ -331,13 +318,10 @@ const UserProfileMenu = () => {
     } catch (error) {
       console.error("Error fetching completed tasks:", error.message);
       setCompletedTasks([]);
-      
-      // Set completedTasks to 0 in case of error
       setUserStats(prev => ({
         ...prev,
         completedTasks: 0
       }));
-      
       return 0;
     } finally {
       setLoading(false);
@@ -363,7 +347,7 @@ const UserProfileMenu = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, []); // Note: This useEffect is separate and for UI behavior, which is fine.
 
   return (
     <div className="relative" ref={menuRef}>
@@ -375,7 +359,6 @@ const UserProfileMenu = () => {
         <Avatar className="h-10 w-10 cursor-pointer">
           <AvatarImage src={user?.photoURL} alt={user?.displayName || user?.username || "User"} />
           <AvatarFallback className="text-white">
-            {/* Profile icon instead of initials */}
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
