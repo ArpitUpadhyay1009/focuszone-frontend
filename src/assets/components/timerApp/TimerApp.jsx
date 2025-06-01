@@ -167,8 +167,8 @@ export default function TimerApp({ setParentPopupState }) {
               setTime(breakTime);
               // Only award coins if at least 1 minute has elapsed
               if (elapsedSeconds >= 60) {
-                saveCoinsToDatabase(0.5);
-                setCoins(prev => prev + 0.5);
+                saveCoinsToDatabase(1); // Should be 1
+                setCoins(prev => prev + 1); // Should be 1
               }
             } else {
               // All cycles completed
@@ -233,21 +233,20 @@ export default function TimerApp({ setParentPopupState }) {
               if (currentCycle + 1 < cycles) {
                 setIsBreak(true);
                 // Only award coins if the timer ran for at least 1 minute
-                if (initialTime && (initialTime - newTime) >= 60) {
-                  saveCoinsToDatabase(0.5);
-                  setCoins((prevCoins) => prevCoins + 0.5);
+                if (initialTime && (initialTime - newTime) >= 60) { // newTime is 0 here
+                  console.log("Awarding 0.5 coins for pomodoro cycle completion (visible)");
+                  saveCoinsToDatabase(0.5); 
+                  setCoins((prevCoins) => prevCoins + 0.5); 
                 }
                 return breakTime;
               } else {
                 setIsRunning(false);
                 setShowStart(true);
                 // Only award coins if the timer ran for at least 1 minute
-                if (initialTime && (initialTime - newTime) >= 60) {
-                  saveCoinsToDatabase(0.5);
-                  setCoins((prevCoins) => prevCoins + 0.5);
-                  
-                  saveCoinsToDatabase(0.5);
-                  setCoins((prevCoins) => prevCoins + 0.5);
+                if (initialTime && (initialTime - newTime) >= 60) { // newTime is 0 here
+                  console.log("Awarding 0.5 coins for final pomodoro cycle completion (visible)");
+                  saveCoinsToDatabase(0.5); 
+                  setCoins((prevCoins) => prevCoins + 0.5); 
                 }
 
                 // Auto reset after a short delay when all cycles are completed
@@ -272,8 +271,10 @@ export default function TimerApp({ setParentPopupState }) {
             
             // Only award coins when crossing a new minute threshold and at least 1 minute has passed
             if (totalMinutesElapsed > minutesElapsed && totalMinutesElapsed > 0) {
-              saveCoinsToDatabase(0.5);
-              setCoins(prev => prev + 0.5);
+              const newCoins = 0.5; // Award 0.5 coins for the elapsed minute when visible
+              console.log(`Awarding ${newCoins} coins for minute ${totalMinutesElapsed} (visible)`);
+              saveCoinsToDatabase(newCoins);
+              setCoins(prev => prev + newCoins);
               setMinutesElapsed(totalMinutesElapsed);
             }
           }
@@ -340,7 +341,7 @@ export default function TimerApp({ setParentPopupState }) {
                   // Timer completed while tab was hidden
                   if (mode === "pomodoro" && !isBreak) {
                     // Award coins for completed pomodoro
-                    const newCoins = Math.floor((initialTime || pomodoroTime) / 60) * 0.5;
+                    const newCoins = Math.floor((initialTime || pomodoroTime) / 60) * 1; // Ensure 1 coin per minute
                     saveCoinsToDatabase(newCoins);
                     setCoins(prev => prev + newCoins);
                     
@@ -378,7 +379,7 @@ export default function TimerApp({ setParentPopupState }) {
                 const totalMinutesElapsed = Math.floor(totalElapsedTime / 60);
                 
                 if (totalMinutesElapsed > minutesElapsed) {
-                  const newCoinsToAdd = (totalMinutesElapsed - minutesElapsed) * 0.5;
+                  const newCoinsToAdd = (totalMinutesElapsed - minutesElapsed) * 1; // Ensure 1 coin per minute
                   saveCoinsToDatabase(newCoinsToAdd);
                   setCoins(prev => prev + newCoinsToAdd);
                   setMinutesElapsed(totalMinutesElapsed);
