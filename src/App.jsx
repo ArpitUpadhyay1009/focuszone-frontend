@@ -10,6 +10,7 @@ import ResetPassword from "@pages/resetPassword/ResetPassword.jsx";
 import VerifyOtp from "@pages/verifyotp/VerifyOtp.jsx";
 import AdminDashboard from "@pages/admin/AdminDashboard";
 import NotFound from "@pages/notFound/NotFound.jsx";
+import BrowserTracker from "@components/BrowserTracker";
 
 function App() {
   // Structured data for organization
@@ -38,6 +39,7 @@ function App() {
 
   return (
     <>
+      <BrowserTracker />
       <Helmet>
         <script type="application/ld+json">
           {JSON.stringify(structuredDataOrganization)}
