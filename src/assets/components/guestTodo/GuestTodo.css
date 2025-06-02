@@ -26,3 +26,367 @@
   background-color: #7500CA;
   color: white;
 }
+@import "tailwindcss";
+/* Apply only to the calendar icon */
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    transition: filter 2.6s ease;
+}
+
+/* Add support for backdrop blur */
+.backdrop-blur {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 2.6s ease;
+}
+
+/* Ensure dialog backdrops are properly styled */
+.dialog-backdrop {
+  background-color: rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 2.6s ease;
+}
+
+/* Speed up dialog animations */
+.dialog-animation-enter {
+  animation-duration: 2.6s !important;
+}
+
+.dialog-animation-exit {
+  animation-duration: 2.6s !important;
+}
+
+/* Add task button styling */
+.add-task-button {
+  background-color: #7500CA;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(117, 0, 202, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.add-task-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 10px rgba(117, 0, 202, 0.3);
+}
+
+.add-task-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(117, 0, 202, 0.2);
+}
+
+/* Ripple effect for the button */
+.add-task-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.add-task-button:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+/* Modal button styling */
+.modal-button {
+  transition: all 0.3s ease;
+}
+
+.modal-button:hover {
+  transform: translateY(-2px);
+}
+
+.modal-button:active {
+  transform: translateY(0);
+}
+
+.cancel-button {
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.cancel-button:hover {
+  background-color: #cbd5e0;
+}
+
+.add-button {
+  background-color: #7500CA;
+  color: white;
+}
+
+.add-button:hover {
+  background-color: #6400ae;
+}
+
+/* Task Manager Styling - More Compact */
+.task-manager-container {
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  width: 100%;
+  max-width: 100%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.task-list {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.task-list.compact {
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.task-item.dark {
+  background-color: rgba(117, 0, 202, 0.1);
+  border: 1px solid rgba(117, 0, 202, 0.3);
+}
+
+.task-item.light {
+  background-color: rgba(255, 227, 166, 0.5);
+  border: 1px solid rgba(237, 137, 54, 0.5);
+}
+
+/* Completed task styling */
+.task-item.completed.dark {
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.task-item.completed.light {
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.checked-item{
+  margin-top: 0.5em;
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+}
+
+.task-checkbox {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  position: relative;
+  appearance: none;
+  border: 2px solid #7500CA;
+  transition: all 0.2s ease;
+}
+
+.task-checkbox:checked {
+  background-color: #27ae60;
+  border-color: #27ae60;
+}
+
+.task-checkbox:checked::after {
+  content: '✓';
+  position: absolute;
+  color: white;
+  font-size: 0.7rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.checked-checkbox {
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  cursor: pointer;
+  margin-right: 0.75rem;
+  position: relative;
+  appearance: none;
+  border: 2px solid #27ae60;
+  transition: all 0.2s ease;
+  background-color: white;
+}
+
+.checked-checkbox:checked {
+  background-color: white;
+}
+
+.checked-checkbox::before {
+  content: '✓';
+  position: absolute;
+  font-size: 0.9rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: green;
+  transition: all 0.2s ease;
+}
+
+.checked-checkbox:checked::before {
+  content: '✓';
+}
+
+
+.task-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.task-name {
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.checked-name{
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.task-name.finished {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.task-details {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  white-space: nowrap;
+}
+
+.task-delete {
+  background: transparent;
+  border: none;
+  color: #ff4d4d;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 50%;
+}
+
+.task-delete:hover {
+  transform: scale(1.1);
+  background-color: rgba(255, 77, 77, 0.1);
+}
+
+.add-task-button {
+  background-color: #7500CA;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(117, 0, 202, 0.3);
+}
+
+.add-task-button:hover {
+  box-shadow: 0 6px 15px rgba(117, 0, 202, 0.4);
+}
+
+.modal-button {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.add-button {
+  background-color: #7500CA;
+  color: white;
+}
+
+/* Dark mode adjustments */
+[data-theme="light"] .task-details {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+[data-theme="light"] .cancel-button {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* Scrollbar styling for task list */
+.task-list.compact::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-list.compact::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.task-list.compact::-webkit-scrollbar-thumb {
+  background: rgba(117, 0, 202, 0.3);
+  border-radius: 10px;
+}
+
+.task-list.compact::-webkit-scrollbar-thumb:hover {
+  background: rgba(117, 0, 202, 0.5);
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .task-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .task-details {
+    font-size: 0.65rem;
+  }
+}
+  
