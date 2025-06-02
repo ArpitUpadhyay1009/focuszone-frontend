@@ -6,6 +6,7 @@ import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackgroun
 import Navbar from "@components/navbar/Navbar.jsx";
 import { Eye, EyeOff } from 'lucide-react';
 import "@components/registerBox/RegisterBox.css";
+import Footer from "@components/footer/Footer.jsx";
 
 const ResetPassword = () => {
   const location = useLocation();
@@ -127,6 +128,8 @@ const ResetPassword = () => {
           {error && <p className="text-red-600 mt-4">{error}</p>}
         </div>
       </div>
+      <div className='mt-[14%]'><Footer/></div>
+      
     </>
   );
 };

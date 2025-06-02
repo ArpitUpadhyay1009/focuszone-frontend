@@ -10,7 +10,12 @@ import ResetPassword from "@pages/resetPassword/ResetPassword.jsx";
 import VerifyOtp from "@pages/verifyotp/VerifyOtp.jsx";
 import AdminDashboard from "@pages/admin/AdminDashboard";
 import NotFound from "@pages/notFound/NotFound.jsx";
+import DataPrivacy from "@pages/dataPrivacy/DataPrivacy";
 import BrowserTracker from "@components/BrowserTracker";
+import StudyWTok from "@pages/studyWTok/StudyWTok";
+import Terms from "@pages/terms/Terms";
+import Contact from "@pages/contact/Contact";
+import Cookie from "@pages/cookie/Cookie";
 
 function App() {
   // Structured data for organization
@@ -59,6 +64,11 @@ function App() {
           <Route path="/home" element={<Dashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/data-privacy" element={<DataPrivacy />} />
+          <Route path="/studyw.tok" element={<StudyWTok />} />
+          <Route path="/terms-and-conditions" element={<Terms />} />
+          <Route path="/contact-us" element={<Contact />} />
+          <Route path="/cookies" element={<Cookie />} />
         </Routes>
       </BrowserRouter>
     </>

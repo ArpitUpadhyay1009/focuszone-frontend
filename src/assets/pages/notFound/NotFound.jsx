@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import SEO from '../../components/SEO/SEO';
 import Navbar from '@components/navbar/Navbar.jsx';
 import AnimatedBackground from '@components/AnimatedBackground/AnimatedBackground.jsx';
+import Footer from '../../components/footer/Footer';
 
 const NotFound = () => {
   return (
@@ -27,6 +28,7 @@ const NotFound = () => {
           Return to Home
         </Link>
       </div>
+      <Footer/>
     </>
   );
 };

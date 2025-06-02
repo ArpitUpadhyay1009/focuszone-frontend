@@ -7,6 +7,7 @@ import LoginToUnlock from "@components/loginToUnlock/LoginToUnlock.jsx";
 import { useNavigate } from "react-router-dom";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import GuestTodoList from "../../components/guestTodo/GuestTodo";
+import Footer from "../../components/footer/Footer";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -56,6 +57,8 @@ export const Home = () => {
         </div>
       </div>
       <GuestTodoList/>
+      <div className="pt-[3%]"><Footer/></div>
+      
     </div>
   );
 };

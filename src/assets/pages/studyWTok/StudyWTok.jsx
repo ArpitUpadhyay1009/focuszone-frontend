@@ -8,6 +8,7 @@ import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSyste
 import SpotifyEmbed2 from "@components/spotify2/SpotifyEmbed2.jsx";
 import TodoList from "@components/todo/todo.jsx";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import Footer from "../../components/footer/Footer";
 
 export const StudyWTok = () => {
   return (
@@ -35,6 +36,7 @@ export const StudyWTok = () => {
           <TodoList />
         </div>
       </div>
+      <Footer/>
     </div>
   );
 };

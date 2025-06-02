@@ -9,6 +9,7 @@ import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSyste
 import SpotifyEmbed2 from "@components/spotify2/SpotifyEmbed2.jsx";
 import TodoList from "@components/todo/todo.jsx";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import Footer from "@components/footer/Footer.jsx";
 
 export const Home = () => {
   return (
@@ -37,6 +38,7 @@ export const Home = () => {
           <TodoList />
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

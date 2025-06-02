@@ -1,0 +1,4 @@
+@import "tailwindcss";
+[data-theme="dark"] .text-new{
+    color: black;
+}

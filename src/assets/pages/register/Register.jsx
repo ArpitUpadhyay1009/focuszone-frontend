@@ -9,6 +9,7 @@ import RegisterBox from "@components/registerBox/RegisterBox.jsx";
 import Logo from "@components/logo/Logo.jsx";
 import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import Footer from "../../components/footer/Footer";
 
 const Register = () => {
   // const [name, setName] = useState();
@@ -49,6 +50,7 @@ const Register = () => {
           <GoogleLoginButton/>
         </div>
       </div>
+      <Footer/>
     </>
   );
 };

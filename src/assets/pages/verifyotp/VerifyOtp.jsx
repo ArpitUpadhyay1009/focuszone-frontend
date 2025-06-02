@@ -1,6 +1,7 @@
 import React from "react";
 import VerifyBox from "@components/verifybox/VerifyBox.jsx";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import Footer from "../../components/footer/Footer";
 
 const VerifyOtp = () => {
   return (
@@ -14,6 +15,8 @@ const VerifyOtp = () => {
       <div className="ml-[1%]">
         <VerifyBox />
       </div>
+      <div className="mt-[14%]"><Footer/></div>
+      
     </>
   );
 };

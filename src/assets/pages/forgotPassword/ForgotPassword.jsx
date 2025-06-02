@@ -5,6 +5,7 @@ import axios from 'axios';
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import Navbar from "@components/navbar/Navbar.jsx";
 import "@components/registerBox/RegisterBox.css"; // Import the CSS
+import Footer from '../../components/footer/Footer';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -51,6 +52,7 @@ const ForgotPassword = () => {
           {error && <p className="text-red-600 mt-4">{error}</p>}
         </div>
       </div>
+      <div className='mt-[22%]'><Footer/></div>
     </>
   );
 };

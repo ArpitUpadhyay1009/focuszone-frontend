@@ -353,6 +353,29 @@ const UserProfileMenu = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []); // Note: This useEffect is separate and for UI behavior, which is fine.
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete your account? This action is irreversible.')) return;
+
+    try {
+      const token = localStorage.getItem('token');
+
+      await axios.delete('/api/user/delete-account', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      // Clear auth tokens
+      localStorage.removeItem('token');
+
+      // Optional: callback to redirect to homepage/login
+      handleLogout();
+
+    } catch (error) {
+      alert('Failed to delete account. Please try again.');
+      console.error(error);
+    }
+  };
 
   return (
     <div className="relative" ref={menuRef}>
@@ -542,6 +565,9 @@ const UserProfileMenu = () => {
               >
                 Logout
               </button>
+              <button onClick={handleDelete} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+      Delete My Account
+    </button>
             </div>
           </motion.div>
         )}

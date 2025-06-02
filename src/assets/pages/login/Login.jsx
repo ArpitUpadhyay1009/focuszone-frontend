@@ -4,6 +4,7 @@ import Navbar from "@components/navbar/Navbar.jsx";
 import LoginBox from "@components/loginBox/LoginBox.jsx";
 import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import Footer from "../../components/footer/Footer";
 
 const Login = () => {
   return (
@@ -21,6 +22,7 @@ const Login = () => {
           <GoogleLoginButton/>
         </div>
       </div>
+      <Footer/>
     </>
   );
 };
