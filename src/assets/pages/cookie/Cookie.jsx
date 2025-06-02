@@ -3,6 +3,7 @@ import { Switch } from '@headlessui/react';
 import AnimatedBackground from '../../components/AnimatedBackground/AnimatedBackground';
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
+import './Cookie.css'; // Import the CSS file for styling
 
 const COOKIE_CATEGORIES = {
   necessary: {
@@ -55,7 +56,7 @@ export default function Cookie() {
     <Navbar/>
       <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">Cookie Preferences</h1>
-      <p className="mb-6 text-gray-600">
+      <p className="mb-6 head-col">
         Manage your cookie preferences. You can change them at any time.
       </p>
 
@@ -65,14 +66,14 @@ export default function Cookie() {
           return (
             <div key={key} className="flex items-start justify-between bg-gray-100 p-4 rounded-lg">
               <div>
-                <h2 className="text-lg font-semibold">{category.label}</h2>
+                <h2 className="text-lg font-semibold topic-col">{category.label}</h2>
                 <p className="text-sm text-gray-600">{category.description}</p>
               </div>
               <Switch
                 checked={preferences[key]}
                 onChange={() => handleToggle(key)}
                 disabled={category.disabled}
-                className={`${preferences[key] ? 'bg-blue-600' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition`}
+                className={`${preferences[key] ? 'bg-purple-800' : 'bg-gray-300'} relative inline-flex h-6 w-11 items-center rounded-full transition`}
               >
                 <span
                   className={`${
@@ -87,7 +88,7 @@ export default function Cookie() {
 
       <button
         onClick={handleSave}
-        className="mt-8 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        className="mt-8 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-800 transition"
       >
         Save Preferences
       </button>

@@ -1,1 +1,8 @@
 @import "tailwindcss";
+[data-theme="dark"] .head-col{
+    color : white;
+}
+
+[data-theme="dark"] .topic-col{
+    color: black;
+}
