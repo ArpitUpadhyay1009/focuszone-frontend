@@ -107,7 +107,7 @@ const UserProfileMenu = () => {
           ...prev,
           // totalTime: `${hours}h ${minutes}m`, // Removed, handled by fetchTotalFocusTime
           yourCoins: response.data.currentCoins || 0,
-          completedTasks: response.data.completedTasksCount || 0, 
+          // completedTasks: response.data.completedTasksCount || 0, // Removed: fetchCompletedTasks will handle this
         }));
         
         if (response.data.currentCoins === 0) {
@@ -242,7 +242,7 @@ const UserProfileMenu = () => {
         await fetchCoinsSpent();
         await fetchUserStats(); 
         await fetchTotalCoinsEarned(); 
-        await fetchTotalFocusTime(); // Fetch total focus time on initial load
+        await fetchTotalFocusTime(); 
       } catch (error) {
         console.error("Error initializing data:", error);
       }
@@ -251,21 +251,24 @@ const UserProfileMenu = () => {
     initializeData();
     
     const handleStatsAndCoinUpdate = async () => {
-      console.log("Stats or Coin update event detected, refreshing stats...");
+      console.log("Stats, Coin, or Task update event detected, refreshing stats..."); // Log message updated
       await fetchUserStats();
       await fetchCoinsSpent();
       await fetchTotalCoinsEarned();
-      await fetchTotalFocusTime(); // Crucially, refresh total focus time here
+      await fetchTotalFocusTime(); 
+      await fetchCompletedTasks(); // Add this to refresh completed tasks count
     };
     
     window.addEventListener('coinUpdate', handleStatsAndCoinUpdate);
-    window.addEventListener('coinSpent', handleStatsAndCoinUpdate); // Assuming coinSpent also implies a general stats refresh
-    window.addEventListener('statsUpdate', handleStatsAndCoinUpdate); // Listen for statsUpdate from TimerApp
+    window.addEventListener('coinSpent', handleStatsAndCoinUpdate); 
+    window.addEventListener('statsUpdate', handleStatsAndCoinUpdate); 
+    window.addEventListener('taskCompletionUpdate', handleStatsAndCoinUpdate); // Add listener for task completion
     
     return () => {
       window.removeEventListener('coinUpdate', handleStatsAndCoinUpdate);
       window.removeEventListener('coinSpent', handleStatsAndCoinUpdate);
       window.removeEventListener('statsUpdate', handleStatsAndCoinUpdate);
+      window.removeEventListener('taskCompletionUpdate', handleStatsAndCoinUpdate); // Clean up listener
     };
   }, []);
 
@@ -284,9 +287,11 @@ const UserProfileMenu = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        console.error("No token found");
-        setLoading(false);
-        return;
+        console.error("No token found for completed tasks");
+        setCompletedTasks([]); // Clear the list of tasks
+        setUserStats(prev => ({ ...prev, completedTasks: 0 })); // Reset count in userStats
+        // setLoading(false); // setLoading is handled in finally
+        return 0; // Return a value for consistency or handle as needed
       }
 
       const response = await axios.get(`/api/tasks/completed`, {
@@ -297,15 +302,15 @@ const UserProfileMenu = () => {
 
       if (response.data && response.data.completedTasks) {
         const tasks = response.data.completedTasks;
-        setCompletedTasks(tasks);
+        setCompletedTasks(tasks); // This state is for displaying the list of tasks
         
-        const compTasks = tasks.length;
+        const compTasksCount = tasks.length; // Calculate the number of completed tasks
         setUserStats(prev => ({
           ...prev,
-          completedTasks: compTasks
+          completedTasks: compTasksCount // Update the count in userStats
         }));
         
-        return compTasks;
+        return compTasksCount;
       } else {
         setCompletedTasks([]);
         setUserStats(prev => ({

@@ -53,23 +53,26 @@ const UserStatsDisplay = () => {
     }
   };
 
-  const fetchUserCoreStats = async () => { // Fetches currentCoins and completedTasks
+  const fetchUserCoreStats = async () => { // Now primarily for currentCoins
     try {
       const token = localStorage.getItem("token");
-      if (!token) return { currentCoins: 0, completedTasks: 0 };
+      if (!token) return { currentCoins: 0 }; 
       const response = await axios.get("/api/user/stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (response.data) {
         return {
           currentCoins: response.data.currentCoins || 0,
-          completedTasks: response.data.completedTasksCount || 0,
+          // completedTasks logic is now handled by fetchCompletedTasksCount
         };
       }
-      return { currentCoins: 0, completedTasks: 0 };
+      return { currentCoins: 0 };
     } catch (error) {
-      console.error("Error fetching user core stats for StatsDisplay:", error.message);
-      return { currentCoins: 0, completedTasks: 0 };
+      console.error(
+        "Error fetching user core stats (coins) for StatsDisplay:", // Clarified error message
+        error.response?.data || error.message
+      );
+      return { currentCoins: 0 };
     }
   };
 
@@ -101,17 +104,34 @@ const UserStatsDisplay = () => {
     }
   };
 
+  const fetchCompletedTasksCount = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return 0;
+      const response = await axios.get("/api/tasks/completed", { // Endpoint for completed tasks count
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // Backend sends { count: Number, completedTasks: Array }
+      // We need the 'count' field.
+      return response.data?.count || 0; 
+    } catch (error) {
+      console.error("Error fetching completed tasks count for StatsDisplay:", error.message);
+      return 0;
+    }
+  };
+
   const fetchData = async () => {
     setLoading(true);
     const totalTimeData = await fetchTotalFocusTime();
-    const coreStatsData = await fetchUserCoreStats();
+    const coreStatsData = await fetchUserCoreStats(); // Gets currentCoins
     const totalCoinsEarnedData = await fetchTotalCoinsEarned();
     const coinsSpentData = await fetchCoinsSpent();
+    const completedTasksCountData = await fetchCompletedTasksCount(); // Get completed tasks count
 
     setStats({
       totalTime: totalTimeData,
       currentCoins: coreStatsData.currentCoins,
-      completedTasks: coreStatsData.completedTasks,
+      completedTasks: completedTasksCountData, // Use the count from the new function
       totalCoinsEarned: totalCoinsEarnedData,
       coinsSpent: coinsSpentData,
     });

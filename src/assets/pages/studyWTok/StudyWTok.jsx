@@ -15,8 +15,8 @@ export const StudyWTok = () => {
       <AnimatedBackground />
       <Navbar2 />
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-center items-center md:items-center gap-8 py-6 md:py-8 ">
-          <div className="w-full max-w-md flex justify-center lg:mb-[30%] lg:mr-[10%]">
+        <div className="flex flex-col md:flex-row justify-center md:items-start gap-8 py-6 md:py-8 "> {/* Changed md:items-center to md:items-start */}
+          <div className="w-full max-w-md flex justify-center lg:mr-[10%]">  {/* Removed lg:mb-[30%] and items-center as justify-center might be enough */}
             <TimerApp />
           </div>
           <div className="w-full max-w-md flex flex-col items-center gap-6">
