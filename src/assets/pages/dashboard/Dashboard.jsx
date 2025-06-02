@@ -2,6 +2,7 @@ import React from "react";
 import Navbar2 from "@components/navbar2/Navbar2.jsx";
 import "./Dashboard.css";
 import TimerApp from "@components/timerApp/TimerApp.jsx";
+import UserStatsDisplay from "../../components/userStatsDisplay/UserStatsDisplay.jsx"; // Import the new component
 import LevelRenders from "@components/levelRenders/LevelRenders.jsx";
 import "@components/levelRenders/LevelRenders.css";
 import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSystem.jsx";
@@ -16,8 +17,9 @@ export const Home = () => {
       <Navbar2 />
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-center items-center md:items-center gap-8 py-6 md:py-8 ">
-          <div className="w-full max-w-md flex justify-center lg:mb-[30%] lg:mr-[10%]">
+          <div className="w-full max-w-md flex flex-col items-center lg:mb-[30%] lg:mr-[10%]"> {/* Added flex-col and items-center */}
             <TimerApp />
+            <UserStatsDisplay /> {/* Add the new component here */}
           </div>
           <div className="w-full max-w-md flex flex-col items-center gap-6">
             <div className="w-full">
