@@ -197,6 +197,7 @@ export default function TimerApp({ setParentPopupState }) {
             if (!isBreak) {
               console.log(`Pomodoro session finished while away. Elapsed: ${elapsedSecondsWhileAway}s, Original Pomodoro Time: ${pomodoroTime}s`);
               saveTimeSpentToDatabase(pomodoroTime); 
+              setLastSavedTimeOnReset(0); // Reset accumulated time after full session is saved
               
               // Standardized coin award: 0.5 coins for every full minute completed in a Pomodoro session.
               const minutesInSession = Math.floor(pomodoroTime / 60);
@@ -454,6 +455,7 @@ export default function TimerApp({ setParentPopupState }) {
                       }
                     }
                     saveTimeSpentToDatabase(pomodoroTime); // Save full pomodoro duration
+                    setLastSavedTimeOnReset(0); // Reset accumulated time after full session is saved
                     
                     if (cycleBeforeUpdate < cycles - 1) { 
                       setIsBreak(true);
@@ -574,7 +576,7 @@ export default function TimerApp({ setParentPopupState }) {
 
     // Save any accumulated time from lastSavedTimeOnReset before resetting
     if (lastSavedTimeOnReset > 0) { 
-      saveTimeSpentToDatabase(lastSavedTimeOnReset); // Corrected: save seconds directly
+      saveTimeSpentToDatabase(lastSavedTimeOnReset/2); // Corrected: save seconds directly
       console.log(`Saved ${lastSavedTimeOnReset} seconds for reset.`);
       // Initialize to 0 immediately after saving to database
       setLastSavedTimeOnReset(0); // Reset after saving
