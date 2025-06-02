@@ -19,7 +19,7 @@ function App() {
     "name": "FocusZone",
     "url": "https://focuszone.io",
     "logo": "https://focuszone.io/logo.png",
-    "description": "FocusZone helps users boost productivity with focus timer, task management, and productivity tracking tools."
+    "description": "FocusZone.io – The Gamified Pomodoro Timer That Makes You Want to Study Turn study time into game time with FocusZone.io — the ultimate gamified Pomodoro timer built for students. Every minute you focus earns you coins, XP, and room upgrades. Use our Pomodoro and countdown timers to stay on track, complete tasks, and unlock stylish furniture to customize your virtual study room. Plug into our embedded, focus-optimized Spotify playlist, scientifically designed and frequently updated to keep you deep in the zone. Track your streaks, monitor your stats, and enjoy study sessions that actually motivate you. Keep leveling up — who knows… maybe a secret second floor unlocks when you least expect it?"
   };
 
   // Structured data for web application
