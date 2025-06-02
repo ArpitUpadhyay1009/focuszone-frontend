@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Add styles similar to todo.css for consistency */
+.add-task-button {
+  background-color: #7500CA;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(117, 0, 202, 0.3);
+}
+
+.add-task-button:hover {
+  box-shadow: 0 6px 15px rgba(117, 0, 202, 0.4);
+}
+
+.modal-button {
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.cancel-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.add-button {
+  background-color: #7500CA;
+  color: white;
+}

@@ -525,8 +525,12 @@ export default function TimerApp({ setParentPopupState }) {
     // Save any accumulated time from lastSavedTimeOnReset before resetting
     if (lastSavedTimeOnReset > 0) { 
       saveTimeSpentToDatabase(lastSavedTimeOnReset); // Corrected: save seconds directly
+      console.log(`Saved ${lastSavedTimeOnReset} seconds for reset.`);
       setLastSavedTimeOnReset(0); // Reset after saving
+      
     }
+    setLastSavedTimeOnReset(0);
+    console.log(`After resetting ${lastSavedTimeOnReset}`);
     setShowStart(true);
     setIsBreak(false);
     setCurrentCycle(0);

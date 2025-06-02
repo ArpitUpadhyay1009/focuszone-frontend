@@ -6,6 +6,7 @@ import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
 import LoginToUnlock from "@components/loginToUnlock/LoginToUnlock.jsx";
 import { useNavigate } from "react-router-dom";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import GuestTodoList from "../../components/guestTodo/GuestTodo";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ export const Home = () => {
           </div>
         </div>
       </div>
+      <GuestTodoList/>
     </div>
   );
 };
