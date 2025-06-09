@@ -9,8 +9,8 @@
   color: #1f2937;
   padding: 1.25rem;
   border-radius: 12px;
-  margin-top: 20px;
-  margin-bottom: 20px;
+  margin-top: 10px;
+  /* margin-bottom: 20px; */
   width: 100%; /* Takes full width of its parent */
   max-width: 400px; /* Constrains width, suitable for a vertical list */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);

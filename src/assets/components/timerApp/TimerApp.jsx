@@ -5,6 +5,7 @@ import { Dialog } from "@headlessui/react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import "./TimerApp.css";
 import { motion, AnimatePresence } from "framer-motion";
+import { useSelectedTask } from "../../context/SelectedTaskContext.jsx";
 
 export default function TimerApp({ setParentPopupState }) {
   // Add timestamp tracking for accurate timing across tab switches and page reloads
@@ -63,6 +64,7 @@ export default function TimerApp({ setParentPopupState }) {
     return saved ? parseInt(saved) : 0;
   });
   const [lastSavedTimeOnReset, setLastSavedTimeOnReset] = useState(0); // To track time for reset
+  const { selectedTaskId } = useSelectedTask();
 
   const notificationSound = new Audio("/notification.mp3");
 
@@ -196,6 +198,7 @@ export default function TimerApp({ setParentPopupState }) {
           if (mode === "pomodoro") {
             if (!isBreak) {
               console.log(`Pomodoro session finished while away. Elapsed: ${elapsedSecondsWhileAway}s, Original Pomodoro Time: ${pomodoroTime}s`);
+              onPomodoroEnd();
               saveTimeSpentToDatabase(pomodoroTime); 
               setLastSavedTimeOnReset(0); // Reset accumulated time after full session is saved
               
@@ -633,6 +636,21 @@ export default function TimerApp({ setParentPopupState }) {
     setIsSettingsOpen(false);
     if (mode === "pomodoro") setTime(pomodoroTime);
     if (mode === "countdown") setTime(countdownTime);
+  };
+
+  const onPomodoroEnd = async () => {
+    if (!selectedTaskId) return;
+  
+    try {
+      await axios.post("/api/tasks/complete-pomodoro", { taskId: selectedTaskId }, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      console.log("Pomodoro marked complete.");
+    } catch (error) {
+      console.error("Failed to complete pomodoro:", error);
+    }
   };
 
   return (

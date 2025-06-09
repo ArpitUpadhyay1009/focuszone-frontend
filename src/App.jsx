@@ -67,6 +67,10 @@ function App() {
           <Route path="/data-privacy" element={<DataPrivacy />} />
           <Route path="/studyw.tok" element={<StudyWTok />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/privacy" element={<DataPrivacy />} />
+          <Route path="/privacy-policy" element={<DataPrivacy />} />
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/cookies" element={<Cookie />} />
         </Routes>

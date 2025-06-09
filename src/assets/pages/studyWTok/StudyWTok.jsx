@@ -1,42 +1,64 @@
-import React from "react";
-import Navbar2 from "@components/navbar2/Navbar2.jsx";
+import React, { useState, useEffect } from "react";
+import Navbar from "@components/navbar/Navbar.jsx";
 import "./StudyWTok.css";
 import TimerApp from "@components/timerApp/TimerApp.jsx";
-import LevelRenders from "@components/levelRenders/LevelRenders.jsx";
-import "@components/levelRenders/LevelRenders.css";
-import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSystem.jsx";
-import SpotifyEmbed2 from "@components/spotify2/SpotifyEmbed2.jsx";
-import TodoList from "@components/todo/todo.jsx";
+import SpotifyEmbed from "@components/spotify/SpotifyEmbed.jsx";
+import LoginToUnlock from "@components/loginToUnlock/LoginToUnlock.jsx";
+import { useNavigate } from "react-router-dom";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
+import GuestTodoList from "../../components/guestTodo/GuestTodo";
 import Footer from "../../components/footer/Footer";
 
 export const StudyWTok = () => {
+  const navigate = useNavigate();
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  // Listen for popup events from child components
+  useEffect(() => {
+    const handlePopupEvent = (e) => {
+      setIsPopupOpen(e.detail.isOpen);
+    };
+    
+    window.addEventListener('popup-state-change', handlePopupEvent);
+    
+    return () => {
+      window.removeEventListener('popup-state-change', handlePopupEvent);
+    };
+  }, []);
+
+  const handleLoginClick = () => {
+    navigate("/Register");
+  };
+
   return (
     <div className="app-container">
       <AnimatedBackground />
-      <Navbar2 />
+      <div className={isPopupOpen ? "blur-sm transition-all duration-300" : ""}>
+        <Navbar />
+      </div>
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-center md:items-start gap-8 py-6 md:py-8 "> {/* Changed md:items-center to md:items-start */}
-          <div className="w-full max-w-md flex justify-center lg:mr-[10%]">  {/* Removed lg:mb-[30%] and items-center as justify-center might be enough */}
-            <TimerApp />
+        <div className={`flex flex-col md:flex-row justify-center items-center md:items-center gap-8 md:gap-12 lg:gap-16 py-6 md:py-8 transition-all duration-300 ${isPopupOpen ? "blur-sm" : ""}`}>
+          <div className="w-full max-w-md flex justify-center">
+            <TimerApp setParentPopupState={setIsPopupOpen} />
           </div>
           <div className="w-full max-w-md flex flex-col items-center gap-6">
-            <div className="w-full">
-              <LevelRenders />
+            <div 
+              onClick={handleLoginClick} 
+              className="w-full cursor-pointer transition-transform duration-300 hover:scale-105 rounded-lg relative z-10"
+            >
+              <LoginToUnlock />
             </div>
-            <div className="w-full">
-              <LevelUpgradeSystem />
-            </div>
-            <div className="w-full">
-              <SpotifyEmbed2 />
+            <div className="w-full relative z-0">
+              <div className="pointer-events-auto mt-[15%]">
+                <SpotifyEmbed />
+              </div>
             </div>
           </div>
         </div>
-        <div className="mt-8 mb-12 max-w-4xl mx-auto">
-          <TodoList />
-        </div>
       </div>
-      <Footer/>
+      <GuestTodoList/>
+      <div className="pt-[3%]"><Footer/></div>
+      
     </div>
   );
 };

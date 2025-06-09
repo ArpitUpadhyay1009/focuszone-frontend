@@ -6,6 +6,7 @@ import { useTheme } from "../../context/ThemeContext.jsx";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import confetti from 'canvas-confetti';
+import {useSelectedTask} from "@context/SelectedTaskContext.jsx";
 
 export default function TodoList() {
   const { theme } = useTheme();
@@ -15,6 +16,8 @@ export default function TodoList() {
   const [isLoading, setIsLoading] = useState(true);
   const [intermediateTasks, setIntermediateTasks] = useState([]);
   const today = new Date().toISOString().split("T")[0];
+  const { selectedTaskId, setSelectedTaskId } = useSelectedTask();
+  const [estimatedTime, setEstimatedTime] = useState("");
   const [newTask, setNewTask] = useState({
     name: "",
     date: today,
@@ -68,6 +71,24 @@ export default function TodoList() {
       setIsLoading(false);
     }
   }, [token]);
+
+  useEffect(() => {
+    if (tasks.length === 0) {
+      setSelectedTaskId(null);
+    } else if (!selectedTaskId) {
+      // Select the last added task by default
+      setSelectedTaskId(tasks[tasks.length - 1].id);
+    } else if (tasks.length === 1) {
+      // If only one task, keep it selected (even if clicked again)
+      setSelectedTaskId(tasks[0].id);
+    }
+    // We skip adding selectedTaskId in dependencies to avoid infinite loop here
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks]);
+
+  useEffect(() => {
+    console.log("Selected Task ID changed to:", selectedTaskId);
+  }, [selectedTaskId]);
 
   const addTask = async () => {
     if (tasks.length >= 100) {
@@ -173,23 +194,37 @@ export default function TodoList() {
     }
   };
   
+  useEffect(() => {
+    async function fetchRemainingPomodoros() {
+      try {
+        const res = await axios.get('/api/tasks/remaining-pomodoros'); // Your actual API route
+        const remainingPomodoros = res.data.remainingPomodoros || 0;
 
-  function calculateCompletionTime(tasks) {
-    const totalPomodoros = tasks.reduce((sum, task) => {
-      return task.status === "ongoing" ? sum + parseInt(task.pomodoros, 10) : sum;
-    }, 0);
-  
-    const totalMinutes = totalPomodoros * 25;
-    const completionTime = new Date();
-    completionTime.setMinutes(completionTime.getMinutes() + totalMinutes);
-  
-    const hours = completionTime.getHours();
-    const minutes = completionTime.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    const formattedHours = hours % 12 || 12;
-  
-    return `${formattedHours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`;
-  }
+        const DEFAULT_POMODORO_SECONDS = 1500; // 25 * 60
+        const pomodoroLength = (parseInt(localStorage.getItem('timerTime'), 10) || DEFAULT_POMODORO_SECONDS) / 60;
+
+        console.log("Pomodoro time: " + localStorage.getItem("timerTime"))
+        console.log("pomodoro length is: " + pomodoroLength)
+
+        const completionDate = new Date();
+        completionDate.setMinutes(completionDate.getMinutes() + remainingPomodoros * pomodoroLength);
+
+        const hours = completionDate.getHours();
+        const minutes = completionDate.getMinutes();
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const formattedHours = hours % 12 || 12;
+
+        setEstimatedTime(`${formattedHours}:${minutes < 10 ? '0' : ''}${minutes} ${ampm}`);
+        console.log("Estimated time set to:", estimatedTime); // Log the value to check if it is being set correctly
+      } catch (error) {
+        console.error("Failed to fetch remaining pomodoros", error);
+        setEstimatedTime("N/A");
+      }
+    }
+
+    fetchRemainingPomodoros();
+  }, []);
+
   async function handleTaskCompletion(taskId) {
     try {
       // Call backend to toggle task
@@ -268,10 +303,17 @@ async function refetchCurrentTasks() {
         setTasks(
           res.data.ongoingTasks.map((task) => {
             let pomodoros = "0";
+            let completedPomodoros = "0";
 
             if (typeof task.estimatedPomodoros === "string") {
               pomodoros = task.estimatedPomodoros;
             }
+
+            if (typeof task.completedPomodoros === "string") {
+              completedPomodoros = task.completedPomodoros;
+            }
+
+            console.log("completed pomodoros are: " + completedPomodoros)
 
             let date;
             try {
@@ -285,6 +327,7 @@ async function refetchCurrentTasks() {
               taskName: task.taskName,
               date,
               pomodoros,
+              completedPomodoros,
               status: task.status || "ongoing",
             };
           })
@@ -346,14 +389,23 @@ async function refetchIntermediateTasks() {
                 </motion.li>
               ) : (
                 tasks.map((task) => (
+
                   <motion.li
                     key={task.id}
-                    className={`task-item ${theme === "dark" ? "dark" : "light"} ${task.status === "finished" ? "completed" : ""}`}
+                    className={`task-item ${theme === "dark" ? "dark" : "light"} ${task.status === "finished" ? "completed" : ""} ${selectedTaskId === task.id ? "selected-task" : ""}`}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -100 }}
                     whileHover={{ scale: 1.01 }}
                     transition={{ duration: 0.2 }}
+                    onClick={() => {
+                      if (tasks.length > 1) {
+                        setSelectedTaskId(task.id);
+                      } else if (isOnlyOneTask) {
+                        // If only one task, clicking it does not deselect
+                        setSelectedTaskId(task.id);
+                      }
+                    }}
                   >
                     <input
                       type="checkbox"
@@ -554,7 +606,7 @@ async function refetchIntermediateTasks() {
         className="info-box mt-2 p-1 border rounded text-xs"
       >
         <p>
-          Estimated Completion Time: {calculateCompletionTime(tasks)}
+          Estimated Completion Time: {estimatedTime}
         </p>
       </motion.div>
     </div>

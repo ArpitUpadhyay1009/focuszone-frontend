@@ -361,4 +361,15 @@
     font-size: 0.65rem;
   }
 }
-  
+.selected-task {
+  border: 10px solid #4ade80; /* bright green border */
+  background-color: rgba(74, 222, 128, 0.15);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.8);
+  border-radius: 12px; /* more rounded corners */
+  cursor: pointer;
+}
+
+.selected-task .task-name {
+  font-weight: 700;
+  color: #16a34a; /* dark green */
+}
