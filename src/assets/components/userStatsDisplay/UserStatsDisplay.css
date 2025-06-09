@@ -12,7 +12,7 @@
   margin-top: 10px;
   /* margin-bottom: 20px; */
   width: 100%; /* Takes full width of its parent */
-  max-width: 400px; /* Constrains width, suitable for a vertical list */
+  max-width: 450px; /* Constrains width, suitable for a vertical list */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e7eb;
   transition: background-color 0.3s ease, border-color 0.3s ease;
