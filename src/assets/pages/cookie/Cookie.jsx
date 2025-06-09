@@ -4,6 +4,7 @@ import AnimatedBackground from '../../components/AnimatedBackground/AnimatedBack
 import Navbar from '../../components/navbar/Navbar';
 import Footer from '../../components/footer/Footer';
 import './Cookie.css'; // Import the CSS file for styling
+import '../../components/common/ThemeStyles.css'; // Import ThemeStyles
 
 const COOKIE_CATEGORIES = {
   necessary: {
@@ -54,9 +55,37 @@ export default function Cookie() {
     <>
     <AnimatedBackground/>
     <Navbar/>
-      <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">Cookie Preferences</h1>
-      <p className="mb-6 head-col">
+      <div className="max-w-2xl mx-auto p-6 pb-10"> {/* Added pb-10 for spacing before footer */}
+      <h1 className="text-2xl font-bold mb-4 text-center">Cookie Policy</h1>
+      
+      <div className="theme-box p-6 rounded-lg shadow-lg mb-8">
+        <p className="mb-4">
+          Our Website may use cookies and similar tracking technologies as described in our Privacy 
+          Policy to enhance user experience and analyze usage. By using the Service, You consent to 
+          the use of cookies in accordance with Our Privacy Policy.
+        </p>
+
+        <h2 className="text-xl font-semibold font-[Poppins] mb-2">Use of Cookies</h2>
+        <p className="mb-2">We use cookies to:</p>
+        <ul className="list-disc list-inside mb-2 ml-4">
+            <li>Ensure technical functionality of the site</li>
+            <li>Store user preferences</li>
+            <li>Measure and analyze traffic (with consent)</li>
+        </ul>
+        <p className="mb-2">Cookies are classified as:</p>
+        <ul className="list-disc list-inside mb-2 ml-4">
+            <li>Essential cookies: Needed for the Service to function</li>
+            <li>Analytics cookies (e.g., Google Analytics, Hotjar)</li>
+            <li>Marketing cookies (e.g., Meta Pixel, if activated)</li>
+        </ul>
+        <p>
+            Cookies are only activated after consent via a cookie banner. Users can revoke or adjust 
+            cookie preferences at any time.
+        </p>
+      </div>
+
+      <h2 className="text-xl font-bold mb-4">Cookie Preferences</h2>
+      <p className="mb-6 head-col"> {/* Assuming head-col is for dark mode compatibility */}
         Manage your cookie preferences. You can change them at any time.
       </p>
 
@@ -64,10 +93,10 @@ export default function Cookie() {
         {Object.keys(COOKIE_CATEGORIES).map((key) => {
           const category = COOKIE_CATEGORIES[key];
           return (
-            <div key={key} className="flex items-start justify-between bg-gray-100 p-4 rounded-lg">
+            <div key={key} className="theme-box flex items-start justify-between p-4 rounded-lg shadow"> {/* Applied theme-box here too */}
               <div>
-                <h2 className="text-lg font-semibold topic-col">{category.label}</h2>
-                <p className="text-sm text-gray-600">{category.description}</p>
+                <h2 className="text-lg font-semibold">{category.label}</h2> {/* Removed topic-col, theme-box should handle text */}
+                <p className="text-sm text-gray-600 dark:text-gray-400">{category.description}</p>
               </div>
               <Switch
                 checked={preferences[key]}
