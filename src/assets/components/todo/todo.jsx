@@ -516,7 +516,9 @@ export default function TodoList() {
                         whileTap={{ scale: 0.9 }}
                         onClick={() => {
                           deleteTask(task.id);
-                          recalculateEstimatedTime();
+                          setTimeout(() => {
+                            window.location.reload();
+                          }, 1000);
                         }}
                         className="task-delete"
                       >
@@ -584,7 +586,9 @@ export default function TodoList() {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     deleteTask(task._id);
-                    recalculateEstimatedTime();
+                    setTimeout(() => {
+                      window.location.reload();
+                    }, 1000);
                   }}
                   className="task-delete"
                 >
