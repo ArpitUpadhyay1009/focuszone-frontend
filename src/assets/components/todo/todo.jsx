@@ -26,6 +26,40 @@ export default function TodoList() {
 
   const token = localStorage.getItem("token");
 
+  async function fetchRemainingPomodoros() {
+    try {
+      const res = await axios.get("/api/tasks/remaining-pomodoros"); // Your actual API route
+      const remainingPomodoros = res.data.remainingPomodoros || 0;
+      console.log("Remaining pomodoros:", remainingPomodoros);
+
+      const DEFAULT_POMODORO_SECONDS = 1500; // 25 * 60
+      const pomodoroLength =
+        (parseInt(localStorage.getItem("timerTime"), 10) ||
+          DEFAULT_POMODORO_SECONDS) / 60;
+
+      console.log("Pomodoro time: " + localStorage.getItem("timerTime"));
+      console.log("pomodoro length is: " + pomodoroLength);
+
+      const completionDate = new Date();
+      completionDate.setMinutes(
+        completionDate.getMinutes() + remainingPomodoros * pomodoroLength
+      );
+
+      const hours = completionDate.getHours();
+      const minutes = completionDate.getMinutes();
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const formattedHours = hours % 12 || 12;
+
+      setEstimatedTime(
+        `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
+      );
+      console.log("Estimated time set to:", estimatedTime); // Log the value to check if it is being set correctly
+    } catch (error) {
+      console.error("Failed to fetch remaining pomodoros", error);
+      setEstimatedTime("N/A");
+    }
+  }
+
   useEffect(() => {
     const fetchTasks = async () => {
       setIsLoading(true);
@@ -146,6 +180,7 @@ export default function TodoList() {
         ]);
 
         setNewTask({ name: "", date: today, pomodoros: "" });
+        fetchRemainingPomodoros();
         setIsOpen(false);
       } catch (error) {
         console.error("Failed to add task:", error.message);
@@ -185,6 +220,7 @@ export default function TodoList() {
             : task
         )
       );
+      fetchRemainingPomodoros();
     } catch (error) {
       console.error("Error toggling task status:", error.message);
     }
@@ -203,82 +239,15 @@ export default function TodoList() {
       setIntermediateTasks((prevTasks) =>
         prevTasks.filter((task) => task._id !== taskId)
       );
+      fetchRemainingPomodoros();
     } catch (error) {
       console.error("Error deleting task:", error.message);
     }
   };
 
   useEffect(() => {
-    async function fetchRemainingPomodoros() {
-      try {
-        const res = await axios.get("/api/tasks/remaining-pomodoros"); // Your actual API route
-        const remainingPomodoros = res.data.remainingPomodoros || 0;
-        console.log("Remaining pomodoros:", remainingPomodoros);
-
-        const DEFAULT_POMODORO_SECONDS = 1500; // 25 * 60
-        const pomodoroLength =
-          (parseInt(localStorage.getItem("timerTime"), 10) ||
-            DEFAULT_POMODORO_SECONDS) / 60;
-
-        console.log("Pomodoro time: " + localStorage.getItem("timerTime"));
-        console.log("pomodoro length is: " + pomodoroLength);
-
-        const completionDate = new Date();
-        completionDate.setMinutes(
-          completionDate.getMinutes() + remainingPomodoros * pomodoroLength
-        );
-
-        const hours = completionDate.getHours();
-        const minutes = completionDate.getMinutes();
-        const ampm = hours >= 12 ? "PM" : "AM";
-        const formattedHours = hours % 12 || 12;
-
-        setEstimatedTime(
-          `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
-        );
-        console.log("Estimated time set to:", estimatedTime); // Log the value to check if it is being set correctly
-      } catch (error) {
-        console.error("Failed to fetch remaining pomodoros", error);
-        setEstimatedTime("N/A");
-      }
-    }
-
     fetchRemainingPomodoros();
   }, []);
-
-  async function recalculateEstimatedTime() {
-    try {
-      const res = await axios.get("/api/tasks/remaining-pomodoros"); // Your actual API route
-      const remainingPomodoros = res.data.remainingPomodoros || 0;
-      console.log("Remaining pomodoros:", remainingPomodoros);
-
-      const DEFAULT_POMODORO_SECONDS = 1500; // 25 * 60
-      const pomodoroLength =
-        (parseInt(localStorage.getItem("timerTime"), 10) ||
-          DEFAULT_POMODORO_SECONDS) / 60;
-
-      console.log("Pomodoro time: " + localStorage.getItem("timerTime"));
-      console.log("pomodoro length is: " + pomodoroLength);
-
-      const completionDate = new Date();
-      completionDate.setMinutes(
-        completionDate.getMinutes() + remainingPomodoros * pomodoroLength
-      );
-
-      const hours = completionDate.getHours();
-      const minutes = completionDate.getMinutes();
-      const ampm = hours >= 12 ? "PM" : "AM";
-      const formattedHours = hours % 12 || 12;
-
-      setEstimatedTime(
-        `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
-      );
-      console.log("Estimated time set to:", estimatedTime); // Log the value to check if it is being set correctly
-    } catch (error) {
-      console.error("Failed to fetch remaining pomodoros", error);
-      setEstimatedTime("N/A");
-    }
-  }
 
   async function handleTaskCompletion(taskId) {
     try {
@@ -489,7 +458,6 @@ export default function TodoList() {
                           handleTaskCompletion(task.id);
                           setTimeout(() => {
                             refetchIntermediateTasks();
-                            recalculateEstimatedTime();
                             refetchCurrentTasks();
                           }, 1500);
                         }}
@@ -516,9 +484,6 @@ export default function TodoList() {
                         whileTap={{ scale: 0.9 }}
                         onClick={() => {
                           deleteTask(task.id);
-                          setTimeout(() => {
-                            window.location.reload();
-                          }, 1000);
                         }}
                         className="task-delete"
                       >
@@ -571,7 +536,6 @@ export default function TodoList() {
                     handleIntermediateTaskCompletion(task._id);
                     setTimeout(() => {
                       refetchCurrentTasks();
-                      recalculateEstimatedTime();
                       refetchIntermediateTasks();
                     }, 500);
                   }}
@@ -586,9 +550,6 @@ export default function TodoList() {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => {
                     deleteTask(task._id);
-                    setTimeout(() => {
-                      window.location.reload();
-                    }, 1000);
                   }}
                   className="task-delete"
                 >
@@ -701,7 +662,6 @@ export default function TodoList() {
                       className="modal-button add-button px-3 py-1.5 rounded-md"
                       onClick={() => {
                         addTask();
-                        recalculateEstimatedTime();
                       }}
                     >
                       Add
