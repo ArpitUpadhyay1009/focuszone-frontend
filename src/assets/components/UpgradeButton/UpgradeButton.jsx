@@ -50,16 +50,7 @@ const UpgradeButton = ({
             <ArrowUp className={small ? "w-4 h-4" : "w-5 h-5"} />
           </motion.div>
           Upgrade
-          <div
-            className={`flex items-center ml-2 ${
-              canUpgrade
-                ? "bg-orange-300 text-orange-600 border-1 border-orange-600"
-                : "bg-gray-400 text-gray-500 border-1 border-gray-500"
-            } bg-opacity-20 rounded-md ${small ? "px-1.5 py-0.5 text-sm" : "px-2 py-1"}`}
-          >
-            <Coins className={`${small ? "w-3.5 h-3.5 mr-1" : "w-4 h-4 mr-1"}`} />
-            <span>{coinsRequired}</span>
-          </div>
+          
         </>
       )}
     </motion.button>

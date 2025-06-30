@@ -1067,11 +1067,11 @@ export default function TimerApp({ setParentPopupState }) {
                     type="number"
                     value={pomodoroTime / 60}
                     min={0}
-                    max={59}
+                    max={9999}
                     onChange={(e) => {
                       const value = Math.max(
                         0,
-                        Math.min(59, Number(e.target.value))
+                        Math.min(9999, Number(e.target.value))
                       );
                       setPomodoroTime(value * 60);
                     }}
@@ -1087,11 +1087,11 @@ export default function TimerApp({ setParentPopupState }) {
                     type="number"
                     value={breakTime / 60}
                     min={0}
-                    max={59}
+                    max={9999}
                     onChange={(e) => {
                       const value = Math.max(
                         0,
-                        Math.min(59, Number(e.target.value))
+                        Math.min(9999, Number(e.target.value))
                       );
                       setBreakTime(value * 60);
                     }}
@@ -1107,11 +1107,11 @@ export default function TimerApp({ setParentPopupState }) {
                     type="number"
                     value={countdownTime / 60}
                     min={0}
-                    max={59}
+                    max={9999}
                     onChange={(e) => {
                       const value = Math.max(
                         0,
-                        Math.min(59, Number(e.target.value))
+                        Math.min(9999, Number(e.target.value))
                       );
                       setCountdownTime(value * 60);
                     }}
@@ -1127,11 +1127,11 @@ export default function TimerApp({ setParentPopupState }) {
                     type="number"
                     value={cycles}
                     min={0}
-                    max={10}
+                    max={100}
                     onChange={(e) => {
                       const value = Math.max(
                         0,
-                        Math.min(10, Number(e.target.value))
+                        Math.min(100, Number(e.target.value))
                       );
                       setCycles(value);
                     }}
