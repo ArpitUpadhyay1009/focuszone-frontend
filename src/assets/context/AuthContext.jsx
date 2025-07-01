@@ -2,6 +2,9 @@ import { createContext, useState, useContext, useEffect } from "react";
 import axios from "axios";
 import Cookies from 'js-cookie';
 
+// Configure axios defaults
+axios.defaults.withCredentials = true; // Enable sending cookies with requests
+
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -12,34 +15,17 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        // Get token from cookie instead of localStorage
-        const token = Cookies.get("token");
+        const response = await axios.get("/api/auth/verify-session");
         
-        if (token) {
-          // Verify token with the server
-          const response = await axios.get("/api/auth/verify-session", {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          });
-          
-          if (response.data.valid) {
-            // Get user data from cookie
-            const userData = Cookies.get("user");
-            if (userData) {
-              setUser(JSON.parse(userData));
-            }
-          } else {
-            // Token is invalid or expired
-            Cookies.remove("token");
-            Cookies.remove("user");
-          }
+        if (response.data.isValid) {
+          setUser(response.data.user);
+        } else {
+          // Clear user state if session is invalid
+          setUser(null);
         }
       } catch (error) {
         console.error("Session verification failed:", error);
-        // Clear invalid session data
-        Cookies.remove("token");
-        Cookies.remove("user");
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -49,48 +35,25 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (userData, token) => {
-    // Set cookie options for 48 hours
-    const cookieOptions = { 
-      expires: 2, // 2 days
-      secure: process.env.NODE_ENV === 'production', // Only use HTTPS in production
-      sameSite: 'strict' // Protect against CSRF
-    };
-    
-    // Store user data and token in cookies
-    Cookies.set("user", JSON.stringify(userData), cookieOptions);
-    Cookies.set("token", token, cookieOptions);
-    localStorage.setItem("token", token);
-    
-    // Update auth state
-    setUser(userData);
-    
-    // Set up session with the server
     try {
-      await axios.post("/api/auth/persist-session", 
-        { expiresIn: '48h' },
-        { headers: { Authorization: `Bearer ${token}` }}
-      );
+      // The backend will set the HTTP-only cookie automatically
+      // We only need to update the user state
+      setUser(userData);
     } catch (error) {
-      console.error("Failed to set up persistent session:", error);
+      console.error("Login error:", error);
+      throw error;
     }
   };
 
-  const logout = () => {
-    const token = Cookies.get("token");
-    
-    // Notify server about logout
-    if (token) {
-      axios.post("/api/auth/logout", {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      }).catch(err => console.error("Logout error:", err));
+  const logout = async () => {
+    try {
+      // Call logout endpoint - backend will clear the HTTP-only cookie
+      await axios.post("/api/auth/logout");
+      setUser(null);
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
     }
-    
-    // Clear cookies
-    Cookies.remove("user");
-    Cookies.remove("token");
-    
-    // Update auth state
-    setUser(null);
   };
 
   return (

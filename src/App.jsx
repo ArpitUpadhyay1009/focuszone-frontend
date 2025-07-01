@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import "./App.css";
 import Home from "@pages/home/Home.jsx";
@@ -16,8 +16,12 @@ import StudyWTok from "@pages/studyWTok/StudyWTok";
 import Terms from "@pages/terms/Terms";
 import Contact from "@pages/contact/Contact";
 import Cookie from "@pages/cookie/Cookie";
+import ProtectedRoute from "./assets/components/protectedpage/ProtectedRoute";
+import { useAuth } from "./assets/context/AuthContext";
 
 function App() {
+  const { user } = useAuth();
+  
   // Structured data for organization
   const structuredDataOrganization = {
     "@context": "https://schema.org",
@@ -55,15 +59,19 @@ function App() {
       </Helmet>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          {/* Public routes */}
+          <Route path="/" element={user ? <Navigate to="/home" replace /> : <Home />} />
+          <Route path="/login" element={user ? <Navigate to="/home" replace /> : <Login />} />
+          <Route path="/register" element={user ? <Navigate to="/home" replace /> : <Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/verify-otp" element={<VerifyOtp />} />
-          <Route path="/home" element={<Dashboard />} />
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="*" element={<NotFound />} />
+          
+          {/* Protected routes */}
+          <Route path="/home" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          
+          {/* Public informational routes */}
           <Route path="/data-privacy" element={<DataPrivacy />} />
           <Route path="/studyw.tok" element={<StudyWTok />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
@@ -73,6 +81,9 @@ function App() {
           <Route path="/privacy-policy" element={<DataPrivacy />} />
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/cookies" element={<Cookie />} />
+          
+          {/* 404 route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </>
