@@ -8,8 +8,21 @@ axios.defaults.withCredentials = true; // Enable sending cookies with requests
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    // Initialize user state from sessionStorage
+    const savedUser = sessionStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [loading, setLoading] = useState(true);
+
+  // Persist user state to sessionStorage whenever it changes
+  useEffect(() => {
+    if (user) {
+      sessionStorage.setItem('user', JSON.stringify(user));
+    } else {
+      sessionStorage.removeItem('user');
+    }
+  }, [user]);
 
   // Check for existing session on initial load
   useEffect(() => {
@@ -20,12 +33,17 @@ export const AuthProvider = ({ children }) => {
         if (response.data.isValid) {
           setUser(response.data.user);
         } else {
-          // Clear user state if session is invalid
+          // Only clear user state if the session is explicitly invalid
           setUser(null);
         }
       } catch (error) {
         console.error("Session verification failed:", error);
-        setUser(null);
+        // Don't clear user state on network errors
+        if (error.response && error.response.status === 401) {
+          // Only clear user if the server explicitly says the token is invalid
+          setUser(null);
+        }
+        // For other errors, keep the current user state
       } finally {
         setLoading(false);
       }
@@ -34,10 +52,8 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, []);
 
-  const login = async (userData, token) => {
+  const login = async (userData) => {
     try {
-      // The backend will set the HTTP-only cookie automatically
-      // We only need to update the user state
       setUser(userData);
     } catch (error) {
       console.error("Login error:", error);
@@ -47,9 +63,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Call logout endpoint - backend will clear the HTTP-only cookie
       await axios.post("/api/auth/logout");
       setUser(null);
+      sessionStorage.removeItem('user');
     } catch (error) {
       console.error("Logout error:", error);
       throw error;
