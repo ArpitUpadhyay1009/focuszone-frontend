@@ -22,6 +22,7 @@ export default function TodoList() {
     name: "",
     date: today,
     pomodoros: "",
+    priority: "",
   });
 
   const token = localStorage.getItem("token");
@@ -90,6 +91,7 @@ export default function TodoList() {
               taskName: task.taskName,
               date,
               pomodoros,
+              priority: task.priority || "must do",
               status: task.status || "ongoing",
             };
           })
@@ -142,6 +144,7 @@ export default function TodoList() {
             taskName: newTask.name,
             dueDate: newTask.date,
             estimatedPomodoros: newTask.pomodoros || "0",
+            priority: newTask.priority || "must do",
           },
           {
             headers: {
@@ -175,11 +178,12 @@ export default function TodoList() {
             taskName: res.data.task.taskName,
             date,
             pomodoros, // Ensure this is set correctly
+            priority: res.data.task.priority || "must do",
             status: "ongoing",
           },
         ]);
 
-        setNewTask({ name: "", date: today, pomodoros: "" });
+        setNewTask({ name: "", date: today, pomodoros: "", priority: ""  });
         fetchRemainingPomodoros();
         setIsOpen(false);
       } catch (error) {
@@ -364,6 +368,7 @@ export default function TodoList() {
             date,
             pomodoros,
             completedPomodoros,
+            priority: task.priority || "must do",
             status: task.status || "ongoing",
           };
         })
@@ -476,7 +481,7 @@ export default function TodoList() {
                             ? "Completed"
                             : `Due: ${
                                 task.date || new Date().toLocaleDateString()
-                              } | Est. Pomodoros: ${task.pomodoros}`}
+                              } | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do"? "Must Do" : "Can Do"}`}
                         </p>
                       </div>
                       <motion.button
@@ -647,6 +652,15 @@ export default function TodoList() {
                     }}
                     className="w-full p-2 border rounded mb-2"
                   />
+                  <label>Priority</label>
+                  <select
+                    value={newTask.priority}
+                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                    className={`w-full p-2 border rounded mb-2 ${theme === 'dark' ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'}`}
+                  >
+                    <option value="must do">Must Do</option>
+                    <option value="can do">Can Do</option>
+                  </select>
                   <div className="flex justify-end gap-2 mt-3">
                     <motion.button
                       whileHover={{ scale: 1.05 }}
