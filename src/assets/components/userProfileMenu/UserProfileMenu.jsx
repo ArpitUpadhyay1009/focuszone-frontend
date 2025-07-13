@@ -561,13 +561,10 @@ const UserProfileMenu = () => {
             <div className="profile-footer p-2 border-t">
               <button 
                 onClick={handleLogout}
-                className="w-full text-left px-4 py-2 text-sm rounded-md hover:bg-red-100 dark:hover:bg-red-900 hover:text-red-600 dark:hover:text-red-300 transition-colors"
+                className="bg-red-500 text-white px-24 py-2 rounded hover:bg-red-600"
               >
                 Logout
               </button>
-              <button onClick={handleDelete} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
-      Delete My Account
-    </button>
             </div>
           </motion.div>
         )}
