@@ -432,70 +432,161 @@ export default function TodoList() {
                     No tasks yet. Add one to get started!
                   </motion.li>
                 ) : (
-                  tasks.map((task) => (
-                    <motion.li
-                      key={task.id}
-                      className={`task-item ${
-                        theme === "dark" ? "dark" : "light"
-                      } ${task.status === "finished" ? "completed" : ""} ${
-                        selectedTaskId === task.id ? "selected-task" : ""
-                      }`}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, x: -100 }}
-                      whileHover={{ scale: 1.01 }}
-                      transition={{ duration: 0.2 }}
-                      onClick={() => {
-                        if (tasks.length > 1) {
-                          setSelectedTaskId(task.id);
-                        } else if (isOnlyOneTask) {
-                          // If only one task, clicking it does not deselect
-                          setSelectedTaskId(task.id);
-                        }
-                      }}
-                    >
-                      <input
-                        type="checkbox"
-                        name={`task-${task.id}`}
-                        checked={task.status === "finished" && task.completed}
-                        onChange={() => {
-                          toggleTaskStatus(task.id);
-                          handleTaskCompletion(task.id);
-                          setTimeout(() => {
-                            refetchIntermediateTasks();
-                            refetchCurrentTasks();
-                          }, 1500);
-                        }}
-                        className="task-checkbox"
-                      />
-                      <div className="task-content">
-                        <p
-                          className={`task-name ${
-                            task.status === "finished" ? "finished" : ""
-                          }`}
-                        >
-                          {task.taskName}
-                        </p>
-                        <p className="task-details">
-                          {task.status === "finished"
-                            ? "Completed"
-                            : `Due: ${
-                                task.date || new Date().toLocaleDateString()
-                              } | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do"? "Must Do" : "Can Do"}`}
-                        </p>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => {
-                          deleteTask(task.id);
-                        }}
-                        className="task-delete"
+                  <>
+                    <h3 className="text-lg font-semibold mb-2 mt-3 text-left">Must Do</h3>
+                    {tasks.filter(task => task.priority === "must do").length === 0 && (
+                      <motion.li
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center py-2 opacity-70 italic"
                       >
-                        <FaTrash size={14} />
-                      </motion.button>
-                    </motion.li>
-                  ))
+                        No must-do tasks.
+                      </motion.li>
+                    )}
+                    {tasks
+                      .filter(task => task.priority === "must do")
+                      .map((task) => (
+                        <motion.li
+                          key={task.id}
+                          className={`task-item ${
+                            theme === "dark" ? "dark" : "light"
+                          } ${task.status === "finished" ? "completed" : ""} ${
+                            selectedTaskId === task.id ? "selected-task" : ""
+                          }`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -100 }}
+                          whileHover={{ scale: 1.01 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={() => {
+                            if (tasks.length > 1) {
+                              setSelectedTaskId(task.id);
+                            } else if (isOnlyOneTask) {
+                              // If only one task, clicking it does not deselect
+                              setSelectedTaskId(task.id);
+                            }
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            name={`task-${task.id}`}
+                            checked={task.status === "finished" && task.completed}
+                            onChange={() => {
+                              toggleTaskStatus(task.id);
+                              handleTaskCompletion(task.id);
+                              setTimeout(() => {
+                                refetchIntermediateTasks();
+                                refetchCurrentTasks();
+                              }, 1500);
+                            }}
+                            className="task-checkbox"
+                          />
+                          <div className="task-content">
+                            <p
+                              className={`task-name ${
+                                task.status === "finished" ? "finished" : ""
+                              }`}
+                            >
+                              {task.taskName}
+                            </p>
+                            <p className="task-details">
+                              {task.status === "finished"
+                                ? "Completed"
+                                : `Due: ${
+                                    task.date || new Date().toLocaleDateString()
+                                  } | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do"? "Must Do" : "Can Do"}`}
+                            </p>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                              deleteTask(task.id);
+                            }}
+                            className="task-delete"
+                          >
+                            <FaTrash size={14} />
+                          </motion.button>
+                        </motion.li>
+                      ))}
+                      
+                    <h3 className="text-lg font-semibold mb-2 mt-4 text-left">Can Do</h3>
+                    {tasks.filter(task => task.priority === "can do").length === 0 && (
+                      <motion.li
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center py-2 opacity-70 italic"
+                      >
+                        No can-do tasks.
+                      </motion.li>
+                    )}
+                    {tasks
+                      .filter(task => task.priority === "can do")
+                      .map((task) => (
+                        <motion.li
+                          key={task.id}
+                          className={`task-item ${
+                            theme === "dark" ? "dark" : "light"
+                          } ${task.status === "finished" ? "completed" : ""} ${
+                            selectedTaskId === task.id ? "selected-task" : ""
+                          }`}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -100 }}
+                          whileHover={{ scale: 1.01 }}
+                          transition={{ duration: 0.2 }}
+                          onClick={() => {
+                            if (tasks.length > 1) {
+                              setSelectedTaskId(task.id);
+                            } else if (isOnlyOneTask) {
+                              // If only one task, clicking it does not deselect
+                              setSelectedTaskId(task.id);
+                            }
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            name={`task-${task.id}`}
+                            checked={task.status === "finished" && task.completed}
+                            onChange={() => {
+                              toggleTaskStatus(task.id);
+                              handleTaskCompletion(task.id);
+                              setTimeout(() => {
+                                refetchIntermediateTasks();
+                                refetchCurrentTasks();
+                              }, 1500);
+                            }}
+                            className="task-checkbox"
+                          />
+                          <div className="task-content">
+                            <p
+                              className={`task-name ${
+                                task.status === "finished" ? "finished" : ""
+                              }`}
+                            >
+                              {task.taskName}
+                            </p>
+                            <p className="task-details">
+                              {task.status === "finished"
+                                ? "Completed"
+                                : `Due: ${
+                                    task.date || new Date().toLocaleDateString()
+                                  } | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do"? "Must Do" : "Can Do"}`}
+                            </p>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            onClick={() => {
+                              deleteTask(task.id);
+                            }}
+                            className="task-delete"
+                          >
+                            <FaTrash size={14} />
+                          </motion.button>
+                        </motion.li>
+                      ))}
+                  </>
                 )}
               </motion.ul>
             )}
