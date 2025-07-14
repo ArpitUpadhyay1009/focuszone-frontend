@@ -138,24 +138,85 @@ const UserStatsDisplay = () => {
     setLoading(false);
   };
 
-  useEffect(() => {
-    fetchData();
+  // New functions to update specific stats
+  const updateTotalTime = async () => {
+    const totalTimeData = await fetchTotalFocusTime();
+    setStats(prevStats => ({
+      ...prevStats,
+      totalTime: totalTimeData
+    }));
+  };
 
-    const handleDataUpdate = () => {
-      // console.log("StatsDisplay: Update event detected, refreshing stats...");
-      fetchData();
+  const updateCurrentCoins = async () => {
+    const coreStatsData = await fetchUserCoreStats();
+    setStats(prevStats => ({
+      ...prevStats,
+      currentCoins: coreStatsData.currentCoins
+    }));
+  };
+
+  const updateTotalCoinsEarned = async () => {
+    const totalCoinsEarnedData = await fetchTotalCoinsEarned();
+    setStats(prevStats => ({
+      ...prevStats,
+      totalCoinsEarned: totalCoinsEarnedData
+    }));
+  };
+
+  const updateCoinsSpent = async () => {
+    const coinsSpentData = await fetchCoinsSpent();
+    setStats(prevStats => ({
+      ...prevStats,
+      coinsSpent: coinsSpentData
+    }));
+  };
+
+  const updateCompletedTasks = async () => {
+    const completedTasksCountData = await fetchCompletedTasksCount();
+    setStats(prevStats => ({
+      ...prevStats,
+      completedTasks: completedTasksCountData
+    }));
+  };
+
+  useEffect(() => {
+    fetchData(); // Initial load of all data
+
+    // Event handlers for specific updates
+    const handleCoinUpdate = () => {
+      // Update coins-related stats
+      updateCurrentCoins();
+      updateTotalCoinsEarned();
     };
 
-    window.addEventListener("coinUpdate", handleDataUpdate);
-    window.addEventListener("statsUpdate", handleDataUpdate);
-    window.addEventListener("taskCompletionUpdate", handleDataUpdate);
-    window.addEventListener("coinSpent", handleDataUpdate); 
+    const handleStatsUpdate = () => {
+      // General stats update - update time
+      updateTotalTime();
+    };
+
+    const handleTaskCompletionUpdate = () => {
+      // Update completed tasks count and coins (tasks give coins)
+      updateCompletedTasks();
+      updateCurrentCoins();
+      updateTotalCoinsEarned();
+    };
+
+    const handleCoinSpent = () => {
+      // Update coins spent and current coins
+      updateCoinsSpent();
+      updateCurrentCoins();
+    };
+
+    window.addEventListener("coinUpdate", handleCoinUpdate);
+    window.addEventListener("statsUpdate", handleStatsUpdate);
+    window.addEventListener("taskCompletionUpdate", handleTaskCompletionUpdate);
+    window.addEventListener("coinSpent", handleCoinSpent); 
 
     return () => {
-      window.removeEventListener("coinUpdate", handleDataUpdate);
-      window.removeEventListener("statsUpdate", handleDataUpdate);
-      window.removeEventListener("taskCompletionUpdate", handleDataUpdate);
-      window.removeEventListener("coinSpent", handleDataUpdate);
+      window.removeEventListener("coinUpdate", handleCoinUpdate);
+      window.removeEventListener("statsUpdate", handleStatsUpdate);
+      window.removeEventListener("taskCompletionUpdate", handleTaskCompletionUpdate);
+      window.removeEventListener("coinSpent", handleCoinSpent);
     };
   }, []);
 
@@ -183,22 +244,19 @@ const UserStatsDisplay = () => {
       initial="hidden"
       animate="visible"
     >
-      {statsArray.map((statItem) => ( // Removed index as divider is gone
-        // Removed React.Fragment as it's no longer needed without the divider
+      {statsArray.map((statItem) => (
         <motion.div
-          key={statItem.id} // Added key directly to the motion.div
+          key={statItem.id}
           className="stat-item-display"
           variants={itemVariants}
           whileHover={{ scale: 1.03, backgroundColor: "rgba(117, 0, 202, 0.05)", transition: { duration: 0.15 } }}
-          // Added a subtle hover background for dark theme consistency with UserProfileMenu
         >
-          <statItem.IconComponent size={26} className="stat-icon-display" /> {/* Increased icon size */}
+          <statItem.IconComponent size={26} className="stat-icon-display" />
           <div className="stat-text-display">
             <span className="stat-label-display">{statItem.label}</span>
             <span className="stat-value-display">{statItem.data}</span>
           </div>
         </motion.div>
-        // Removed divider rendering logic
       ))}
     </motion.div>
   );
