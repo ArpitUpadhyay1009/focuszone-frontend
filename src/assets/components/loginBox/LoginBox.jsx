@@ -5,6 +5,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import Confetti from "react-confetti";
+import { motion, AnimatePresence } from "framer-motion";
 import "./LoginBox.css";
 
 const LoginBox = () => {
@@ -14,20 +15,40 @@ const LoginBox = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [showProgress, setShowProgress] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setIsLoading(true);
+    setShowProgress(true);
+    setProgress(0);
 
     try {
+      // Simulate progress animation (1 second duration)
+      const interval = setInterval(() => {
+        setProgress((prev) => {
+          const newProgress = prev + 10;
+          if (newProgress >= 90) {
+            clearInterval(interval);
+            return 90;
+          }
+          return newProgress;
+        });
+      }, 100); // 100ms * 9 steps = 900ms (close to 1s)
+
       const response = await axios.post("/api/auth/login", {
         identifier,
         password,
-        // Request a persistent session (48 hours)
         rememberMe: true
       });
 
       const { token, user } = response.data;
+
+      clearInterval(interval);
+      setProgress(100);
 
       if (token && user) {
         localStorage.setItem("token", token);
@@ -35,17 +56,20 @@ const LoginBox = () => {
         setShowSuccess(true);
 
         setTimeout(() => {
-          setShowSuccess(false);
+          setShowProgress(false);
+          setIsLoading(false);
           if (user.role === "admin") {
             navigate("/admin");
           } else {
             navigate("/home");
           }
-        }, 2000);
+        }, 500);
       } else {
         console.error("Login failed: No token or user received");
       }
     } catch (error) {
+      setShowProgress(false);
+      setIsLoading(false);
       if (error.response) {
         if (error.response.status === 400) {
           alert("Invalid username or password! Please try again.");
@@ -53,7 +77,7 @@ const LoginBox = () => {
           alert("Please verify your email first!");
           navigate("/verify-otp");
         } else {
-          console.log(error)
+          console.log(error);
           alert("Server error! Please try again later.");
           navigate("/server-error");
         }
@@ -66,6 +90,38 @@ const LoginBox = () => {
 
   return (
     <div className="flex justify-center items-center">
+      <AnimatePresence>
+        {showProgress && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full"
+            >
+              <h3 className="text-xl font-bold mb-4 text-center">Logging in</h3>
+              
+              <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
+                <motion.div
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: 0.3 }}
+                  className="h-full bg-purple-500 rounded-full"
+                />
+              </div>
+              
+              <p className="text-center text-gray-600">
+                {progress < 100 ? "Authenticating..." : "Success! Redirecting..."}
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
       <div className="login-box p-6 rounded-lg shadow-lg w-110">
         <h2 className="text-4xl font-[Poppins] font-medium mb-4 text-left login-text">
           Login
@@ -84,6 +140,7 @@ const LoginBox = () => {
               className="login-input w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
               onChange={(e) => setIdentifier(e.target.value)}
               required
+              disabled={isLoading}
             />
           </div>
           <div className="relative w-full mb-4">
@@ -93,20 +150,25 @@ const LoginBox = () => {
               className="login-input w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute inset-y-0 right-3 flex items-center eye-icon"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
           <button
             type="submit"
-            className="w-full bg-purple-700 font-[Poppins] text-white py-2 rounded-lg cursor-pointer hover:bg-purple-800 transition shadow-[0px_-4px_10px_rgba(128,0,128,0.3)]"
+            disabled={isLoading}
+            className={`w-full bg-purple-700 font-[Poppins] text-white py-2 rounded-lg cursor-pointer transition shadow-[0px_-4px_10px_rgba(128,0,128,0.3)] ${
+              isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-purple-800"
+            }`}
           >
-            Login
+            {isLoading ? "Logging in..." : "Login"}
           </button>
         </form>
         <div className="flex justify-between mt-4">
