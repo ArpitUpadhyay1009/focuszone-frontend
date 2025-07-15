@@ -9,18 +9,23 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // Initialize user state from sessionStorage
-    const savedUser = sessionStorage.getItem('user');
-    return savedUser ? JSON.parse(savedUser) : null;
+    // Initialize user state from Cookies
+    const savedUser = Cookies.get('user');
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error("Failed to parse user cookie:", e);
+      return null;
+    }
   });
   const [loading, setLoading] = useState(true);
 
-  // Persist user state to sessionStorage whenever it changes
+  // Persist user state to Cookies whenever it changes
   useEffect(() => {
     if (user) {
-      sessionStorage.setItem('user', JSON.stringify(user));
+      Cookies.set('user', JSON.stringify(user), { expires: 90 }); // Cookie expires in 90 days
     } else {
-      sessionStorage.removeItem('user');
+      Cookies.remove('user');
     }
   }, [user]);
 
@@ -65,7 +70,7 @@ export const AuthProvider = ({ children }) => {
     try {
       await axios.post("/api/auth/logout");
       setUser(null);
-      sessionStorage.removeItem('user');
+      Cookies.remove('user'); // Also remove the user cookie on logout
     } catch (error) {
       console.error("Logout error:", error);
       throw error;
