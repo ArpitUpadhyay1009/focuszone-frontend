@@ -13,6 +13,7 @@ import NotFound from "@pages/notFound/NotFound.jsx";
 import DataPrivacy from "@pages/dataPrivacy/DataPrivacy";
 import BrowserTracker from "@components/BrowserTracker";
 import StudyWTok from "@pages/studyWTok/StudyWTok";
+import StudyWGram from "@pages/studyWGram/StudyWGram";
 import Terms from "@pages/terms/Terms";
 import Contact from "@pages/contact/Contact";
 import Cookie from "@pages/cookie/Cookie";
@@ -74,6 +75,7 @@ function App() {
           {/* Public informational routes */}
           <Route path="/data-privacy" element={<DataPrivacy />} />
           <Route path="/studyw.tok" element={<StudyWTok />} />
+          <Route path="/studyw.gram" element={<StudyWGram />} />
           <Route path="/terms-and-conditions" element={<Terms />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/contact" element={<Contact />} />
