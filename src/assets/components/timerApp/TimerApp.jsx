@@ -368,6 +368,7 @@ export default function TimerApp({ setParentPopupState }) {
             }
 
             if (mode === "pomodoro" && !isBreak) {
+              onPomodoroEnd();
               if (currentCycle + 1 < cycles) {
                 setIsBreak(true);
                 // Only award coins if the timer ran for at least 1 minute
@@ -786,6 +787,9 @@ export default function TimerApp({ setParentPopupState }) {
         }
       );
       console.log("Pomodoro marked complete.");
+      
+      // Dispatch event to update estimated time in todo component
+      window.dispatchEvent(new Event("pomodoroCompleted"));
     } catch (error) {
       console.error("Failed to complete pomodoro:", error);
     }

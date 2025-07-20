@@ -59,51 +59,53 @@ export default function TodoList() {
     }
   }
 
+  // Move fetchTasks outside useEffect so it can be called from event handlers
+  const fetchTasks = async () => {
+    setIsLoading(true);
+    try {
+      const res = await axios.get("/api/tasks", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setTasks(
+        res.data.ongoingTasks.map((task) => {
+          let pomodoros = "0";
+          if (typeof task.estimatedPomodoros === "string") {
+            pomodoros = task.estimatedPomodoros;
+          }
+
+          let completedPomodoros = "0";
+          if (typeof task.completedPomodoros === "string") {
+            completedPomodoros = task.completedPomodoros;
+          }
+
+          let date;
+          try {
+            date = task.dueDate
+              ? new Date(task.dueDate).toLocaleDateString()
+              : new Date().toLocaleDateString();
+          } catch (e) {
+            date = new Date().toLocaleDateString();
+          }
+
+          return {
+            id: task._id,
+            taskName: task.taskName,
+            date,
+            pomodoros,
+            completedPomodoros,
+            priority: task.priority || "must do",
+            status: task.status || "ongoing",
+          };
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching tasks:", error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchTasks = async () => {
-      setIsLoading(true);
-      try {
-        const res = await axios.get("/api/tasks", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        });
-        setTasks(
-          res.data.ongoingTasks.map((task) => {
-            let pomodoros = "0";
-            if (typeof task.estimatedPomodoros === "string") {
-              pomodoros = task.estimatedPomodoros;
-            }
-
-            let completedPomodoros = "0";
-            if (typeof task.completedPomodoros === "string") {
-              completedPomodoros = task.completedPomodoros;
-            }
-
-            let date;
-            try {
-              date = task.dueDate
-                ? new Date(task.dueDate).toLocaleDateString()
-                : new Date().toLocaleDateString();
-            } catch (e) {
-              date = new Date().toLocaleDateString();
-            }
-
-            return {
-              id: task._id,
-              taskName: task.taskName,
-              date,
-              pomodoros,
-              completedPomodoros,
-              priority: task.priority || "must do",
-              status: task.status || "ongoing",
-            };
-          })
-        );
-      } catch (error) {
-        console.error("Error fetching tasks:", error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
     if (token) {
       fetchTasks();
@@ -306,10 +308,17 @@ export default function TodoList() {
       fetchRemainingPomodoros();
     };
 
+    const handlePomodoroCompleted = () => {
+      fetchRemainingPomodoros();
+      fetchTasks(); // Refresh task data to show updated completedPomodoros
+    };
+
     window.addEventListener("timerSettingsUpdate", handleTimerSettingsUpdate);
+    window.addEventListener("pomodoroCompleted", handlePomodoroCompleted);
 
     return () => {
       window.removeEventListener("timerSettingsUpdate", handleTimerSettingsUpdate);
+      window.removeEventListener("pomodoroCompleted", handlePomodoroCompleted);
     };
   }, []);
 
