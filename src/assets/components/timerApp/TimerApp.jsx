@@ -301,7 +301,7 @@ export default function TimerApp({ setParentPopupState }) {
               const newMinutesToAwardFor =
                 totalMinutesNowEffectivelyElapsed -
                 currentMinutesAlreadyAwarded;
-              const newCoins = newMinutesToAwardFor * 2; // Standardized 0.5 coins
+              const newCoins = newMinutesToAwardFor * 1; // Standardized 0.5 coins
               if (newCoins > 0) {
                 console.log(
                   `PageLoad: Partial pomodoro. Awarding ${newCoins} coins for ${newMinutesToAwardFor} new minutes.`
@@ -436,7 +436,7 @@ export default function TimerApp({ setParentPopupState }) {
             ) {
               const newlyCompletedMinutes =
                 totalMinutesElapsedThisSession - minutesElapsed;
-              const newCoins = newlyCompletedMinutes * 2; // Standardized 0.5 coins per new minute
+              const newCoins = newlyCompletedMinutes * 1; // Standardized 0.5 coins per new minute
               if (newCoins > 0) {
                 console.log(
                   `MainTimer: Awarding ${newCoins} coins for minute(s) up to ${totalMinutesElapsedThisSession} (visible)`
@@ -546,7 +546,7 @@ export default function TimerApp({ setParentPopupState }) {
                         const newlyCompletedMinutes =
                           minutesInSession - minutesElapsed;
                         if (newlyCompletedMinutes > 0) {
-                          const coinsForCompletion = newlyCompletedMinutes * 2;
+                          const coinsForCompletion = newlyCompletedMinutes * 1;
                           console.log(
                             `VisibilityChange: Pomodoro completed. Awarding ${coinsForCompletion} coins for ${newlyCompletedMinutes} new minutes.`
                           );
@@ -626,7 +626,7 @@ export default function TimerApp({ setParentPopupState }) {
                   if (totalMinutesNowActuallyElapsed > minutesElapsed) {
                     const minutesNewlyPassedWhileHidden =
                       totalMinutesNowActuallyElapsed - minutesElapsed;
-                    const newCoinsToAdd = minutesNewlyPassedWhileHidden * 2; // Changed from 0.5 to 1 for hidden scenario
+                    const newCoinsToAdd = minutesNewlyPassedWhileHidden * 1; // Changed from 0.5 to 1 for hidden scenario
                     if (newCoinsToAdd > 0) {
                       console.log(
                         `VisibilityChange: Partial pomodoro (hidden). Awarding ${newCoinsToAdd} coins for ${minutesNewlyPassedWhileHidden} new minutes.`
