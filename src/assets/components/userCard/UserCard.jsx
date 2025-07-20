@@ -2,6 +2,8 @@ import "./UserCard.css";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { FaLink } from "react-icons/fa";
+
 const UserCard = ({ user }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [coins, setCoins] = useState(user.coins);
@@ -10,8 +12,7 @@ const UserCard = ({ user }) => {
     const [monthly, setMonthly] = useState(null);
     const [yearly, setYearly] = useState(null);
     const [userId, setUserId] = useState(user._id);
-  
-  
+
     const handleSave = async () => {
       try {
         await axios.put(`/api/admin/users/${userId}`, {
@@ -24,42 +25,46 @@ const UserCard = ({ user }) => {
         toast.error("Failed to update user");
       }
     };
+
     const getDailyLoginFrequency = async (userId, date) => {
         try {
           const res = await axios.get(`/api/admin/users/${user._id}/login-frequency/daily`, {
             params: { date }
           });
-          console.log(res.data); // Add this line to log the response data to the console for debugging purposes
+          console.log(res.data); 
           return res.data;
         } catch (error) {
           console.error('Error fetching daily login frequency:', error.response?.data || error.message);
           throw error;
         }
       };
+
       const getMonthlyLoginFrequency = async (userId, month) => {
         try {
           const res = await axios.get(`/api/admin/users/${user._id}/login-frequency/monthly`, {
             params: { month }
           });
-          console.log(res.data); // Add this line to log the response data to the console for debugging purposes
+          console.log(res.data); 
           return res.data;
         } catch (error) {
           console.error('Error fetching monthly login frequency:', error.response?.data || error.message);
           throw error;
         }
       };
+
       const getYearlyLoginFrequency = async (userId, year) => {
         try {
           const res = await axios.get(`/api/admin/users/${user._id}/login-frequency/yearly`, {
             params: { year }
           });
-          console.log(res.data); // Add this line to log the response data to the console for debugging purposes
+          console.log(res.data); 
           return res.data;
         } catch (error) {
           console.error('Error fetching yearly login frequency:', error.response?.data || error.message);
           throw error;
         }
       };
+
       useEffect(() => {
         const fetchStats = async () => {
           try {
@@ -67,11 +72,11 @@ const UserCard = ({ user }) => {
             const date = today.toISOString().split('T')[0];
             const month = date.slice(0, 7);
             const year = date.slice(0, 4);
-    
+
             const dailyData = await getDailyLoginFrequency(user._id, date);
             const monthlyData = await getMonthlyLoginFrequency(user._id, month);
             const yearlyData = await getYearlyLoginFrequency(user._id, year);
-    
+
             setDaily(dailyData.count);
             setMonthly(monthlyData.count);
             setYearly(yearlyData.count);
@@ -79,15 +84,37 @@ const UserCard = ({ user }) => {
             console.error('Failed to fetch activity stats:', err);
           }
         };
-    
+
         fetchStats();
       }, [user._id]);    
-  
-    return (
-      <div className="user-card">
-        <h3>{user.name}</h3>
-  
-        {isEditing ? (
+
+    const copyReferralLink = () => {
+    const referralLink = `${window.location.origin}/signup?ref=${user._id}`;
+    navigator.clipboard.writeText(referralLink)
+      .then(() => {
+        toast.success('Referral link copied to clipboard!');
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        toast.error('Failed to copy referral link');
+      });
+  };
+
+  return (
+    <div className="user-card">
+      <h3>{user.name}</h3>
+
+      <div className="referral-section mb-4">
+        <button 
+          onClick={copyReferralLink}
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+        >
+          <FaLink /> Invite Friends
+        </button>
+        <p className="text-xs text-gray-500 mt-1">Earn rewards for each friend who signs up!</p>
+      </div>
+
+      {isEditing ? (
           <>
             <label htmlFor="">Coins</label>
             <input

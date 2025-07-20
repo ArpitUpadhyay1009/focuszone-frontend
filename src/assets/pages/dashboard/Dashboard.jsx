@@ -19,12 +19,8 @@ export const Home = () => {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-center md:items-start gap-8 py-6 md:py-8 "> {/* Changed md:items-center to md:items-start */}
           <div className="w-full max-w-md flex flex-col items-center lg:mr-[10%] gap-10"> {/* Removed lg:mb-[30%] */}
-            <div className="w-full pt-[30%] px-4">
-              <TimerApp />
-            </div>
-            <div className="w-full mt-[30%] px-4">
-              <SpotifyEmbed2/>
-            </div>
+            <div className="w-full"><TimerApp /></div>
+            <div className="w-full mt-5"><SpotifyEmbed2/></div>
             {/* <div className="w-full mt-15"><UserStatsDisplay /></div> */}
           </div>
           <div className="w-full max-w-md flex flex-col items-center gap-6">
@@ -41,7 +37,7 @@ export const Home = () => {
             </div>
           </div>
         </div>
-        <div className="mt-8 mb-12 max-w-4xl mx-auto">
+        <div className="mt-8 mb-12 w-full max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4">
           <TodoList />
         </div>
       </div>

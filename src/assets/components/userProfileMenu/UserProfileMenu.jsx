@@ -5,6 +5,8 @@ import { useTheme } from "../../context/ThemeContext";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
+import { toast } from 'react-toastify';
+import { FaWhatsapp, FaFacebook, FaInstagram, FaLink, FaTimes, FaCopy } from "react-icons/fa";
 import "./UserProfileMenu.css";
 
 // Create our own Avatar components directly
@@ -44,6 +46,9 @@ const UserProfileMenu = () => {
   const [showCompletedTasks, setShowCompletedTasks] = useState(false);
   const [completedTasks, setCompletedTasks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showReferralPopup, setShowReferralPopup] = useState(false);
+  const [referralLink, setReferralLink] = useState('');
+  const [copied, setCopied] = useState(false);
   const [userStats, setUserStats] = useState({
     totalTime: "0h 0m", // This will be updated by fetchTotalFocusTime
     totalCoinsEarned: 0,
@@ -279,6 +284,48 @@ const UserProfileMenu = () => {
     window.addEventListener("popstate", () => {
       navigate("/login", { replace: true });
     });
+  };
+
+  const handleReferralClick = () => {
+    const link = `${window.location.origin}/signup?ref=${user?._id || ''}`;
+    setReferralLink(link);
+    setShowReferralPopup(true);
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(referralLink)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
+        toast.success('Link copied to clipboard!');
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        toast.error('Failed to copy link');
+      });
+  };
+
+  const shareOnPlatform = (platform) => {
+    const message = `Join me on FocusZone! Use my referral link: ${referralLink}`;
+    let url = '';
+    
+    switch(platform) {
+      case 'whatsapp':
+        url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        break;
+      case 'facebook':
+        url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}&quote=${encodeURIComponent(message)}`;
+        break;
+      case 'instagram':
+        // Open Instagram's web intent with the referral link in the caption
+        url = `https://www.instagram.com/?url=${encodeURIComponent(referralLink)}`;
+        window.location.href = url;
+        return;
+      default:
+        return;
+    }
+    
+    window.open(url, '_blank', 'width=600,height=400');
   };
 
   // Fetch completed tasks
@@ -558,14 +605,103 @@ const UserProfileMenu = () => {
               </div>
             )}
 
-            <div className="profile-footer p-2 border-t">
+            <div className="profile-footer p-4 space-y-3 border-t">
+              <button 
+                onClick={handleReferralClick}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-purple-600 to-blue-500 text-white px-4 py-2 rounded-lg hover:opacity-90 transition-opacity"
+              >
+                <FaLink className="text-white" />
+                Invite Friends
+              </button>
               <button 
                 onClick={handleLogout}
-                className="bg-red-500 text-white px-24 py-2 rounded hover:bg-red-600"
+                className="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
               >
                 Logout
               </button>
             </div>
+
+            {/* Referral Popup */}
+            <AnimatePresence>
+              {showReferralPopup && (
+                <motion.div 
+                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowReferralPopup(false)}
+                >
+                  <motion.div 
+                    className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <button 
+                      onClick={() => setShowReferralPopup(false)}
+                      className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <FaTimes size={20} />
+                    </button>
+                    
+                    <h3 className="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">Invite Friends</h3>
+                    
+                    <div className="mb-6">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3 text-center">Share your referral link with friends</p>
+                      
+                      <div className="flex items-center gap-2 mb-6">
+                        <input
+                          type="text"
+                          value={referralLink}
+                          readOnly
+                          className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm"
+                        />
+                        <button 
+                          onClick={copyToClipboard}
+                          className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                          title={copied ? 'Copied!' : 'Copy link'}
+                        >
+                          {copied ? (
+                            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          ) : (
+                            <FaCopy className="text-gray-700 dark:text-gray-300" />
+                          )}
+                        </button>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-3">
+                        <button 
+                          onClick={() => shareOnPlatform('whatsapp')}
+                          className="flex flex-col items-center justify-center gap-2 p-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+                        >
+                          <FaWhatsapp size={24} />
+                          <span className="text-xs">WhatsApp</span>
+                        </button>
+                        <button 
+                          onClick={() => shareOnPlatform('facebook')}
+                          className="flex flex-col items-center justify-center gap-2 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <FaFacebook size={24} />
+                          <span className="text-xs">Facebook</span>
+                        </button>
+                        <button 
+                          onClick={() => shareOnPlatform('instagram')}
+                          className="flex flex-col items-center justify-center gap-2 p-3 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors"
+                        >
+                          <FaInstagram size={24} />
+                          <span className="text-xs">Instagram</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
