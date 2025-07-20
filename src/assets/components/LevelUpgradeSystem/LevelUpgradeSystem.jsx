@@ -5,6 +5,7 @@ import { Coins } from "lucide-react";
 import ProgressBar from "../ProgressBar/ProgressBar.jsx";
 import UpgradeButton from "../UpgradeButton/UpgradeButton.jsx";
 import CongratsPopup from "../CongratsPopup/CongratsPopup.jsx";
+import UpgradeConfirmationPopup from "../UpgradeConfirmationPopup/UpgradeConfirmationPopup.jsx";
 import axios from "axios";
 import { useTheme } from "../../context/ThemeContext.jsx";
 
@@ -76,6 +77,11 @@ const LevelUpgradeSystem = () => {
   const [showCongratsPopup, setShowCongratsPopup] = useState(false);
   const [newLevel, setNewLevel] = useState(1);
   const [upgradeCost, setUpgradeCost] = useState(null);
+  const [showUpgradeConfirmation, setShowUpgradeConfirmation] = useState(false);
+  const [maxUpgrades, setMaxUpgrades] = useState(0);
+  const [totalCostForMax, setTotalCostForMax] = useState(0);
+  const [isMultipleUpgrade, setIsMultipleUpgrade] = useState(false);
+  const [targetLevel, setTargetLevel] = useState(1);
 
   
   // The cost to upgrade a level (fixed at 150 coins)
@@ -94,12 +100,53 @@ const LevelUpgradeSystem = () => {
       },
     });
 
-    const { upgradeCost } = response.data;
+    const { upgradeCost, maxLevelUpgrades } = response.data;
     setUpgradeCost(upgradeCost);
-    console.log("Set upgradeCost:", upgradeCost);
+    setMaxUpgrades(maxLevelUpgrades || 0);
+    
+    // Calculate total cost for max upgrades
+    if (maxLevelUpgrades > 0) {
+      let totalCost = 0;
+      let tempLevel = userData.level;
+      for (let i = 0; i < maxLevelUpgrades; i++) {
+        totalCost += getLevelUpgradeCost(tempLevel + 1 + i);
+      }
+      setTotalCostForMax(totalCost);
+    }
+    
+    console.log("Set upgradeCost:", upgradeCost, "maxUpgrades:", maxLevelUpgrades);
   } catch (error) {
     console.error("Error fetching upgrade cost:", error.response?.data || error.message);
   }
+};
+
+// Helper function to calculate upgrade cost (should match backend logic)
+const getLevelUpgradeCost = (level) => {
+  if (level < 2) return 1;
+  if (level <= 5) return 3;
+  if (level <= 8) return 5;
+  if (level <= 12) return 10;
+  if (level <= 20) return 20;
+  if (level <= 30) return 30;
+  if (level <= 33) return 40;
+  if (level <= 36) return 50;
+  if (level <= 39) return 60;
+  if (level <= 42) return 70;
+  if (level <= 45) return 80;
+  if (level <= 48) return 100;
+  if (level <= 51) return 120;
+  if (level <= 54) return 150;
+  if (level <= 57) return 180;
+  if (level <= 60) return 210;
+  if (level <= 63) return 240;
+  if (level <= 66) return 270;
+  if (level <= 69) return 300;
+  if (level <= 72) return 350;
+  if (level <= 75) return 400;
+  if (level <= 78) return 450;
+  if (level <= 81) return 500;
+  if (level <= 83) return 600;
+  return Infinity;
 };
 
 
@@ -251,6 +298,21 @@ const LevelUpgradeSystem = () => {
       return;
     }
 
+    // Show confirmation popup
+    setShowUpgradeConfirmation(true);
+  };
+
+  const handleUpgradeConfirm = async (upgradeAll) => {
+    setShowUpgradeConfirmation(false);
+    setIsMultipleUpgrade(upgradeAll);
+    
+    // Set target level based on upgrade type
+    if (upgradeAll) {
+      setTargetLevel(userData.level + maxUpgrades);
+    } else {
+      setTargetLevel(userData.level + 1);
+    }
+    
     try {
       setIsUpgrading(true);
       setShowProgressPopup(true);
@@ -264,8 +326,12 @@ const LevelUpgradeSystem = () => {
         if (progress >= 100) {
           clearInterval(interval);
 
-          // After animation completes, call the API to upgrade level
-          upgradeUserLevel();
+          // After animation completes, call the appropriate API
+          if (upgradeAll) {
+            upgradeMultipleLevels();
+          } else {
+            upgradeUserLevel();
+          }
         }
       }, 30);
     } catch (error) {
@@ -274,6 +340,66 @@ const LevelUpgradeSystem = () => {
       setShowProgressPopup(false);
       toast.error(
         error.message || "Something went wrong. Please try again later."
+      );
+    }
+  };
+
+  const upgradeMultipleLevels = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setIsUpgrading(false);
+        setShowProgressPopup(false);
+        toast.error("You need to be logged in to upgrade");
+        return;
+      }
+
+      console.log("Sending multiple upgrade request");
+
+      const response = await axios.patch(
+        "/api/auth/updateMultipleLevels",
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Multiple upgrade response:", response.data);
+
+      // Update user data with new level and remaining coins
+      setUserData((prev) => ({
+        ...prev,
+        level: response.data.newLevel,
+        coins: response.data.newCoins,
+        progress: 100,
+      }));
+
+      setNewLevel(response.data.newLevel);
+      setIsUpgrading(false);
+      setShowProgressPopup(false);
+
+      // Show congratulations popup
+      setShowCongratsPopup(true);
+      
+      // Show success message
+      toast.success(`Upgraded ${response.data.levelsUpgraded} levels! Spent ${response.data.totalCostSpent} coins.`);
+
+      // Dispatch coin update event to refresh other components
+      window.dispatchEvent(new Event("coinUpdate"));
+      
+      // Refresh upgrade data
+      fetchUpgradableLevels();
+    } catch (error) {
+      console.error("Multiple upgrade failed:", error);
+      setIsUpgrading(false);
+      setShowProgressPopup(false);
+      toast.error(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong. Please try again later."
       );
     }
   };
@@ -459,7 +585,10 @@ const LevelUpgradeSystem = () => {
               }`}
             >
               <h3 className="text-xl font-bold mb-4 text-center">
-                Upgrading to Level {userData.level + 1}
+                {isMultipleUpgrade 
+                  ? `Upgrading to Level ${targetLevel}` 
+                  : `Upgrading to Level ${userData.level + 1}`
+                }
               </h3>
 
               <div className={`w-full h-4 rounded-full overflow-hidden mb-4 ${
@@ -481,6 +610,18 @@ const LevelUpgradeSystem = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Upgrade Confirmation Popup */}
+      <UpgradeConfirmationPopup
+        isOpen={showUpgradeConfirmation}
+        onClose={() => setShowUpgradeConfirmation(false)}
+        onConfirm={handleUpgradeConfirm}
+        singleUpgradeCost={upgradeCost}
+        maxUpgrades={maxUpgrades}
+        totalCostForMax={totalCostForMax}
+        currentLevel={userData.level}
+        userCoins={userData.coins}
+      />
 
       {/* Make sure the CongratsPopup is properly included */}
       <CongratsPopup
