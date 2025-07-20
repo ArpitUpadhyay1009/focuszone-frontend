@@ -6,7 +6,8 @@ const ProgressBar = ({
   isComplete,
   coinsRequired,
   darkMode = false,
-  userCoins
+  userCoins,
+  showLevelText = true
 }) => {
   // Calculate coin progress as a percentage
   const coinProgress = Math.min((userCoins / coinsRequired) * 100, 100);
@@ -42,9 +43,11 @@ const ProgressBar = ({
               }
             />
           </motion.div>
-          <span className={`text-xs font-medium ${darkMode ? "text-white" : ""}`}>
-            Level {level}
-          </span>
+          {showLevelText && (
+            <span className={`text-xs font-medium ${darkMode ? "text-white" : "text-gray-800"}`}>
+              Level {level}
+            </span>
+          )}
         </div>
         <div className="flex items-center text-xs font-medium space-x-1">
           <Coins size={10} className={darkMode ? "text-yellow-400" : "text-yellow-500"} />

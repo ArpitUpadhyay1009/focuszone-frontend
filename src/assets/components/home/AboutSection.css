@@ -16,14 +16,21 @@
 /* Coin Distribution System styling - matching GuestTodo */
 .coin-distribution {
   background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 0.75rem;
   padding: 1.5rem;
   width: 100%;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+}
+
+/* Ensure blur works in both light and dark modes */
+[data-theme="light"] .coin-distribution,
+[data-theme="dark"] .coin-distribution {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* Section heading */
@@ -37,13 +44,20 @@
 /* Content cards styling - matching GuestTodo */
 .content-card {
   background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 0.75rem;
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+}
+
+/* Ensure blur works in both light and dark modes */
+[data-theme="light"] .content-card,
+[data-theme="dark"] .content-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 /* List items styling */
@@ -73,11 +87,18 @@
   padding: 0.75rem;
   border-radius: 0.5rem;
   background-color: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+}
+
+/* Ensure blur works in both light and dark modes */
+[data-theme="light"] .coin-item,
+[data-theme="dark"] .coin-item {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .coin-item:hover {

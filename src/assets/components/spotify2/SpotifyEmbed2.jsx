@@ -1,20 +1,17 @@
 import "./SpotifyEmbed2.css";
-import React from "react";
 
 const SpotifyEmbed2 = () => {
   return (
-    <>
-      <div>
-        <iframe
-          src="https://open.spotify.com/embed/playlist/2M2sS2wB173sce3MFbGp4Q?utm_source=generator"
-          height="351"
-          allowfullscreen=""
-          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-          loading="lazy"
-          className="frame ml-[-10%]  mb-[10%] md:ml-[-20%] lg:ml-[3%]" // Adjusted margin for tablet screens
-        ></iframe>
-      </div>
-    </>
+    <div className="w-full max-w-[400px] mx-auto">
+      <iframe
+        src="https://open.spotify.com/embed/playlist/2M2sS2wB173sce3MFbGp4Q?utm_source=generator"
+        height="351"
+        allowFullScreen=""
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        loading="lazy"
+        className="w-full"
+      ></iframe>
+    </div>
   );
 };
 export default SpotifyEmbed2;

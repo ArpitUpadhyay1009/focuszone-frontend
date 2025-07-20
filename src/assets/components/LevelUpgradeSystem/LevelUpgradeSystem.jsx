@@ -8,6 +8,60 @@ import CongratsPopup from "../CongratsPopup/CongratsPopup.jsx";
 import axios from "axios";
 import { useTheme } from "../../context/ThemeContext.jsx";
 
+// Mapping of levels to their unlockable items
+const levelUnlocks = {
+  1: "Starting Level",
+  2: "Bed",
+  3: "Side Table with a lamp",
+  4: "Bookshelves",
+  5: "Storage",
+  6: "Rug",
+  7: "Center table",
+  8: "Books",
+  9: "Computer Setup",
+  10: "Boxes for storage",
+  11: "Exercising Equipment",
+  12: "Pictures on the wall",
+  13: "Coffee and Cookies",
+  14: "Clock",
+  15: "Cactus Plant on the window",
+  16: "Houseplant",
+  17: "Stationary",
+  18: "Slippers",
+  19: "Dustbin",
+  20: "Moon Lamp",
+  21: "Jewellery Box",
+  22: "Succulent House Pot",
+  23: "Picture frame",
+  24: "Additional books",
+  25: "Laundry baskets",
+  26: "Rubik's cube",
+  27: "Candles",
+  28: "Additional Books",
+  29: "Globe",
+  30: "Climber house plant",
+  31: "Snake house plant",
+  32: "Double floor layout",
+  33: "Single couch",
+  34: "Rectangle table",
+  35: "Center Table",
+  36: "Side table for the couch",
+  37: "Aquarium",
+  38: "More storage",
+  39: "Hangers",
+  40: "Carpet",
+  41: "Pictures",
+  42: "Large Houseplant",
+  43: "Jacket",
+  44: "Books and useful stuff",
+  45: "Teddy Bear",
+  46: "Side Table with book",
+  47: "House plant near the window",
+  48: "Coffee and Cookies",
+  49: "Food Plate",
+  50: "Cat"
+};
+
 const LevelUpgradeSystem = () => {
   const { theme } = useTheme();
   const [userData, setUserData] = useState({
@@ -307,25 +361,34 @@ const LevelUpgradeSystem = () => {
           Level Progress
         </h3>
 
-        {/* Level progress bar */}
+        {/* Current level progress bar */}
         <ProgressBar
           level={userData.level}
           progress={100}
           isComplete={true}
           coinsRequired={upgradeCost}
           darkMode={theme === "dark"}
-
+          userCoins={userData.coins}
+          showLevelText={false}
         />
 
         {/* Next level */}
-        <ProgressBar
-          level={userData.level + 1}
-          progress={0}
-          isComplete={false}
-          coinsRequired={upgradeCost}
-          darkMode={theme === "dark"}
-          userCoins = {userData.coins}
-        />
+        <div className="mb-2">
+          <ProgressBar
+            level={userData.level + 1}
+            progress={0}
+            isComplete={false}
+            coinsRequired={upgradeCost}
+            darkMode={theme === "dark"}
+            userCoins={userData.coins}
+            showLevelText={true}
+          />
+          {userData.level < 50 && (
+            <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              Next Level Unlocks: {levelUnlocks[userData.level + 1]}
+            </p>
+          )}
+        </div>
 
         <div className="flex justify-between items-center mt-3">
           <motion.div
