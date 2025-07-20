@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import GuestTodoList from "../../components/guestTodo/GuestTodo";
 import Footer from "../../components/footer/Footer";
+import AboutSection from  "../../components/home/AboutSection";
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -57,7 +58,7 @@ export const Home = () => {
         </div>
       </div>
       <GuestTodoList/>
-      <div className="pt-[3%]"><Footer/></div>
+      <div className="pt-[3%]"><AboutSection/><Footer/></div>
       
     </div>
   );
