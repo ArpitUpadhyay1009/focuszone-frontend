@@ -1,6 +1,6 @@
 import "./todo.css";
 import { useEffect, useState } from "react";
-import { FaTrash, FaPlus } from "react-icons/fa";
+import { FaTrash, FaPlus, FaPencilAlt } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import { motion, AnimatePresence } from "framer-motion";
@@ -25,6 +25,14 @@ export default function TodoList() {
     completedPomodoros: "",
     priority: "",
   });
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editTask, setEditTask] = useState({
+    id: "",
+    name: "",
+    date: today,
+    pomodoros: "",
+    priority: "",
+  });
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
   const token = localStorage.getItem("token");
@@ -32,27 +40,14 @@ export default function TodoList() {
   async function fetchRemainingPomodoros() {
     try {
       const res = await axios.get("/api/tasks/remaining-pomodoros");
-      const remainingPomodoros = res.data.remainingPomodoros || 0;
-      console.log("Remaining pomodoros:", remainingPomodoros);
+      const remainingCount = res.data.remainingPomodoros || 0;
+      console.log("Remaining pomodoros:", remainingCount);
 
-      const DEFAULT_POMODORO_SECONDS = 1500;
-      const pomodoroLength =
-        (parseInt(localStorage.getItem("timerTime"), 10) ||
-          DEFAULT_POMODORO_SECONDS) / 60;
-
-      const completionDate = new Date();
-      completionDate.setMinutes(
-        completionDate.getMinutes() + remainingPomodoros * pomodoroLength
-      );
-
-      const hours = completionDate.getHours();
-      const minutes = completionDate.getMinutes();
-      const ampm = hours >= 12 ? "PM" : "AM";
-      const formattedHours = hours % 12 || 12;
-
-      setEstimatedTime(
-        `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
-      );
+      // Store the remaining count for local calculations
+      setRemainingPomodoros(remainingCount);
+      
+      // Calculate and set the estimated time
+      calculateEstimatedTime(remainingCount);
     } catch (error) {
       console.error("Failed to fetch remaining pomodoros", error);
       setEstimatedTime("N/A");
@@ -135,6 +130,44 @@ export default function TodoList() {
     }
   }, []);
 
+  // Store remaining pomodoros count for local time calculations
+  const [remainingPomodoros, setRemainingPomodoros] = useState(0);
+
+  // Function to calculate estimated time locally without API call
+  const calculateEstimatedTime = (remainingCount) => {
+    const DEFAULT_POMODORO_SECONDS = 1500;
+    const pomodoroLength =
+      (parseInt(localStorage.getItem("timerTime"), 10) ||
+        DEFAULT_POMODORO_SECONDS) / 60;
+
+    const completionDate = new Date();
+    completionDate.setMinutes(
+      completionDate.getMinutes() + remainingCount * pomodoroLength
+    );
+
+    const hours = completionDate.getHours();
+    const minutes = completionDate.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    const formattedHours = hours % 12 || 12;
+
+    setEstimatedTime(
+      `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
+    );
+  };
+
+  // Auto-update estimated time every minute (local calculation only)
+  useEffect(() => {
+    const updateEstimatedTimeLocally = () => {
+      calculateEstimatedTime(remainingPomodoros);
+    };
+
+    // Set up interval to update every minute (60000ms)
+    const interval = setInterval(updateEstimatedTimeLocally, 60000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(interval);
+  }, [remainingPomodoros]);
+
   const addTask = async () => {
     if (tasks.length >= 100) {
       alert("You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more.");
@@ -179,6 +212,7 @@ export default function TodoList() {
             taskName: res.data.task.taskName,
             date,
             pomodoros,
+            completedPomodoros: res.data.task.completedPomodoros || "0",
             priority: res.data.task.priority || "must do",
             status: "ongoing",
           },
@@ -230,6 +264,59 @@ export default function TodoList() {
       fetchRemainingPomodoros();
     } catch (error) {
       console.error("Error deleting task:", error.message);
+    }
+  };
+
+  const openEditModal = (task) => {
+    setEditTask({
+      id: task.id,
+      name: task.taskName,
+      date: task.date,
+      pomodoros: task.pomodoros,
+      priority: task.priority,
+    });
+    setIsEditOpen(true);
+  };
+
+  const updateTask = async () => {
+    if (editTask.name.trim()) {
+      try {
+        const res = await axios.patch(
+          `/api/tasks/${editTask.id}`,
+          {
+            taskName: editTask.name,
+            dueDate: editTask.date,
+            estimatedPomodoros: editTask.pomodoros || "0",
+            priority: editTask.priority || "must do",
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        // Update the task in the local state
+        setTasks((prev) =>
+          prev.map((task) =>
+            task.id === editTask.id
+              ? {
+                  ...task,
+                  taskName: editTask.name,
+                  date: editTask.date,
+                  pomodoros: editTask.pomodoros || "0",
+                  priority: editTask.priority || "must do",
+                }
+              : task
+          )
+        );
+
+        setEditTask({ id: "", name: "", date: today, pomodoros: "", priority: "" });
+        fetchRemainingPomodoros();
+        setIsEditOpen(false);
+      } catch (error) {
+        console.error("Failed to update task:", error.message);
+      }
     }
   };
 
@@ -362,20 +449,35 @@ export default function TodoList() {
         <p className="task-details">
           {task.status === "finished"
             ? "Completed"
-            : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.completedPomodoros}/${task.pomodoros} | Priority: ${task.priority === "must do" ? "Must Do" : "Can Do"}`}
+            : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.completedPomodoros}/${task.pomodoros}`}
         </p>
       </div>
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={(e) => {
-          e.stopPropagation();
-          deleteTask(task.id);
-        }}
-        className="task-delete"
-      >
-        <FaTrash size={14} />
-      </motion.button>
+      <div className="task-actions">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            openEditModal(task);
+          }}
+          className="task-edit"
+          title="Edit task"
+        >
+          <FaPencilAlt size={14} />
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            deleteTask(task.id);
+          }}
+          className="task-delete"
+          title="Delete task"
+        >
+          <FaTrash size={14} />
+        </motion.button>
+      </div>
     </motion.li>
   );
 
@@ -587,6 +689,96 @@ export default function TodoList() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Edit Task Modal */}
+        <div className="edit-modal-container">
+          <AnimatePresence>
+            {isEditOpen && (
+              <Dialog
+                open={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                className="fixed inset-0 z-50 flex items-center justify-center"
+              >
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className={`modal-content p-6 rounded-lg shadow-lg max-w-md w-full mx-4 ${
+                    theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                  }`}
+                >
+                  <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
+                  <label>Task name:</label>
+                  <input
+                    type="text"
+                    placeholder="Enter task name"
+                    value={editTask.name}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (value.length <= 200) {
+                        setEditTask({ ...editTask, name: value });
+                      }
+                    }}
+                    className="w-full p-2 border rounded mb-2"
+                  />
+                  <label>Enter date of completion:</label>
+                  <input
+                    type="date"
+                    value={editTask.date || today}
+                    onChange={(e) => setEditTask({ ...editTask, date: e.target.value })}
+                    className="w-full p-2 border rounded mb-2"
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                  <label>Estimated number of pomodoros:</label>
+                  <input
+                    type="number"
+                    placeholder="Pomodoros"
+                    value={editTask.pomodoros}
+                    min={0}
+                    max={100}
+                    onChange={(e) => {
+                      const value = Math.max(0, Math.min(100, Number(e.target.value)));
+                      setEditTask({ ...editTask, pomodoros: value });
+                    }}
+                    className="w-full p-2 border rounded mb-2"
+                  />
+                  <label>Priority</label>
+                  <select
+                    value={editTask.priority}
+                    onChange={(e) => setEditTask({ ...editTask, priority: e.target.value })}
+                    className={`w-full p-2 border rounded mb-2 ${
+                      theme === "dark" ? "text-white bg-gray-800" : "text-gray-800 bg-white"
+                    }`}
+                  >
+                    <option value="must do">Must Do</option>
+                    <option value="can do">Can Do</option>
+                  </select>
+                  <div className="flex justify-end gap-2 mt-3">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="modal-button cancel-button px-3 py-1.5 rounded-md"
+                      onClick={() => setIsEditOpen(false)}
+                    >
+                      Cancel
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="modal-button add-button px-3 py-1.5 rounded-md"
+                      onClick={() => {
+                        updateTask();
+                      }}
+                    >
+                      Update
+                    </motion.button>
+                  </div>
+                </motion.div>
+              </Dialog>
+            )}
+          </AnimatePresence>
+        </div>
+
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

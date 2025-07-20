@@ -276,6 +276,36 @@
   white-space: nowrap;
 }
 
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.task-item:hover .task-actions {
+  opacity: 1;
+}
+
+.task-edit {
+  background: transparent;
+  border: none;
+  color: #7500CA;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border-radius: 50%;
+}
+
+.task-edit:hover {
+  transform: scale(1.1);
+  background-color: rgba(117, 0, 202, 0.1);
+}
+
 .task-delete {
   background: transparent;
   border: none;
