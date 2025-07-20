@@ -2,7 +2,7 @@ import React from "react";
 import Navbar2 from "@components/navbar2/Navbar2.jsx";
 import "./Dashboard.css";
 import TimerApp from "@components/timerApp/TimerApp.jsx";
-import UserStatsDisplay from "../../components/userStatsDisplay/UserStatsDisplay.jsx"; // Import the new component
+// import UserStatsDisplay from "../../components/userStatsDisplay/UserStatsDisplay.jsx"; // Import the new component
 import LevelRenders from "@components/levelRenders/LevelRenders.jsx";
 import "@components/levelRenders/LevelRenders.css";
 import LevelUpgradeSystem from "@components/LevelUpgradeSystem/LevelUpgradeSystem.jsx";
