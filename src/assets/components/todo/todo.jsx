@@ -300,6 +300,19 @@ export default function TodoList() {
     fetchRemainingPomodoros();
   }, []);
 
+  // Listen for timer settings updates to recalculate estimated time
+  useEffect(() => {
+    const handleTimerSettingsUpdate = () => {
+      fetchRemainingPomodoros();
+    };
+
+    window.addEventListener("timerSettingsUpdate", handleTimerSettingsUpdate);
+
+    return () => {
+      window.removeEventListener("timerSettingsUpdate", handleTimerSettingsUpdate);
+    };
+  }, []);
+
   const TaskItem = ({ task, section }) => (
     <motion.li
       key={task.id}

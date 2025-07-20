@@ -767,6 +767,9 @@ export default function TimerApp({ setParentPopupState }) {
     setIsSettingsOpen(false);
     if (mode === "pomodoro") setTime(pomodoroTime);
     if (mode === "countdown") setTime(countdownTime);
+
+    // Dispatch a custom event to notify other components that timer settings have been updated
+    window.dispatchEvent(new Event("timerSettingsUpdate"));
   };
 
   const onPomodoroEnd = async () => {
