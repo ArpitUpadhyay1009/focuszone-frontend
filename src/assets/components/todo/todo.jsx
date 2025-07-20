@@ -22,8 +22,10 @@ export default function TodoList() {
     name: "",
     date: today,
     pomodoros: "",
+    completedPomodoros: "",
     priority: "",
   });
+  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
 
   const token = localStorage.getItem("token");
 
@@ -71,6 +73,11 @@ export default function TodoList() {
               pomodoros = task.estimatedPomodoros;
             }
 
+            let completedPomodoros = "0";
+            if (typeof task.completedPomodoros === "string") {
+              completedPomodoros = task.completedPomodoros;
+            }
+
             let date;
             try {
               date = task.dueDate
@@ -85,6 +92,7 @@ export default function TodoList() {
               taskName: task.taskName,
               date,
               pomodoros,
+              completedPomodoros,
               priority: task.priority || "must do",
               status: task.status || "ongoing",
             };
@@ -113,6 +121,17 @@ export default function TodoList() {
       setSelectedTaskId(tasks[0].id);
     }
   }, [tasks]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
 
   const addTask = async () => {
     if (tasks.length >= 100) {
@@ -321,7 +340,7 @@ export default function TodoList() {
         <p className="task-details">
           {task.status === "finished"
             ? "Completed"
-            : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do" ? "Must Do" : "Can Do"}`}
+            : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.completedPomodoros}/${task.pomodoros} | Priority: ${task.priority === "must do" ? "Must Do" : "Can Do"}`}
         </p>
       </div>
       <motion.button
@@ -342,7 +361,10 @@ export default function TodoList() {
     <>
       <div className="todo-container flex flex-col items-center">
         <div
-          className="task-manager-container p-4 mx-auto text-center w-[90vw] sm:w-[80vw] md:w-[70vw] lg:w-[60vw]"
+          className="task-manager-container p-4 mx-auto text-center w-[92vw] sm:w-[85vw] md:w-[75vw] lg:w-[65vw] xl:w-[55vw] max-w-4xl"
+          style={{ 
+            minWidth: windowWidth >= 1024 ? '700px' : '320px'
+          }}
         >
           <h2 className="text-xl font-bold mb-3">Task Manager</h2>
           <AnimatePresence>
