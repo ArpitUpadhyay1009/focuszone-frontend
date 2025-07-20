@@ -342,8 +342,7 @@ export default function TodoList() {
     <>
       <div className="todo-container flex flex-col items-center">
         <div
-          className="task-manager-container p-4 mx-auto text-center"
-          style={{ width: "60vw" }}
+          className="task-manager-container p-4 mx-auto text-center w-[90vw] sm:w-[80vw] md:w-[70vw] lg:w-[60vw]"
         >
           <h2 className="text-xl font-bold mb-3">Task Manager</h2>
           <AnimatePresence>
@@ -454,7 +453,7 @@ export default function TodoList() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/50"
+                  className="fixed inset-0 bg-black/50 backdrop-blur-md"
                   onClick={() => setIsOpen(false)}
                 />
                 <motion.div

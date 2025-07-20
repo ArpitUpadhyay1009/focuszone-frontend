@@ -4,14 +4,14 @@ import React from "react";
 const SpotifyEmbed2 = () => {
   return (
     <>
-      <div>
+      <div className="w-full flex justify-center px-4">
         <iframe
           src="https://open.spotify.com/embed/playlist/2M2sS2wB173sce3MFbGp4Q?utm_source=generator"
           height="351"
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"
-          className="frame ml-[-10%]  mb-[10%] md:ml-[-20%] lg:ml-[3%]" // Adjusted margin for tablet screens
+          className="frame w-full max-w-lg sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl mb-[10%] rounded-lg shadow-lg"
         ></iframe>
       </div>
     </>
