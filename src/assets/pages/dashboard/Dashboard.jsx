@@ -17,22 +17,23 @@ export const Home = () => {
       <AnimatedBackground />
       <Navbar2 />
       <div className="container mx-auto px-4">
-        <div className="flex flex-col md:flex-row justify-center md:items-start gap-8 py-6 md:py-8 "> {/* Changed md:items-center to md:items-start */}
-          <div className="w-full max-w-md flex flex-col items-center lg:mr-[10%] gap-10"> {/* Removed lg:mb-[30%] */}
-            <div className="w-full"><TimerApp /></div>
-            <div className="w-full mt-5"><SpotifyEmbed2/></div>
-            {/* <div className="w-full mt-15"><UserStatsDisplay /></div> */}
-          </div>
-          <div className="w-full max-w-md flex flex-col items-center gap-6">
-            <div className="w-full flex flex-col items-center">
-              <div className="w-full">
-                <LevelRenders />
-              </div>
-              <div className="w-full mt-[5%] px-4">
-                <LevelUpgradeSystem/>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 lg:gap-30 max-w-6xl mx-auto py-6 md:py-8">
+          {/* Left Column - Timer and Spotify */}
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="w-150 sm:w-full md:w-90 md:ml-[5%] max-w-full  lg:w-120 lg:ml-[-10%]">
+              <TimerApp />
             </div>
-            <div className="hidden !hidden">
+            <div className="w-full sm:w-full md:w-100 md:mt-[17%] mt-4 sm:mt-6 max-w-full">
+              <SpotifyEmbed2 />
+            </div>
+          </div>
+          
+          {/* Right Column - Level Components */}
+          <div className="flex flex-col gap-4 sm:gap-6">
+            <div className="w-110 sm:w-75 md:w-85 lg:w-120 md:mt-[-18%] max-w-full sm:max-w-80 md:max-w-78 lg:max-w-none ml-0 sm:ml-[2%] md:ml-[4%]">
+              <LevelRenders />
+            </div>
+            <div className="w-full sm:w-80 md:w-96 lg:w-100 px-2 sm:px-4 max-w-full sm:max-w-80 md:max-w-96 lg:max-w-none md:mt-[25%] lg:mt-[0%] lg:ml-[13%]">
               <LevelUpgradeSystem />
             </div>
           </div>
