@@ -29,17 +29,14 @@ export default function TodoList() {
 
   async function fetchRemainingPomodoros() {
     try {
-      const res = await axios.get("/api/tasks/remaining-pomodoros"); // Your actual API route
+      const res = await axios.get("/api/tasks/remaining-pomodoros");
       const remainingPomodoros = res.data.remainingPomodoros || 0;
       console.log("Remaining pomodoros:", remainingPomodoros);
 
-      const DEFAULT_POMODORO_SECONDS = 1500; // 25 * 60
+      const DEFAULT_POMODORO_SECONDS = 1500;
       const pomodoroLength =
         (parseInt(localStorage.getItem("timerTime"), 10) ||
           DEFAULT_POMODORO_SECONDS) / 60;
-
-      console.log("Pomodoro time: " + localStorage.getItem("timerTime"));
-      console.log("pomodoro length is: " + pomodoroLength);
 
       const completionDate = new Date();
       completionDate.setMinutes(
@@ -54,7 +51,6 @@ export default function TodoList() {
       setEstimatedTime(
         `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
       );
-      console.log("Estimated time set to:", estimatedTime); // Log the value to check if it is being set correctly
     } catch (error) {
       console.error("Failed to fetch remaining pomodoros", error);
       setEstimatedTime("N/A");
@@ -68,11 +64,9 @@ export default function TodoList() {
         const res = await axios.get("/api/tasks", {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
-        console.log("Fetched tasks:", res.data.ongoingTasks);
         setTasks(
           res.data.ongoingTasks.map((task) => {
             let pomodoros = "0";
-
             if (typeof task.estimatedPomodoros === "string") {
               pomodoros = task.estimatedPomodoros;
             }
@@ -114,25 +108,15 @@ export default function TodoList() {
     if (tasks.length === 0) {
       setSelectedTaskId(null);
     } else if (!selectedTaskId) {
-      // Select the last added task by default
       setSelectedTaskId(tasks[tasks.length - 1].id);
     } else if (tasks.length === 1) {
-      // If only one task, keep it selected (even if clicked again)
       setSelectedTaskId(tasks[0].id);
     }
-    // We skip adding selectedTaskId in dependencies to avoid infinite loop here
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tasks]);
-
-  useEffect(() => {
-    console.log("Selected Task ID changed to:", selectedTaskId);
-  }, [selectedTaskId]);
 
   const addTask = async () => {
     if (tasks.length >= 100) {
-      alert(
-        "You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more."
-      );
+      alert("You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more.");
       return;
     }
 
@@ -154,13 +138,9 @@ export default function TodoList() {
         );
 
         let pomodoros = "0";
-
         if (res.data.task.estimatedPomodoros) {
           pomodoros = res.data.task.estimatedPomodoros;
         }
-
-        console.log("Pomodoros from API:", res.data.task.estimatedPomodoros);
-        console.log("Pomodoros set in state:", pomodoros);
 
         let date;
         try {
@@ -177,13 +157,13 @@ export default function TodoList() {
             id: res.data.task._id,
             taskName: res.data.task.taskName,
             date,
-            pomodoros, // Ensure this is set correctly
+            pomodoros,
             priority: res.data.task.priority || "must do",
             status: "ongoing",
           },
         ]);
 
-        setNewTask({ name: "", date: today, pomodoros: "", priority: ""  });
+        setNewTask({ name: "", date: today, pomodoros: "", priority: "" });
         fetchRemainingPomodoros();
         setIsOpen(false);
       } catch (error) {
@@ -194,7 +174,7 @@ export default function TodoList() {
 
   const toggleTaskStatus = async (taskId) => {
     try {
-      const res = await axios.patch(
+      await axios.patch(
         `/api/tasks/${taskId}/toggle`,
         {},
         {
@@ -214,16 +194,6 @@ export default function TodoList() {
             : task
         )
       );
-      setIntermediateTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task._id === taskId
-            ? {
-                ...task,
-                status: task.status === "ongoing" ? "finished" : "ongoing",
-              }
-            : task
-        )
-      );
       fetchRemainingPomodoros();
     } catch (error) {
       console.error("Error toggling task status:", error.message);
@@ -232,33 +202,61 @@ export default function TodoList() {
 
   const deleteTask = async (taskId) => {
     try {
-      console.log("Trying to delete:", taskId);
       await axios.delete(`/api/tasks/${taskId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
-
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-      setIntermediateTasks((prevTasks) =>
-        prevTasks.filter((task) => task._id !== taskId)
-      );
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
       fetchRemainingPomodoros();
     } catch (error) {
       console.error("Error deleting task:", error.message);
     }
   };
 
-  useEffect(() => {
-    fetchRemainingPomodoros();
-  }, []);
-
-  async function handleTaskCompletion(taskId) {
+  // Drag and Drop Functions
+  const toggleTaskPriority = async (taskId, newPriority) => {
     try {
-      // Call backend to toggle task
-      await axios.patch(`/api/tasks/${taskId}/toggle`);
+      await axios.patch(`/api/tasks/${taskId}/priority`, 
+        { priority: newPriority },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        }
+      );
+      
+      setTasks((prev) => 
+        prev.map((task) => 
+          task.id === taskId ? { ...task, priority: newPriority } : task
+        )
+      );
+      
+      fetchRemainingPomodoros();
+    } catch (error) {
+      console.error("Error updating task priority:", error.message);
+    }
+  };
 
-      // Then update local state
+  const handleDragStart = (e, taskId) => {
+    e.dataTransfer.setData("text/plain", taskId);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e, targetPriority) => {
+    e.preventDefault();
+    const taskId = e.dataTransfer.getData("text/plain");
+    const task = tasks.find(t => t.id === taskId);
+    
+    if (task && task.priority !== targetPriority) {
+      toggleTaskPriority(taskId, targetPriority);
+    }
+  };
+
+  const handleTaskCompletion = async (taskId) => {
+    try {
+      await axios.patch(`/api/tasks/${taskId}/toggle`);
       setTasks((prevTasks) =>
         prevTasks.map((task) => {
           if (task.id === taskId) {
@@ -275,127 +273,70 @@ export default function TodoList() {
         })
       );
     } catch (error) {
-      console.error(
-        "Error toggling task:",
-        error.response?.data || error.message
-      );
+      console.error("Error toggling task:", error.response?.data || error.message);
     }
-  }
+  };
 
   useEffect(() => {
-    const fetchIntermediateTasks = async () => {
-      try {
-        const response = await fetch("/api/tasks/intermediate", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Ensure you have the token available
-          },
-        });
-        const data = await response.json();
-        setIntermediateTasks(data.intermediateTasks);
-      } catch (error) {
-        console.error("Error fetching intermediate tasks:", error);
-      }
-    };
-    fetchIntermediateTasks();
+    fetchRemainingPomodoros();
   }, []);
 
-  async function handleIntermediateTaskCompletion(taskId) {
-    try {
-      // Call backend to toggle task
-      await axios.patch(`/api/${taskId}/toggle`);
-
-      // Then update local state
-      setIntermediateTasks((prevTasks) =>
-        prevTasks.map((task) => {
-          if (task._id === taskId) {
-            if (!task.completed) {
-              confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-              });
-            }
-            return { ...task, completed: !task.completed };
-          }
-          return task;
-        })
-      );
-    } catch (error) {
-      console.error(
-        "Error toggling intermediate task:",
-        error.response?.data || error.message
-      );
-    }
-  }
-
-  async function refetchCurrentTasks() {
-    // Example using fetch API
-    setIsLoading(true);
-    try {
-      const res = await axios.get("/api/tasks", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      console.log("Fetched tasks:", res.data.ongoingTasks);
-      setTasks(
-        res.data.ongoingTasks.map((task) => {
-          let pomodoros = "0";
-          let completedPomodoros = "0";
-
-          if (typeof task.estimatedPomodoros === "string") {
-            pomodoros = task.estimatedPomodoros;
-          }
-
-          if (typeof task.completedPomodoros === "string") {
-            completedPomodoros = task.completedPomodoros;
-          }
-
-          console.log("completed pomodoros are: " + completedPomodoros);
-
-          let date;
-          try {
-            date = task.dueDate
-              ? new Date(task.dueDate).toLocaleDateString()
-              : new Date().toLocaleDateString();
-          } catch (e) {
-            date = new Date().toLocaleDateString();
-          }
-
-          return {
-            id: task._id,
-            taskName: task.taskName,
-            date,
-            pomodoros,
-            completedPomodoros,
-            priority: task.priority || "must do",
-            status: task.status || "ongoing",
-          };
-        })
-      );
-    } catch (error) {
-      console.error("Error fetching tasks:", error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
-
-  async function refetchIntermediateTasks() {
-    // Example using fetch API
-    try {
-      const response = await fetch("/api/tasks/intermediate", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // Ensure you have the token available
-        },
-      });
-      const data = await response.json();
-      setIntermediateTasks(data.intermediateTasks);
-    } catch (error) {
-      console.error("Error fetching intermediate tasks:", error);
-    }
-  }
+  const TaskItem = ({ task, section }) => (
+    <motion.li
+      key={task.id}
+      draggable
+      onDragStart={(e) => handleDragStart(e, task.id)}
+      className={`task-item ${
+        theme === "dark" ? "dark" : "light"
+      } ${task.status === "finished" ? "completed" : ""} ${
+        selectedTaskId === task.id ? "selected-task" : ""
+      } cursor-move hover:shadow-lg transition-shadow`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.2 }}
+      onClick={() => {
+        if (tasks.length > 1) {
+          setSelectedTaskId(task.id);
+        } else if (tasks.length === 1) {
+          setSelectedTaskId(task.id);
+        }
+      }}
+    >
+      <input
+        type="checkbox"
+        name={`task-${task.id}`}
+        checked={task.status === "finished" && task.completed}
+        onChange={() => {
+          toggleTaskStatus(task.id);
+          handleTaskCompletion(task.id);
+        }}
+        className="task-checkbox"
+      />
+      <div className="task-content">
+        <p className={`task-name ${task.status === "finished" ? "finished" : ""}`}>
+          {task.taskName}
+        </p>
+        <p className="task-details">
+          {task.status === "finished"
+            ? "Completed"
+            : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do" ? "Must Do" : "Can Do"}`}
+        </p>
+      </div>
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
+        onClick={(e) => {
+          e.stopPropagation();
+          deleteTask(task.id);
+        }}
+        className="task-delete"
+      >
+        <FaTrash size={14} />
+      </motion.button>
+    </motion.li>
+  );
 
   return (
     <>
@@ -417,178 +358,71 @@ export default function TodoList() {
                 <p className="mt-2">Loading tasks...</p>
               </motion.div>
             ) : (
-              <motion.ul
-                className="task-list compact"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ staggerChildren: 0.1 }}
-              >
+              <div className="space-y-6">
                 {tasks.length === 0 ? (
-                  <motion.li
+                  <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center py-4 opacity-70 italic"
                   >
                     No tasks yet. Add one to get started!
-                  </motion.li>
+                  </motion.div>
                 ) : (
                   <>
-                    <h3 className="text-lg font-semibold mb-2 mt-3 text-left">Must Do</h3>
-                    {tasks.filter(task => task.priority === "must do").length === 0 && (
-                      <motion.li
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center py-2 opacity-70 italic"
-                      >
-                        No must-do tasks.
-                      </motion.li>
-                    )}
-                    {tasks
-                      .filter(task => task.priority === "must do")
-                      .map((task) => (
-                        <motion.li
-                          key={task.id}
-                          className={`task-item ${
-                            theme === "dark" ? "dark" : "light"
-                          } ${task.status === "finished" ? "completed" : ""} ${
-                            selectedTaskId === task.id ? "selected-task" : ""
-                          }`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: -100 }}
-                          whileHover={{ scale: 1.01 }}
-                          transition={{ duration: 0.2 }}
-                          onClick={() => {
-                            if (tasks.length > 1) {
-                              setSelectedTaskId(task.id);
-                            } else if (isOnlyOneTask) {
-                              // If only one task, clicking it does not deselect
-                              setSelectedTaskId(task.id);
-                            }
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            name={`task-${task.id}`}
-                            checked={task.status === "finished" && task.completed}
-                            onChange={() => {
-                              toggleTaskStatus(task.id);
-                              handleTaskCompletion(task.id);
-                              setTimeout(() => {
-                                refetchIntermediateTasks();
-                                refetchCurrentTasks();
-                              }, 1500);
-                            }}
-                            className="task-checkbox"
-                          />
-                          <div className="task-content">
-                            <p
-                              className={`task-name ${
-                                task.status === "finished" ? "finished" : ""
-                              }`}
-                            >
-                              {task.taskName}
-                            </p>
-                            <p className="task-details">
-                              {task.status === "finished"
-                                ? "Completed"
-                                : `Due: ${
-                                    task.date || new Date().toLocaleDateString()
-                                  } | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do"? "Must Do" : "Can Do"}`}
-                            </p>
-                          </div>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => {
-                              deleteTask(task.id);
-                            }}
-                            className="task-delete"
+                    {/* Must Do Section */}
+                    <div 
+                      className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, "must do")}
+                    >
+                      <h3 className="text-lg font-semibold mb-3 text-left text-red-600 dark:text-red-400">
+                        🔥 Must Do
+                      </h3>
+                      <motion.ul className="space-y-2">
+                        {tasks.filter(task => task.priority === "must do").length === 0 ? (
+                          <motion.li
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-center py-4 opacity-70 italic border-2 border-dashed border-gray-300 rounded-lg"
                           >
-                            <FaTrash size={14} />
-                          </motion.button>
-                        </motion.li>
-                      ))}
-                      
-                    <h3 className="text-lg font-semibold mb-2 mt-4 text-left">Can Do</h3>
-                    {tasks.filter(task => task.priority === "can do").length === 0 && (
-                      <motion.li
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="text-center py-2 opacity-70 italic"
-                      >
-                        No can-do tasks.
-                      </motion.li>
-                    )}
-                    {tasks
-                      .filter(task => task.priority === "can do")
-                      .map((task) => (
-                        <motion.li
-                          key={task.id}
-                          className={`task-item ${
-                            theme === "dark" ? "dark" : "light"
-                          } ${task.status === "finished" ? "completed" : ""} ${
-                            selectedTaskId === task.id ? "selected-task" : ""
-                          }`}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: -100 }}
-                          whileHover={{ scale: 1.01 }}
-                          transition={{ duration: 0.2 }}
-                          onClick={() => {
-                            if (tasks.length > 1) {
-                              setSelectedTaskId(task.id);
-                            } else if (isOnlyOneTask) {
-                              // If only one task, clicking it does not deselect
-                              setSelectedTaskId(task.id);
-                            }
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            name={`task-${task.id}`}
-                            checked={task.status === "finished" && task.completed}
-                            onChange={() => {
-                              toggleTaskStatus(task.id);
-                              handleTaskCompletion(task.id);
-                              setTimeout(() => {
-                                refetchIntermediateTasks();
-                                refetchCurrentTasks();
-                              }, 1500);
-                            }}
-                            className="task-checkbox"
-                          />
-                          <div className="task-content">
-                            <p
-                              className={`task-name ${
-                                task.status === "finished" ? "finished" : ""
-                              }`}
-                            >
-                              {task.taskName}
-                            </p>
-                            <p className="task-details">
-                              {task.status === "finished"
-                                ? "Completed"
-                                : `Due: ${
-                                    task.date || new Date().toLocaleDateString()
-                                  } | Est. Pomodoros: ${task.pomodoros} | Priority: ${task.priority === "must do"? "Must Do" : "Can Do"}`}
-                            </p>
-                          </div>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => {
-                              deleteTask(task.id);
-                            }}
-                            className="task-delete"
+                            No must-do tasks. Drop tasks here to make them high priority.
+                          </motion.li>
+                        ) : (
+                          tasks
+                            .filter(task => task.priority === "must do")
+                            .map((task) => <TaskItem key={task.id} task={task} section="must-do" />)
+                        )}
+                      </motion.ul>
+                    </div>
+
+                    {/* Can Do Section */}
+                    <div 
+                      className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => handleDrop(e, "can do")}
+                    >
+                      <h3 className="text-lg font-semibold mb-3 text-left text-green-600 dark:text-green-400">
+                        ✅ Can Do
+                      </h3>
+                      <motion.ul className="space-y-2">
+                        {tasks.filter(task => task.priority === "can do").length === 0 ? (
+                          <motion.li
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-center py-4 opacity-70 italic border-2 border-dashed border-gray-300 rounded-lg"
                           >
-                            <FaTrash size={14} />
-                          </motion.button>
-                        </motion.li>
-                      ))}
+                            No can-do tasks. Drop tasks here for lower priority.
+                          </motion.li>
+                        ) : (
+                          tasks
+                            .filter(task => task.priority === "can do")
+                            .map((task) => <TaskItem key={task.id} task={task} section="can-do" />)
+                        )}
+                      </motion.ul>
+                    </div>
                   </>
                 )}
-              </motion.ul>
+              </div>
             )}
           </AnimatePresence>
 
@@ -608,101 +442,37 @@ export default function TodoList() {
             <span>Add Task</span>
           </motion.button>
 
-          <h2 className="text-xl font-bold mb-3 mt-3">Completed tasks</h2>
-
-          <motion.ul>
-            {intermediateTasks.map((task) => (
-              <motion.li
-                key={task._id}
-                className={`checked-item ${
-                  theme === "dark" ? "dark" : "light"
-                }`}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.2 }}
-              >
-                <input
-                  type="checkbox"
-                  name={`task-${task.id}`}
-                  checked={task.status === "ongoing" && !task.completed}
-                  onChange={() => {
-                    toggleTaskStatus(task._id);
-                    handleIntermediateTaskCompletion(task._id);
-                    setTimeout(() => {
-                      refetchCurrentTasks();
-                      refetchIntermediateTasks();
-                    }, 500);
-                  }}
-                  className="checked-checkbox"
-                />
-                <div className="task-content">
-                  <p className="checked-name">{task.taskName}</p>
-                  <p className="task-details">completed</p>
-                </div>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => {
-                    deleteTask(task._id);
-                  }}
-                  className="task-delete"
-                >
-                  <FaTrash size={14} />
-                </motion.button>
-              </motion.li>
-            ))}
-          </motion.ul>
-
           <AnimatePresence>
             {isOpen && (
               <Dialog
-                as="div"
-                className="fixed inset-0 flex items-center justify-center"
+                as={motion.div}
                 open={isOpen}
                 onClose={() => setIsOpen(false)}
+                className="fixed inset-0 z-50 flex items-center justify-center"
               >
                 <motion.div
-                  className="fixed inset-0"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 bg-black/50"
                   onClick={() => setIsOpen(false)}
-                  style={{
-                    backgroundColor: "rgba(0, 0, 0, 0.45)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                  }}
                 />
-
                 <motion.div
-                  initial={{ scale: 0.8, opacity: 0, y: 20 }}
-                  animate={{ scale: 1, opacity: 1, y: 0 }}
-                  exit={{ scale: 0.8, opacity: 0, y: 20 }}
-                  transition={{
-                    duration: 0.3,
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
-                  className={`relative p-5 rounded-lg shadow-md w-96 ${
-                    theme === "dark" ? "bg-black text-white" : "bg-white"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  className={`relative p-6 rounded-lg shadow-xl max-w-md w-full mx-4 ${
+                    theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <h2 className="text-lg font-semibold mb-3">New Task</h2>
                   <label className="relative">
                     Enter task:
-                    <span className="text-red-500 absolute top-0 right-[-1]">
-                      *
-                    </span>
+                    <span className="text-red-500 absolute top-0 right-[-1]">*</span>
                   </label>
                   {charCount > 0 && (
-                    <p className="text-sm text-gray-600 mb-1">
-                      Character limit: 200
-                    </p>
+                    <p className="text-sm text-gray-600 mb-1">Character limit: 200</p>
                   )}
                   <input
                     type="text"
@@ -721,9 +491,7 @@ export default function TodoList() {
                   <input
                     type="date"
                     value={newTask.date || today}
-                    onChange={(e) =>
-                      setNewTask({ ...newTask, date: e.target.value })
-                    }
+                    onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
                     className="w-full p-2 border rounded mb-2"
                     min={new Date().toISOString().split("T")[0]}
                   />
@@ -735,10 +503,7 @@ export default function TodoList() {
                     min={0}
                     max={100}
                     onChange={(e) => {
-                      const value = Math.max(
-                        0,
-                        Math.min(100, Number(e.target.value))
-                      );
+                      const value = Math.max(0, Math.min(100, Number(e.target.value)));
                       setNewTask({ ...newTask, pomodoros: value });
                     }}
                     className="w-full p-2 border rounded mb-2"
@@ -747,7 +512,9 @@ export default function TodoList() {
                   <select
                     value={newTask.priority}
                     onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                    className={`w-full p-2 border rounded mb-2 ${theme === 'dark' ? 'text-white bg-gray-800' : 'text-gray-800 bg-white'}`}
+                    className={`w-full p-2 border rounded mb-2 ${
+                      theme === "dark" ? "text-white bg-gray-800" : "text-gray-800 bg-white"
+                    }`}
                   >
                     <option value="must do">Must Do</option>
                     <option value="can do">Can Do</option>

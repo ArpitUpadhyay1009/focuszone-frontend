@@ -6,10 +6,6 @@ const AboutSection = () => {
     <section className="w-full py-12 md:py-16 relative about-section">
       <div className="container mx-auto px-4">
         <div className="mx-auto" style={{ width: '60vw' }}>
-          <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center section-heading about-section-text">
-            About Focuszone.io
-          </h2>
-          
           <div className="space-y-6">
             <div className="content-card">
              <div> <h3 className="text-xl font-semibold mb-4 about-section-text">What is Focuszone.io?<br></br></h3></div>

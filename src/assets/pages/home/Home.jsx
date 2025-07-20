@@ -58,7 +58,11 @@ export const Home = () => {
         </div>
       </div>
       <GuestTodoList/>
-      <div className="pt-[3%]"><AboutSection/><Footer/></div>
+      <div className="pt-[3%]">
+        <h2 className="text-3xl md:text-4xl font-bold mb-8 text-center section-heading about-section-text">About Focuszone.io</h2>
+        <AboutSection/>
+        <Footer/>
+        </div>
       
     </div>
   );
