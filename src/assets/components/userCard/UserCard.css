@@ -1,0 +1,154 @@
+.user-card {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  max-width: 400px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .user-card {
+    background-color: #1f2937;
+    border-color: #374151;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* Dark mode class-based (if using class toggle) */
+.dark .user-card {
+  background-color: #1f2937;
+  border-color: #374151;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+}
+
+.user-card h3 {
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.user-card h2 {
+  color: #374151;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.user-card p {
+  color: white;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.user-card label {
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+
+/* Dark mode text colors */
+@media (prefers-color-scheme: dark) {
+  .user-card h3 {
+    color: #f9fafb;
+  }
+
+  .user-card h2 {
+    color: #e5e7eb;
+  }
+
+  .user-card p {
+    color: white;
+  }
+
+  .user-card label {
+    color: white;
+  }
+}
+
+/* Dark mode class-based text colors */
+.dark .user-card h3 {
+  color: #f9fafb;
+}
+
+.dark .user-card h2 {
+  color: #e5e7eb;
+}
+
+.dark .user-card p {
+  color: #d1d5db;
+}
+
+.dark .user-card label {
+  color: #e5e7eb;
+}
+
+.user-card input {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 8px 12px;
+  width: 100%;
+  margin-bottom: 12px;
+  font-size: 0.875rem;
+  color: #1f2937;
+  background-color: #ffffff;
+}
+
+.user-card input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+/* Dark mode input styles */
+@media (prefers-color-scheme: dark) {
+  .user-card input {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+}
+
+.dark .user-card input {
+  background-color: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+.user-card button {
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin: 4px;
+}
+
+.user-card button:hover {
+  opacity: 0.9;
+}
+
+/* Ensure text is always visible with proper contrast */
+.user-card * {
+  color: inherit;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .user-card {
+    margin: 8px;
+    padding: 16px;
+    max-width: none;
+  }
+}

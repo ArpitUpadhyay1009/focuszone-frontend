@@ -2,7 +2,6 @@ import "./UserCard.css";
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { FaLink } from "react-icons/fa";
 
 const UserCard = ({ user }) => {
     const [isEditing, setIsEditing] = useState(false);
@@ -88,55 +87,32 @@ const UserCard = ({ user }) => {
         fetchStats();
       }, [user._id]);    
 
-    const copyReferralLink = () => {
-    const referralLink = `${window.location.origin}/signup?ref=${user._id}`;
-    navigator.clipboard.writeText(referralLink)
-      .then(() => {
-        toast.success('Referral link copied to clipboard!');
-      })
-      .catch(err => {
-        console.error('Failed to copy: ', err);
-        toast.error('Failed to copy referral link');
-      });
-  };
-
   return (
     <div className="user-card">
       <h3>{user.name}</h3>
 
-      <div className="referral-section mb-4">
-        <button 
-          onClick={copyReferralLink}
-          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-        >
-          <FaLink /> Invite Friends
-        </button>
-        <p className="text-xs text-gray-500 mt-1">Earn rewards for each friend who signs up!</p>
-      </div>
-
       {isEditing ? (
-          <>
-            <label htmlFor="">Coins</label>
-            <input
-              type="number"
-              className="border p-2 rounded w-full mb-2"
-              value={coins}
-              onChange={(e) => setCoins(e.target.value)}
-            />
-            <label htmlFor="">Level</label>
-            <input
-              type="number"
-              className="border p-2 rounded w-full mb-2"
-              value={level}
-              onChange={(e) => setLevel(e.target.value)}
-            />
-            <button className="bg-green-500 mx-1 px-2 py-[0.5] rounded-[10%]" onClick={handleSave}>Save</button>
-            <button className="bg-red-700 mx-1 px-2 py-[0.5] rounded-[10%]" onClick={() => setIsEditing(false)}>Cancel</button>
-          </>
-        ) : (
-          <>
-
-          <div className="bg-white p-4 rounded-xl shadow border">
+        <>
+          <label htmlFor="">Coins</label>
+          <input
+            type="number"
+            className="border p-2 rounded w-full mb-2"
+            value={coins}
+            onChange={(e) => setCoins(e.target.value)}
+          />
+          <label htmlFor="">Level</label>
+          <input
+            type="number"
+            className="border p-2 rounded w-full mb-2"
+            value={level}
+            onChange={(e) => setLevel(e.target.value)}
+          />
+          <button className="bg-green-500 mx-1 px-2 py-[0.5] rounded-[10%]" onClick={handleSave}>Save</button>
+          <button className="bg-red-700 mx-1 px-2 py-[0.5] rounded-[10%]" onClick={() => setIsEditing(false)}>Cancel</button>
+        </>
+      ) : (
+        <>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-gray-200 dark:border-gray-600">
             <h2 className="text-lg font-semibold mb-2">{user.username}</h2>
             <p>✅ Verified: {user.isVerified ? "Yes" : "No"}</p>
             <p>🏆 Level: {level}</p>
@@ -146,9 +122,9 @@ const UserCard = ({ user }) => {
             <p>📆 Logins This Year: {yearly ? yearly : "0"}</p>
             <button className="bg-[#7500CA] px-2 py-[0.5] text-white rounded-[10%]" onClick={() => setIsEditing(true)}>Edit</button>
           </div>
-          </>
-        )}
-      </div>
-    );
-  };
+        </>
+      )}
+    </div>
+  );
+};
   export default UserCard;
