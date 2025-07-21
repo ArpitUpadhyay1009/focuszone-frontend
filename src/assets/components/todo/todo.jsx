@@ -826,15 +826,24 @@ export default function TodoList() {
                 onClose={() => setIsEditOpen(false)}
                 className="fixed inset-0 z-50 flex items-center justify-center"
               >
+                {/* Overlay for background blur */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/50 backdrop-blur-md z-0"
+                  onClick={() => setIsEditOpen(false)}
+                />
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
-                  className={`modal-content p-6 rounded-lg shadow-lg max-w-md w-full mx-4 ${
+                  className={`modal-content p-6 rounded-lg shadow-lg max-w-md w-full mx-4 z-10 relative ${
                     theme === "dark"
                       ? "bg-gray-800 text-white"
                       : "bg-white text-gray-800"
                   }`}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
                   <label>Task name:</label>
