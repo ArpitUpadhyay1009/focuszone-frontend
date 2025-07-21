@@ -42,7 +42,7 @@ const LoginBox = () => {
       const response = await axios.post("/api/auth/login", {
         identifier,
         password,
-        rememberMe: true
+        rememberMe: true,
       });
 
       const { token, user } = response.data;
@@ -54,6 +54,7 @@ const LoginBox = () => {
         localStorage.setItem("token", token);
         login(user, token);
         setShowSuccess(true);
+        window.sessionStorage.removeItem("otpSent");
 
         setTimeout(() => {
           setShowProgress(false);
@@ -75,6 +76,7 @@ const LoginBox = () => {
           alert("Invalid username or password! Please try again.");
         } else if (error.response.status === 403) {
           alert("Please verify your email first!");
+          window.sessionStorage.setItem("otpSent", "1");
           navigate("/verify-otp");
         } else {
           console.log(error);
@@ -104,7 +106,7 @@ const LoginBox = () => {
               className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full"
             >
               <h3 className="text-xl font-bold mb-4 text-center">Logging in</h3>
-              
+
               <div className="w-full h-4 bg-gray-200 rounded-full overflow-hidden mb-4">
                 <motion.div
                   initial={{ width: "0%" }}
@@ -113,15 +115,17 @@ const LoginBox = () => {
                   className="h-full bg-purple-500 rounded-full"
                 />
               </div>
-              
+
               <p className="text-center text-gray-600">
-                {progress < 100 ? "Authenticating..." : "Success! Redirecting..."}
+                {progress < 100
+                  ? "Authenticating..."
+                  : "Success! Redirecting..."}
               </p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       <div className="login-box p-6 rounded-lg shadow-lg w-110">
         <h2 className="text-4xl font-[Poppins] font-medium mb-4 text-left login-text">
           Login
@@ -165,7 +169,9 @@ const LoginBox = () => {
             type="submit"
             disabled={isLoading}
             className={`w-full bg-purple-700 font-[Poppins] text-white py-2 rounded-lg cursor-pointer transition shadow-[0px_-4px_10px_rgba(128,0,128,0.3)] ${
-              isLoading ? "opacity-70 cursor-not-allowed" : "hover:bg-purple-800"
+              isLoading
+                ? "opacity-70 cursor-not-allowed"
+                : "hover:bg-purple-800"
             }`}
           >
             {isLoading ? "Logging in..." : "Login"}
@@ -184,10 +190,7 @@ const LoginBox = () => {
         </div>
         {showSuccess && (
           <>
-            <Confetti
-              width={window.innerWidth}
-              height={window.innerHeight}
-            />
+            <Confetti width={window.innerWidth} height={window.innerHeight} />
             <div className="popup-message">
               <div className="popup-content">
                 <h3>Login Successful!</h3>

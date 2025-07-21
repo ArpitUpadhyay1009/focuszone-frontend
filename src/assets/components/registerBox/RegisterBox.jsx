@@ -23,7 +23,9 @@ const RegisterBox = () => {
     // Password validation logic
     const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$#!@]).{8,}$/;
     if (!passwordPattern.test(password)) {
-      alert("Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one symbol ($, #, @).");
+      alert(
+        "Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, one digit, and one symbol ($, #, @)."
+      );
       return;
     }
 
@@ -35,7 +37,14 @@ const RegisterBox = () => {
       });
 
       alert("Registered successfully! Please verify.");
-      navigate("/verify-otp"); // Navigate to OTP verification page
+      window.localStorage.setItem("otpSent", "1");
+      window.localStorage.setItem("emailForOtp", email);
+      console.log(
+        "[RegisterBox] Set otpSent and emailForOtp in localStorage",
+        window.localStorage.getItem("otpSent"),
+        window.localStorage.getItem("emailForOtp")
+      );
+      navigate("/verify-otp", { state: { email } }); // Navigate to OTP verification page
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {
@@ -64,9 +73,13 @@ const RegisterBox = () => {
               <label className="block font-[Poppins] register-subtext py-4">
                 Please enter the details below to continue.
               </label>
-              <label>{charCount > 0 && (
-                <p className="text-sm register-subtext mb-1">Character limit: 200</p> 
-              )}</label>
+              <label>
+                {charCount > 0 && (
+                  <p className="text-sm register-subtext mb-1">
+                    Character limit: 200
+                  </p>
+                )}
+              </label>
               <input
                 type="text"
                 placeholder="User Name"
@@ -112,11 +125,14 @@ const RegisterBox = () => {
             </div>
             {isPasswordFocused && (
               <p className="text-sm text-gray-600 mb-4">
-                Password must be at least 8 characters long and include:<br />
-                - At least one uppercase letter<br />
-                - At least one lowercase letter<br />
-                - At least one digit<br />
-                - One of these symbols: $ @ ! #
+                Password must be at least 8 characters long and include:
+                <br />
+                - At least one uppercase letter
+                <br />
+                - At least one lowercase letter
+                <br />
+                - At least one digit
+                <br />- One of these symbols: $ @ ! #
               </p>
             )}
             <button

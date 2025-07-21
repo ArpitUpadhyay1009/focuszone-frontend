@@ -17,34 +17,37 @@ import StudyWGram from "@pages/studyWGram/StudyWGram";
 import Terms from "@pages/terms/Terms";
 import Contact from "@pages/contact/Contact";
 import Cookie from "@pages/cookie/Cookie";
-import ProtectedRoute from "./assets/components/protectedpage/ProtectedRoute";
+import ProtectedRoute, {
+  PublicRoute,
+} from "./assets/components/protectedpage/ProtectedRoute";
 import { useAuth } from "./assets/context/AuthContext";
 
 function App() {
   const { user } = useAuth();
-  
+
   // Structured data for organization
   const structuredDataOrganization = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": "FocusZone",
-    "url": "https://focuszone.io",
-    "logo": "https://focuszone.io/logo.png",
-    "description": "FocusZone.io – The Gamified Pomodoro Timer That Makes You Want to Study Turn study time into game time with FocusZone.io — the ultimate gamified Pomodoro timer built for students. Every minute you focus earns you coins, XP, and room upgrades. Use our Pomodoro and countdown timers to stay on track, complete tasks, and unlock stylish furniture to customize your virtual study room. Plug into our embedded, focus-optimized Spotify playlist, scientifically designed and frequently updated to keep you deep in the zone. Track your streaks, monitor your stats, and enjoy study sessions that actually motivate you. Keep leveling up — who knows… maybe a secret second floor unlocks when you least expect it?"
+    name: "FocusZone",
+    url: "https://focuszone.io",
+    logo: "https://focuszone.io/logo.png",
+    description:
+      "FocusZone.io – The Gamified Pomodoro Timer That Makes You Want to Study Turn study time into game time with FocusZone.io — the ultimate gamified Pomodoro timer built for students. Every minute you focus earns you coins, XP, and room upgrades. Use our Pomodoro and countdown timers to stay on track, complete tasks, and unlock stylish furniture to customize your virtual study room. Plug into our embedded, focus-optimized Spotify playlist, scientifically designed and frequently updated to keep you deep in the zone. Track your streaks, monitor your stats, and enjoy study sessions that actually motivate you. Keep leveling up — who knows… maybe a secret second floor unlocks when you least expect it?",
   };
 
   // Structured data for web application
   const structuredDataWebApp = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
-    "name": "FocusZone",
-    "applicationCategory": "ProductivityApplication",
-    "operatingSystem": "Web",
-    "offers": {
+    name: "FocusZone",
+    applicationCategory: "ProductivityApplication",
+    operatingSystem: "Web",
+    offers: {
       "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
+      price: "0",
+      priceCurrency: "USD",
+    },
   };
 
   return (
@@ -60,19 +63,70 @@ function App() {
       </Helmet>
       <BrowserRouter>
         <Routes>
-          {/* Public routes */}
-          <Route path="/" element={user ? <Navigate to="/home" replace /> : <Home />} />
-          <Route path="/login" element={user ? <Navigate to="/home" replace /> : <Login />} />
-          <Route path="/register" element={user ? <Navigate to="/home" replace /> : <Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/verify-otp" element={<VerifyOtp />} />
-          
-          {/* Protected routes */}
-          <Route path="/home" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
-          
+          {/* Public routes (only for unauthenticated users) */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <Home />
+              </PublicRoute>
+            }
+          />
+
+          {/* Step-protected routes */}
+          <Route
+            path="/verify-otp"
+            element={
+              <ProtectedRoute requiredStep="otpSent">
+                <VerifyOtp />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <ProtectedRoute requiredStep="resetVerified">
+                <ResetPassword />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Protected routes (authenticated users only) */}
+          <Route
+            path="/home"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Public informational routes */}
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/data-privacy" element={<DataPrivacy />} />
           <Route path="/studyw.tok" element={<StudyWTok />} />
           <Route path="/studyw.gram" element={<StudyWGram />} />
@@ -83,7 +137,7 @@ function App() {
           <Route path="/privacy-policy" element={<DataPrivacy />} />
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/cookies" element={<Cookie />} />
-          
+
           {/* 404 route */}
           <Route path="*" element={<NotFound />} />
         </Routes>

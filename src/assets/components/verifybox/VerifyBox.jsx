@@ -1,11 +1,30 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 
 const VerifyOTP = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(""); // User enters OTP
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    const emailFromState = location.state?.email;
+    const emailFromLocal = window.localStorage.getItem("emailForOtp");
+    console.log(
+      "[VerifyBox] emailFromState:",
+      emailFromState,
+      "emailFromLocal:",
+      emailFromLocal
+    );
+    if (emailFromState) {
+      setEmail(emailFromState);
+    } else if (emailFromLocal) {
+      setEmail(emailFromLocal);
+    } else {
+      navigate("/register", { replace: true });
+    }
+  }, [location.state, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -17,6 +36,8 @@ const VerifyOTP = () => {
       });
 
       alert("Email verified successfully!");
+      window.localStorage.removeItem("otpSent");
+      window.localStorage.removeItem("emailForOtp");
       navigate("/login"); // Redirect to login page
     } catch (error) {
       if (error.response) {
@@ -47,6 +68,7 @@ const VerifyOTP = () => {
             onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            disabled
           />
           <input
             type="text"

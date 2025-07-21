@@ -1,29 +1,31 @@
 // src/pages/ForgotPassword.jsx
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import Navbar from "@components/navbar/Navbar.jsx";
 import "@components/registerBox/RegisterBox.css"; // Import the CSS
-import Footer from '../../components/footer/Footer';
+import Footer from "../../components/footer/Footer";
 
 const ForgotPassword = () => {
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     try {
       const res = await axios.post(`/api/auth/forgot-password`, { email });
-      if(res.status === 200){
+      if (res.status === 200) {
         alert(res.data.message);
       }
-      navigate('/reset-password', { state: { email } });
+      window.sessionStorage.setItem("resetVerified", "1");
+      window.sessionStorage.setItem("emailForOtp", email);
+      navigate("/reset-password", { state: { email } });
     } catch (err) {
       console.log(err);
-      setError(err.response?.data?.message || 'Something went wrong');
+      setError(err.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -45,14 +47,19 @@ const ForgotPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-            <button type="submit" className="w-full bg-purple-700 text-white p-2 rounded">
+            <button
+              type="submit"
+              className="w-full bg-purple-700 text-white p-2 rounded"
+            >
               Send OTP
             </button>
           </form>
           {error && <p className="text-red-600 mt-4">{error}</p>}
         </div>
       </div>
-      <div className='mt-[22%]'><Footer/></div>
+      <div className="mt-[22%]">
+        <Footer />
+      </div>
     </>
   );
 };
