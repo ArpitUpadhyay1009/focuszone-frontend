@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import { useTheme } from "../../context/ThemeContext.jsx";
 
 const VerifyOTP = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme } = useTheme();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(""); // User enters OTP
 
@@ -56,8 +58,14 @@ const VerifyOTP = () => {
 
   return (
     <div className="flex justify-center items-center bg-transparent">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-96">
-        <h2 className="text-3xl font-semibold text-left font-[Poppins] text-gray-800 mb-4">
+      <div
+        className={`p-8 rounded-xl shadow-lg w-96 transition-colors duration-300 ${
+          theme === "dark"
+            ? "bg-gray-900 text-white border border-gray-700"
+            : "bg-white text-gray-800"
+        }`}
+      >
+        <h2 className="text-3xl font-semibold text-left font-[Poppins] mb-4">
           Verify OTP
         </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -67,7 +75,11 @@ const VerifyOTP = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className={`w-full px-3 py-2 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-300 ${
+              theme === "dark"
+                ? "bg-gray-800 text-white border border-gray-700 placeholder-gray-400"
+                : "bg-gray-200 text-gray-800 border-none"
+            }`}
             disabled
           />
           <input
@@ -76,7 +88,11 @@ const VerifyOTP = () => {
             value={otp}
             onChange={(e) => setOtp(e.target.value)}
             required
-            className="w-full px-3 py-2 border-none bg-gray-200 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className={`w-full px-3 py-2 font-[Poppins] rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors duration-300 ${
+              theme === "dark"
+                ? "bg-gray-800 text-white border border-gray-700 placeholder-gray-400"
+                : "bg-gray-200 text-gray-800 border-none"
+            }`}
           />
           <button
             type="submit"
