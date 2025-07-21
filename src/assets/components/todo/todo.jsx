@@ -33,7 +33,9 @@ export default function TodoList() {
     pomodoros: "",
     priority: "",
   });
-  const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024);
+  const [windowWidth, setWindowWidth] = useState(
+    typeof window !== "undefined" ? window.innerWidth : 1024
+  );
 
   const token = localStorage.getItem("token");
 
@@ -45,7 +47,7 @@ export default function TodoList() {
 
       // Store the remaining count for local calculations
       setRemainingPomodoros(remainingCount);
-      
+
       // Calculate and set the estimated time
       calculateEstimatedTime(remainingCount);
     } catch (error) {
@@ -100,10 +102,32 @@ export default function TodoList() {
     }
   };
 
-  useEffect(() => {
+  const fetchIntermediateTasks = async () => {
+    try {
+      const res = await axios.get("/api/tasks/intermediate", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      setIntermediateTasks(
+        res.data.intermediateTasks.map((task) => ({
+          id: task._id,
+          taskName: task.taskName,
+          date: task.dueDate
+            ? new Date(task.dueDate).toLocaleDateString()
+            : new Date().toLocaleDateString(),
+          pomodoros: task.estimatedPomodoros || "0",
+          priority: task.priority || "must do",
+          status: "finished",
+        }))
+      );
+    } catch (error) {
+      console.error("Error fetching intermediate tasks:", error.message);
+    }
+  };
 
+  useEffect(() => {
     if (token) {
       fetchTasks();
+      fetchIntermediateTasks();
     } else {
       setIsLoading(false);
     }
@@ -124,9 +148,9 @@ export default function TodoList() {
       setWindowWidth(window.innerWidth);
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
     }
   }, []);
 
@@ -170,7 +194,9 @@ export default function TodoList() {
 
   const addTask = async () => {
     if (tasks.length >= 100) {
-      alert("You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more.");
+      alert(
+        "You have reached the maximum limit of 100 tasks. Please delete or complete some tasks to add more."
+      );
       return;
     }
 
@@ -228,30 +254,55 @@ export default function TodoList() {
   };
 
   const toggleTaskStatus = async (taskId) => {
+    // Find if the task is in ongoing or intermediate
+    const isOngoing = tasks.some((task) => task.id === taskId);
+    let toggledTask;
+
+    if (isOngoing) {
+      toggledTask = tasks.find((task) => task.id === taskId);
+      // Optimistically move to intermediateTasks
+      setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      setIntermediateTasks((prev) => [
+        ...prev,
+        { ...toggledTask, status: "finished" },
+      ]);
+    } else {
+      toggledTask = intermediateTasks.find((task) => task.id === taskId);
+      // Optimistically move to tasks
+      setIntermediateTasks((prev) => prev.filter((task) => task.id !== taskId));
+      setTasks((prev) => [
+        ...prev,
+        {
+          ...toggledTask,
+          status: "ongoing",
+          completedPomodoros: toggledTask.completedPomodoros || "0",
+        },
+      ]);
+    }
+
+    // Call backend
     try {
       await axios.patch(
         `/api/tasks/${taskId}/toggle`,
         {},
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === taskId
-            ? {
-                ...task,
-                status: task.status === "finished" ? "ongoing" : "finished",
-              }
-            : task
-        )
-      );
       fetchRemainingPomodoros();
+      // Optionally, re-fetch after a delay or on error
     } catch (error) {
-      console.error("Error toggling task status:", error.message);
+      // Revert optimistic update if error
+      if (isOngoing) {
+        setIntermediateTasks((prev) =>
+          prev.filter((task) => task.id !== taskId)
+        );
+        setTasks((prev) => [...prev, toggledTask]);
+      } else {
+        setTasks((prev) => prev.filter((task) => task.id !== taskId));
+        setIntermediateTasks((prev) => [...prev, toggledTask]);
+      }
+      alert("Failed to toggle task status. Please try again.");
     }
   };
 
@@ -311,7 +362,13 @@ export default function TodoList() {
           )
         );
 
-        setEditTask({ id: "", name: "", date: today, pomodoros: "", priority: "" });
+        setEditTask({
+          id: "",
+          name: "",
+          date: today,
+          pomodoros: "",
+          priority: "",
+        });
         fetchRemainingPomodoros();
         setIsEditOpen(false);
       } catch (error) {
@@ -323,19 +380,20 @@ export default function TodoList() {
   // Drag and Drop Functions
   const toggleTaskPriority = async (taskId, newPriority) => {
     try {
-      await axios.patch(`/api/tasks/${taskId}/priority`, 
+      await axios.patch(
+        `/api/tasks/${taskId}/priority`,
         { priority: newPriority },
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
-      
-      setTasks((prev) => 
-        prev.map((task) => 
+
+      setTasks((prev) =>
+        prev.map((task) =>
           task.id === taskId ? { ...task, priority: newPriority } : task
         )
       );
-      
+
       fetchRemainingPomodoros();
     } catch (error) {
       console.error("Error updating task priority:", error.message);
@@ -355,8 +413,8 @@ export default function TodoList() {
   const handleDrop = (e, targetPriority) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData("text/plain");
-    const task = tasks.find(t => t.id === taskId);
-    
+    const task = tasks.find((t) => t.id === taskId);
+
     if (task && task.priority !== targetPriority) {
       toggleTaskPriority(taskId, targetPriority);
     }
@@ -381,7 +439,10 @@ export default function TodoList() {
         })
       );
     } catch (error) {
-      console.error("Error toggling task:", error.response?.data || error.message);
+      console.error(
+        "Error toggling task:",
+        error.response?.data || error.message
+      );
     }
   };
 
@@ -404,19 +465,22 @@ export default function TodoList() {
     window.addEventListener("pomodoroCompleted", handlePomodoroCompleted);
 
     return () => {
-      window.removeEventListener("timerSettingsUpdate", handleTimerSettingsUpdate);
+      window.removeEventListener(
+        "timerSettingsUpdate",
+        handleTimerSettingsUpdate
+      );
       window.removeEventListener("pomodoroCompleted", handlePomodoroCompleted);
     };
   }, []);
 
-  const TaskItem = ({ task, section }) => (
+  const TaskItem = ({ task, section, isIntermediate }) => (
     <motion.li
       key={task.id}
       draggable
       onDragStart={(e) => handleDragStart(e, task.id)}
-      className={`task-item ${
-        theme === "dark" ? "dark" : "light"
-      } ${task.status === "finished" ? "completed" : ""} ${
+      className={`task-item ${theme === "dark" ? "dark" : "light"} ${
+        task.status === "finished" ? "completed" : ""
+      } ${
         selectedTaskId === task.id ? "selected-task" : ""
       } cursor-move hover:shadow-lg transition-shadow`}
       initial={{ opacity: 0, y: 20 }}
@@ -435,21 +499,27 @@ export default function TodoList() {
       <input
         type="checkbox"
         name={`task-${task.id}`}
-        checked={task.status === "finished" && task.completed}
+        checked={isIntermediate || task.status === "finished"}
         onChange={() => {
           toggleTaskStatus(task.id);
-          handleTaskCompletion(task.id);
+          // Removed fetchTasks() and fetchIntermediateTasks() from here
         }}
         className="task-checkbox"
       />
       <div className="task-content">
-        <p className={`task-name ${task.status === "finished" ? "finished" : ""}`}>
+        <p
+          className={`task-name ${
+            task.status === "finished" ? "finished" : ""
+          }`}
+        >
           {task.taskName}
         </p>
         <p className="task-details">
           {task.status === "finished"
             ? "Completed"
-            : `Due: ${task.date || new Date().toLocaleDateString()} | Est. Pomodoros: ${task.completedPomodoros}/${task.pomodoros}`}
+            : `Due: ${
+                task.date || new Date().toLocaleDateString()
+              } | Est. Pomodoros: ${task.completedPomodoros}/${task.pomodoros}`}
         </p>
       </div>
       <div className="task-actions">
@@ -486,8 +556,8 @@ export default function TodoList() {
       <div className="todo-container flex flex-col items-center">
         <div
           className="task-manager-container p-4 mx-auto text-center w-[92vw] sm:w-[85vw] md:w-[75vw] lg:w-[65vw] xl:w-[55vw] max-w-4xl"
-          style={{ 
-            minWidth: windowWidth >= 1024 ? '700px' : '320px'
+          style={{
+            minWidth: windowWidth >= 1024 ? "700px" : "320px",
           }}
         >
           <h2 className="text-xl font-bold mb-3">Task Manager</h2>
@@ -515,7 +585,7 @@ export default function TodoList() {
                 ) : (
                   <>
                     {/* Must Do Section */}
-                    <div 
+                    <div
                       className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, "must do")}
@@ -524,24 +594,30 @@ export default function TodoList() {
                         🔥 Must Do
                       </h3>
                       <motion.ul className="space-y-2">
-                        {tasks.filter(task => task.priority === "must do").length === 0 ? (
-                          <motion.li
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-center py-4 opacity-70 italic border-2 border-dashed border-gray-300 rounded-lg"
-                          >
-                            No must-do tasks. Drop tasks here to make them high priority.
-                          </motion.li>
-                        ) : (
-                          tasks
-                            .filter(task => task.priority === "must do")
-                            .map((task) => <TaskItem key={task.id} task={task} section="must-do" />)
-                        )}
+                        {tasks
+                          .filter((task) => task.priority === "must do")
+                          .map((task) => (
+                            <TaskItem
+                              key={task.id}
+                              task={task}
+                              section="must-do"
+                            />
+                          ))}
+                        {intermediateTasks
+                          .filter((task) => task.priority === "must do")
+                          .map((task) => (
+                            <TaskItem
+                              key={task.id}
+                              task={task}
+                              section="must-do"
+                              isIntermediate
+                            />
+                          ))}
                       </motion.ul>
                     </div>
 
                     {/* Can Do Section */}
-                    <div 
+                    <div
                       className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, "can do")}
@@ -550,7 +626,8 @@ export default function TodoList() {
                         ✅ Can Do
                       </h3>
                       <motion.ul className="space-y-2">
-                        {tasks.filter(task => task.priority === "can do").length === 0 ? (
+                        {tasks.filter((task) => task.priority === "can do")
+                          .length === 0 ? (
                           <motion.li
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -560,9 +637,25 @@ export default function TodoList() {
                           </motion.li>
                         ) : (
                           tasks
-                            .filter(task => task.priority === "can do")
-                            .map((task) => <TaskItem key={task.id} task={task} section="can-do" />)
+                            .filter((task) => task.priority === "can do")
+                            .map((task) => (
+                              <TaskItem
+                                key={task.id}
+                                task={task}
+                                section="can-do"
+                              />
+                            ))
                         )}
+                        {intermediateTasks
+                          .filter((task) => task.priority === "can do")
+                          .map((task) => (
+                            <TaskItem
+                              key={task.id}
+                              task={task}
+                              section="can-do"
+                              isIntermediate
+                            />
+                          ))}
                       </motion.ul>
                     </div>
                   </>
@@ -607,17 +700,23 @@ export default function TodoList() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   className={`relative p-6 rounded-lg shadow-xl max-w-md w-full mx-4 ${
-                    theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                    theme === "dark"
+                      ? "bg-gray-800 text-white"
+                      : "bg-white text-gray-800"
                   }`}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <h2 className="text-lg font-semibold mb-3">New Task</h2>
                   <label className="relative">
                     Enter task:
-                    <span className="text-red-500 absolute top-0 right-[-1]">*</span>
+                    <span className="text-red-500 absolute top-0 right-[-1]">
+                      *
+                    </span>
                   </label>
                   {charCount > 0 && (
-                    <p className="text-sm text-gray-600 mb-1">Character limit: 200</p>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Character limit: 200
+                    </p>
                   )}
                   <input
                     type="text"
@@ -636,7 +735,9 @@ export default function TodoList() {
                   <input
                     type="date"
                     value={newTask.date || today}
-                    onChange={(e) => setNewTask({ ...newTask, date: e.target.value })}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, date: e.target.value })
+                    }
                     className="w-full p-2 border rounded mb-2"
                     min={new Date().toISOString().split("T")[0]}
                   />
@@ -648,7 +749,10 @@ export default function TodoList() {
                     min={0}
                     max={100}
                     onChange={(e) => {
-                      const value = Math.max(0, Math.min(100, Number(e.target.value)));
+                      const value = Math.max(
+                        0,
+                        Math.min(100, Number(e.target.value))
+                      );
                       setNewTask({ ...newTask, pomodoros: value });
                     }}
                     className="w-full p-2 border rounded mb-2"
@@ -656,9 +760,13 @@ export default function TodoList() {
                   <label>Priority</label>
                   <select
                     value={newTask.priority}
-                    onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
+                    onChange={(e) =>
+                      setNewTask({ ...newTask, priority: e.target.value })
+                    }
                     className={`w-full p-2 border rounded mb-2 ${
-                      theme === "dark" ? "text-white bg-gray-800" : "text-gray-800 bg-white"
+                      theme === "dark"
+                        ? "text-white bg-gray-800"
+                        : "text-gray-800 bg-white"
                     }`}
                   >
                     <option value="must do">Must Do</option>
@@ -704,7 +812,9 @@ export default function TodoList() {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8 }}
                   className={`modal-content p-6 rounded-lg shadow-lg max-w-md w-full mx-4 ${
-                    theme === "dark" ? "bg-gray-800 text-white" : "bg-white text-gray-800"
+                    theme === "dark"
+                      ? "bg-gray-800 text-white"
+                      : "bg-white text-gray-800"
                   }`}
                 >
                   <h2 className="text-lg font-semibold mb-4">Edit Task</h2>
@@ -725,7 +835,9 @@ export default function TodoList() {
                   <input
                     type="date"
                     value={editTask.date || today}
-                    onChange={(e) => setEditTask({ ...editTask, date: e.target.value })}
+                    onChange={(e) =>
+                      setEditTask({ ...editTask, date: e.target.value })
+                    }
                     className="w-full p-2 border rounded mb-2"
                     min={new Date().toISOString().split("T")[0]}
                   />
@@ -737,7 +849,10 @@ export default function TodoList() {
                     min={0}
                     max={100}
                     onChange={(e) => {
-                      const value = Math.max(0, Math.min(100, Number(e.target.value)));
+                      const value = Math.max(
+                        0,
+                        Math.min(100, Number(e.target.value))
+                      );
                       setEditTask({ ...editTask, pomodoros: value });
                     }}
                     className="w-full p-2 border rounded mb-2"
@@ -745,9 +860,13 @@ export default function TodoList() {
                   <label>Priority</label>
                   <select
                     value={editTask.priority}
-                    onChange={(e) => setEditTask({ ...editTask, priority: e.target.value })}
+                    onChange={(e) =>
+                      setEditTask({ ...editTask, priority: e.target.value })
+                    }
                     className={`w-full p-2 border rounded mb-2 ${
-                      theme === "dark" ? "text-white bg-gray-800" : "text-gray-800 bg-white"
+                      theme === "dark"
+                        ? "text-white bg-gray-800"
+                        : "text-gray-800 bg-white"
                     }`}
                   >
                     <option value="must do">Must Do</option>
