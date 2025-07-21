@@ -313,6 +313,9 @@ export default function TodoList() {
       });
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
       fetchRemainingPomodoros();
+
+      // Dispatch custom event for real-time update
+      window.dispatchEvent(new Event("taskCompletionUpdate"));
     } catch (error) {
       console.error("Error deleting task:", error.message);
     }
