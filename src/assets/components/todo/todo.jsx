@@ -332,8 +332,9 @@ export default function TodoList() {
   const updateTask = async () => {
     if (editTask.name.trim()) {
       try {
+        console.log("Updating task with ID:", editTask.id);
         const res = await axios.patch(
-          `/api/tasks/${editTask.id}`,
+          `/api/tasks/${editTask.id}/edit`,
           {
             taskName: editTask.name,
             dueDate: editTask.date,
