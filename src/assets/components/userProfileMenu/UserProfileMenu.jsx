@@ -287,7 +287,7 @@ const UserProfileMenu = () => {
   };
 
   const handleReferralClick = () => {
-    const link = `${window.location.origin}/signup?ref=${user?._id || ''}`;
+    const link = `${window.location.origin}/?ref=${user?._id || ''}`;
     setReferralLink(link);
     setShowReferralPopup(true);
   };

@@ -11,7 +11,7 @@ const SpotifyEmbed2 = () => {
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy"
-          className="frame w-full max-w-lg sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl mb-[10%] rounded-lg shadow-lg"
+          className="frame w-full max-w-lg sm:max-w-md md:max-w-lg lg:max-w-2xl xl:max-w-4xl mb-[10%]"
         ></iframe>
       </div>
     </>
