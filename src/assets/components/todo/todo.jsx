@@ -254,13 +254,11 @@ export default function TodoList() {
   };
 
   const toggleTaskStatus = async (taskId) => {
-    // Find if the task is in ongoing or intermediate
     const isOngoing = tasks.some((task) => task.id === taskId);
     let toggledTask;
 
     if (isOngoing) {
       toggledTask = tasks.find((task) => task.id === taskId);
-      // Optimistically move to intermediateTasks
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
       setIntermediateTasks((prev) => [
         ...prev,
@@ -268,7 +266,6 @@ export default function TodoList() {
       ]);
     } else {
       toggledTask = intermediateTasks.find((task) => task.id === taskId);
-      // Optimistically move to tasks
       setIntermediateTasks((prev) => prev.filter((task) => task.id !== taskId));
       setTasks((prev) => [
         ...prev,
@@ -280,7 +277,6 @@ export default function TodoList() {
       ]);
     }
 
-    // Call backend
     try {
       await axios.patch(
         `/api/tasks/${taskId}/toggle`,
@@ -289,8 +285,9 @@ export default function TodoList() {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
+      // Only update remaining pomodoros, not the whole task list
       fetchRemainingPomodoros();
-      // Optionally, re-fetch after a delay or on error
+      // Do NOT call fetchTasks() or fetchIntermediateTasks() here!
     } catch (error) {
       // Revert optimistic update if error
       if (isOngoing) {
@@ -311,10 +308,10 @@ export default function TodoList() {
       await axios.delete(`/api/tasks/${taskId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
       });
+      // Remove from both arrays
       setTasks((prev) => prev.filter((task) => task.id !== taskId));
+      setIntermediateTasks((prev) => prev.filter((task) => task.id !== taskId));
       fetchRemainingPomodoros();
-
-      // Dispatch custom event for real-time update
       window.dispatchEvent(new Event("taskCompletionUpdate"));
     } catch (error) {
       console.error("Error deleting task:", error.message);
@@ -577,7 +574,7 @@ export default function TodoList() {
               </motion.div>
             ) : (
               <div className="space-y-6">
-                {tasks.length === 0 ? (
+                {tasks.length === 0 && intermediateTasks.length === 0 ? (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -597,25 +594,38 @@ export default function TodoList() {
                         🔥 Must Do
                       </h3>
                       <motion.ul className="space-y-2">
-                        {tasks
-                          .filter((task) => task.priority === "must do")
-                          .map((task) => (
-                            <TaskItem
-                              key={task.id}
-                              task={task}
-                              section="must-do"
-                            />
-                          ))}
-                        {intermediateTasks
-                          .filter((task) => task.priority === "must do")
-                          .map((task) => (
-                            <TaskItem
-                              key={task.id}
-                              task={task}
-                              section="must-do"
-                              isIntermediate
-                            />
-                          ))}
+                        {tasks.filter((task) => task.priority === "must do")
+                          .length === 0 &&
+                        intermediateTasks.filter(
+                          (task) => task.priority === "must do"
+                        ).length === 0 ? (
+                          <motion.li>
+                            No must-do tasks. Drop tasks here to make them high
+                            priority.
+                          </motion.li>
+                        ) : (
+                          <>
+                            {tasks
+                              .filter((task) => task.priority === "must do")
+                              .map((task) => (
+                                <TaskItem
+                                  key={task.id}
+                                  task={task}
+                                  section="must-do"
+                                />
+                              ))}
+                            {intermediateTasks
+                              .filter((task) => task.priority === "must do")
+                              .map((task) => (
+                                <TaskItem
+                                  key={task.id}
+                                  task={task}
+                                  section="must-do"
+                                  isIntermediate
+                                />
+                              ))}
+                          </>
+                        )}
                       </motion.ul>
                     </div>
 
@@ -630,7 +640,10 @@ export default function TodoList() {
                       </h3>
                       <motion.ul className="space-y-2">
                         {tasks.filter((task) => task.priority === "can do")
-                          .length === 0 ? (
+                          .length === 0 &&
+                        intermediateTasks.filter(
+                          (task) => task.priority === "can do"
+                        ).length === 0 ? (
                           <motion.li
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -639,26 +652,28 @@ export default function TodoList() {
                             No can-do tasks. Drop tasks here for lower priority.
                           </motion.li>
                         ) : (
-                          tasks
-                            .filter((task) => task.priority === "can do")
-                            .map((task) => (
-                              <TaskItem
-                                key={task.id}
-                                task={task}
-                                section="can-do"
-                              />
-                            ))
+                          <>
+                            {tasks
+                              .filter((task) => task.priority === "can do")
+                              .map((task) => (
+                                <TaskItem
+                                  key={task.id}
+                                  task={task}
+                                  section="can-do"
+                                />
+                              ))}
+                            {intermediateTasks
+                              .filter((task) => task.priority === "can do")
+                              .map((task) => (
+                                <TaskItem
+                                  key={task.id}
+                                  task={task}
+                                  section="can-do"
+                                  isIntermediate
+                                />
+                              ))}
+                          </>
                         )}
-                        {intermediateTasks
-                          .filter((task) => task.priority === "can do")
-                          .map((task) => (
-                            <TaskItem
-                              key={task.id}
-                              task={task}
-                              section="can-do"
-                              isIntermediate
-                            />
-                          ))}
                       </motion.ul>
                     </div>
                   </>
