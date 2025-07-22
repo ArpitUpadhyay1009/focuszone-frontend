@@ -12,6 +12,7 @@ const GoogleLoginButton = () => {
   const handleSuccess = async (credentialResponse) => {
     try {
       const { credential } = credentialResponse;
+      console.log("Google credential received:", credential);
 
       const response = await axios.post(
         "/api/auth/google-login",
