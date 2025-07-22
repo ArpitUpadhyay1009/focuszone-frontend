@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import "./RegisterBox.css";
+import GoogleSignIn from "../googleSignIn/GoogleSignIn.jsx";
 
 const RegisterBox = () => {
   const { theme } = useTheme();
@@ -142,6 +143,8 @@ const RegisterBox = () => {
               Register
             </button>
           </form>
+          {/* Google Sign In Button */}
+          <GoogleSignIn />
           <div className="flex justify-center items-center mt-4">
             <p className="register-subtext">Already have an account?</p>
             <Link to="/login" className="text-purple-700 font-[Poppins] ml-2">

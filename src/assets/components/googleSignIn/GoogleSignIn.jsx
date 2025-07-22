@@ -13,15 +13,17 @@ const GoogleLoginButton = () => {
     try {
       const { credential } = credentialResponse;
 
-      const response = await axios.post("/api/auth/google-login", {
-        idToken: credential,
-        rememberMe: true // Request persistent session
-      });
+      const response = await axios.post(
+        "/api/auth/google-login",
+        {
+          idToken: credential,
+          rememberMe: true, // Request persistent session
+        },
+        { withCredentials: true }
+      );
 
-      const { token, user } = response.data;
-
-      // Store user data and token
-      login(user, token);
+      const { user } = response.data;
+      login(user); // Only pass user, not token
 
       // ✅ Redirect based on role
       if (user.role === "admin") {
@@ -29,9 +31,11 @@ const GoogleLoginButton = () => {
       } else {
         navigate("/home");
       }
-
     } catch (err) {
-      console.error("❌ Google login failed", err.response?.data || err.message);
+      console.error(
+        "❌ Google login failed",
+        err.response?.data || err.message
+      );
       alert("Google login failed. Try again.");
     }
   };
