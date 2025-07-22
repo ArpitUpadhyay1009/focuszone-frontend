@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime&family=Roboto+Mono&display=swap');
+@import "tailwindcss";
 
 /* Add a specific class for the timer display with clean zeros */
 .timer-display {
