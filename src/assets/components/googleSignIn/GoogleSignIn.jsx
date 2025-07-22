@@ -23,7 +23,10 @@ const GoogleLoginButton = () => {
         { withCredentials: true }
       );
 
-      const { user } = response.data;
+      const { token, user } = response.data;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
       login(user); // Only pass user, not token
 
       // ✅ Redirect based on role
