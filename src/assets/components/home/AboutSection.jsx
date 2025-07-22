@@ -62,29 +62,6 @@ const AboutSection = () => {
                 </ul>
               </div>
             </div>
-
-            <div className="coin-distribution">
-              <h3 className="text-xl font-semibold mb-4 about-section-text">💰 Coin Distribution System</h3>
-              <div className="coin-grid">
-                {[
-                  { level: 'Level 2', coins: '1 coin' },
-                  { level: 'Level 3-5', coins: '2 coins' },
-                  { level: 'Level 6-10', coins: '5 coins' },
-                  { level: 'Level 11-15', coins: '10 coins' },
-                  { level: 'Level 16-20', coins: '20 coins' },
-                  { level: 'Level 21-30', coins: '50 coins' },
-                  { level: 'Level 31-35', coins: '100 coins' },
-                  { level: 'Level 36-40', coins: '150 coins' },
-                  { level: 'Level 41-45', coins: '200 coins' },
-                  { level: 'Level 46-50', coins: '300 coins' }
-                ].map((item, index) => (
-                  <div key={index} className="coin-item">
-                    <h4 className="text-sm mb-1 about-section-text">{item.level}</h4>
-                    <p className="text-lg font-bold text-yellow-500">{item.coins}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
             </div>
           </div>
         </div>

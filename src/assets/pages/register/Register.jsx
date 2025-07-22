@@ -7,7 +7,7 @@ import Navbar from "@components/navbar/Navbar.jsx";
 import "./Register.css";
 import RegisterBox from "@components/registerBox/RegisterBox.jsx";
 import Logo from "@components/logo/Logo.jsx";
-import GoogleLoginButton from "../../components/googleSignIn/GoogleSignIn";
+
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import Footer from "../../components/footer/Footer";
 
@@ -47,7 +47,6 @@ const Register = () => {
         />
         <div className="w-full mb-60 max-w-xs md:max-w-md">
           <RegisterBox />
-          <GoogleLoginButton/>
         </div>
       </div>
       <Footer/>

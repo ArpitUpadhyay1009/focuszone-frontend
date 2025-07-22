@@ -298,7 +298,13 @@ const getLevelUpgradeCost = (level) => {
       return;
     }
 
-    // Show confirmation popup
+    // If only one level is available to upgrade, directly upgrade without showing popup
+    if (maxUpgrades === 1) {
+      handleUpgradeConfirm(false); // false means single upgrade, not upgrade all
+      return;
+    }
+
+    // Show confirmation popup for multiple upgrade options
     setShowUpgradeConfirmation(true);
   };
 

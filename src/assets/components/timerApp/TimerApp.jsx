@@ -710,9 +710,14 @@ export default function TimerApp({ setParentPopupState }) {
     window.dispatchEvent(new Event("coinUpdate"));
   };
 
-  // Update handleModeChange to work with timestamps
+  // Update handleModeChange to work with timestamps and prevent switching when running
   const handleModeChange = (newMode) => {
-    // Pause current timer
+    // Prevent mode change if timer is running
+    if (isRunning) {
+      return;
+    }
+
+    // Pause current timer (redundant with the check above, but kept for safety)
     setIsRunning(false);
     setShowStart(true);
     setTimerStartedAt(null);
@@ -790,53 +795,82 @@ export default function TimerApp({ setParentPopupState }) {
         animate={{ scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <motion.button
-          className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
-            isBreak
-              ? "bg-gray-300 text-gray-700"
-              : mode === "pomodoro"
-              ? "bg-[#FFE3A6] text-black"
-              : theme === "dark"
-              ? "bg-black text-white"
-              : "bg-white text-black"
-          }`}
-          onClick={() => handleModeChange("pomodoro")}
-          whileHover={{ y: -2 }}
-          whileTap={{ y: 1 }}
-          transition={{ duration: 0 }}
-        >
-          {isBreak ? "Break" : "Pomodoro"}
-        </motion.button>
-        <motion.button
-          className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
-            mode === "countdown"
-              ? "bg-[#FFE3A6] text-black"
-              : theme === "dark"
-              ? "bg-black text-white"
-              : "bg-white text-black"
-          }`}
-          onClick={() => handleModeChange("countdown")}
-          whileHover={{ y: -2 }}
-          whileTap={{ y: 1 }}
-          transition={{ duration: 0 }}
-        >
-          Countdown
-        </motion.button>
-        <motion.button
-          className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
-            mode === "stopwatch"
-              ? "bg-[#FFE3A6] text-black"
-              : theme === "dark"
-              ? "bg-black text-white"
-              : "bg-white text-black"
-          }`}
-          onClick={() => handleModeChange("stopwatch")}
-          whileHover={{ y: -2 }}
-          whileTap={{ y: 1 }}
-          transition={{ duration: 0 }}
-        >
-          Timer
-        </motion.button>
+        <div className="relative">
+          <motion.button
+            className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
+              isRunning
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer"
+            } ${
+              isBreak
+                ? "bg-gray-300 text-gray-700"
+                : mode === "pomodoro"
+                ? "bg-[#FFE3A6] text-black"
+                : theme === "dark"
+                ? "bg-black text-white"
+                : "bg-white text-black"
+            }`}
+            onClick={() => !isRunning && handleModeChange("pomodoro")}
+            whileHover={isRunning ? {} : { y: -2 }}
+            whileTap={isRunning ? {} : { y: 1 }}
+            transition={{ duration: 0 }}
+            disabled={isRunning}
+            title={isRunning ? "Pause the timer to switch modes" : ""}
+          >
+            {isBreak ? "Break" : "Pomodoro"}
+          </motion.button>
+        </div>
+        <div className="relative">
+          <motion.button
+            className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
+              isRunning
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer"
+            } ${
+              mode === "countdown"
+                ? "bg-[#FFE3A6] text-black"
+                : theme === "dark"
+                ? "bg-black text-white"
+                : "bg-white text-black"
+            }`}
+            onClick={() => !isRunning && handleModeChange("countdown")}
+            whileHover={isRunning ? {} : { y: -2 }}
+            whileTap={isRunning ? {} : { y: 1 }}
+            transition={{ duration: 0 }}
+            disabled={isRunning}
+            title={isRunning ? "Pause the timer to switch modes" : ""}
+          >
+            Countdown
+          </motion.button>
+          {isRunning && (
+            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap">
+              Pause to switch
+            </div>
+          )}
+        </div>
+        <div className="relative">
+          <motion.button
+            className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
+              isRunning
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer"
+            } ${
+              mode === "stopwatch"
+                ? "bg-[#FFE3A6] text-black"
+                : theme === "dark"
+                ? "bg-black text-white"
+                : "bg-white text-black"
+            }`}
+            onClick={() => !isRunning && handleModeChange("stopwatch")}
+            whileHover={isRunning ? {} : { y: -2 }}
+            whileTap={isRunning ? {} : { y: 1 }}
+            transition={{ duration: 0 }}
+            disabled={isRunning}
+            title={isRunning ? "Pause the timer to switch modes" : ""}
+          >
+            Timer
+          </motion.button>
+        </div>
       </motion.div>
 
       {/* Timer display with animation */}
