@@ -285,6 +285,20 @@ const UserProfileMenu = () => {
     window.addEventListener("statsUpdate", handleStatsAndCoinUpdate);
     window.addEventListener("taskCompletionUpdate", handleStatsAndCoinUpdate); // Add listener for task completion
 
+    // Listen for real-time focus time updates
+    const handleFocusTimeTick = (e) => {
+      if (e && e.detail && typeof e.detail.totalSeconds === "number") {
+        const totalSeconds = e.detail.totalSeconds;
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        setUserStats((prev) => ({
+          ...prev,
+          totalTime: `${hours}h ${minutes}m`,
+        }));
+      }
+    };
+    window.addEventListener("focusTimeTick", handleFocusTimeTick);
+
     return () => {
       window.removeEventListener("coinUpdate", handleStatsAndCoinUpdate);
       window.removeEventListener("coinSpent", handleStatsAndCoinUpdate);
@@ -293,6 +307,7 @@ const UserProfileMenu = () => {
         "taskCompletionUpdate",
         handleStatsAndCoinUpdate
       ); // Clean up listener
+      window.removeEventListener("focusTimeTick", handleFocusTimeTick);
     };
   }, []);
 

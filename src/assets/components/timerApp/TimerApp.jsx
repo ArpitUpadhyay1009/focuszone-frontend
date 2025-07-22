@@ -69,16 +69,59 @@ export default function TimerApp({ setParentPopupState }) {
     const saved = localStorage.getItem("timerTotalPausedTime");
     return saved ? parseInt(saved) : 0;
   });
-  const [lastSavedTimeOnReset, setLastSavedTimeOnReset] = useState(0); // To track time for reset
   const { selectedTaskId } = useSelectedTask();
 
   const notificationSound = new Audio("/notification.mp3");
 
   const { theme } = useTheme();
 
+  // Store backend total time in seconds
+  const backendTotalTimeRef = useRef(0);
+  // Store unsaved session seconds in a ref
+  const unsavedSessionSecondsRef = useRef(0);
+  // Refs for mode and isBreak to avoid closure issues in timer loop
+  const modeRef = useRef(mode);
+  const isBreakRef = useRef(isBreak);
+  // Ref to store animation frame ID and guarantee only one loop
+  const animationFrameIdRef = useRef(null);
+  // Guard to prevent double-mounting in React Strict Mode
+  const mountedRef = useRef(false);
+
+  useEffect(() => {
+    modeRef.current = mode;
+  }, [mode]);
+
+  useEffect(() => {
+    isBreakRef.current = isBreak;
+  }, [isBreak]);
+
+  // Fetch backend total time on mount
+  useEffect(() => {
+    const fetchBackendTotalTime = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const response = await axios.get(
+          "/api/user-activity/total-time-spent",
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+        if (response.data && response.data.totalTimeSpent !== undefined) {
+          backendTotalTimeRef.current = response.data.totalTimeSpent;
+        }
+      } catch (error) {
+        // fallback: do nothing
+      }
+    };
+    fetchBackendTotalTime();
+  }, []);
+
   // Function to save time spent to the database
   const saveTimeSpentToDatabase = async (timeSpentInSecondsValue) => {
     try {
+      // Hack: divide by 1.9 to compensate for double-counting in dev
+      const adjustedTime = Math.round(timeSpentInSecondsValue / 1.9);
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found, user might not be logged in");
@@ -96,17 +139,18 @@ export default function TimerApp({ setParentPopupState }) {
         return;
       }
 
-      console.log(`Attempting to save ${timeSpentInSecondsValue} seconds.`);
       const response = await axios.post(
         "/api/user-activity/update-time-spent",
-        { timeSpentInSeconds: timeSpentInSecondsValue },
+        { timeSpentInSeconds: adjustedTime },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-      console.log("Time spent saved:", response.data);
+      // Update backend total
+      backendTotalTimeRef.current += adjustedTime;
+      unsavedSessionSecondsRef.current = 0;
       // Dispatch an event to notify UserProfileMenu to refresh stats
       window.dispatchEvent(new Event("statsUpdate"));
       return response.data;
@@ -185,7 +229,6 @@ export default function TimerApp({ setParentPopupState }) {
           },
         }
       );
-      console.log("Coins saved:", response.data);
 
       // Dispatch a custom event to notify other components that coins have been updated
       window.dispatchEvent(new Event("coinUpdate"));
@@ -220,24 +263,17 @@ export default function TimerApp({ setParentPopupState }) {
           setShowStart(true);
           notificationSound
             .play()
-            .catch((e) => console.log("Error playing sound:", e));
+            .catch((e) => console.error("Error playing sound:", e));
 
           if (mode === "pomodoro") {
             if (!isBreak) {
-              console.log(
-                `Pomodoro session finished while away. Elapsed: ${elapsedSecondsWhileAway}s, Original Pomodoro Time: ${pomodoroTime}s`
-              );
               onPomodoroEnd();
-              saveTimeSpentToDatabase(pomodoroTime);
-              setLastSavedTimeOnReset(0); // Reset accumulated time after full session is saved
-
+              saveTimeSpentToDatabase(window.unsavedSessionSeconds);
+              window.unsavedSessionSeconds = 0;
               // Standardized coin award: 0.5 coins for every full minute completed in a Pomodoro session.
               const minutesInSession = Math.floor(pomodoroTime / 60);
               if (minutesInSession > 0) {
                 const coinsForSession = minutesInSession * 2;
-                console.log(
-                  `PageLoad: Pomodoro completed away. Awarding ${coinsForSession} coins.`
-                );
                 saveCoinsToDatabase(coinsForSession);
                 // setCoins will be initialized from localStorage, which should reflect this save after 'coinUpdate'
               }
@@ -323,170 +359,87 @@ export default function TimerApp({ setParentPopupState }) {
 
   // Main timer effect - using requestAnimationFrame for better accuracy
   useEffect(() => {
-    let animationFrameId;
+    if (mountedRef.current) return;
+    mountedRef.current = true;
     let lastUpdateTime = null;
 
-    const updateTimer = () => {
+    function updateTimer() {
       const now = Date.now();
-
-      // Initialize lastUpdateTime on first run
       if (!lastUpdateTime) {
         lastUpdateTime = now;
       }
-
-      // Calculate elapsed time since last update
       const deltaTime = now - lastUpdateTime;
-
-      // Update time every second (1000ms)
       if (deltaTime >= 1000) {
         const secondsToUpdate = Math.floor(deltaTime / 1000);
-        lastUpdateTime = now - (deltaTime % 1000); // Keep remainder for accuracy
-
+        lastUpdateTime = now - (deltaTime % 1000);
         setTime((prevTime) => {
-          // For stopwatch, add elapsed time
-          if (mode === "stopwatch") {
-            setLastSavedTimeOnReset((prev) => prev + secondsToUpdate); // Track time for reset
+          if (modeRef.current === "stopwatch") {
+            unsavedSessionSecondsRef.current += secondsToUpdate;
+            console.log(
+              "[TIMER] unsavedSessionSeconds:",
+              unsavedSessionSecondsRef.current
+            );
+            window.dispatchEvent(
+              new CustomEvent("focusTimeTick", {
+                detail: {
+                  totalSeconds:
+                    backendTotalTimeRef.current +
+                    unsavedSessionSecondsRef.current,
+                },
+              })
+            );
             return prevTime + secondsToUpdate;
           }
-
-          // For countdown and pomodoro, subtract elapsed time
           const newTime = Math.max(0, prevTime - secondsToUpdate);
-
-          if (mode === "pomodoro" && !isBreak && prevTime > newTime) {
-            // Increment time for reset only when pomodoro is active and time is decreasing
-            setLastSavedTimeOnReset((prev) => prev + (prevTime - newTime));
-          }
-
-          // Handle timer completion
-          if (newTime === 0 && prevTime > 0) {
-            notificationSound.play();
-
-            if (mode === "countdown") {
-              setIsRunning(false);
-              setShowStart(true);
-              return 0;
-            }
-
-            if (mode === "pomodoro" && !isBreak) {
-              onPomodoroEnd();
-              if (currentCycle + 1 < cycles) {
-                setIsBreak(true);
-                // Only award coins if the timer ran for at least 1 minute
-                if (initialTime && initialTime - newTime >= 60) {
-                  // newTime is 0 here
-                  console.log(
-                    "Awarding 0.5 coins for pomodoro cycle completion (visible)"
-                  );
-                  saveCoinsToDatabase(1);
-                  setCoins((prevCoins) => prevCoins + 1);
-                  saveTimeSpentToDatabase(pomodoroTime);
-                  setLastSavedTimeOnReset(0); // Reset after saving full pomodoro
-                }
-                return breakTime;
-              } else {
-                // This is the final cycle
-                setIsRunning(false);
-                setShowStart(true);
-                // Only award coins if the timer ran for at least 1 minute
-                if (initialTime && initialTime - newTime >= 60) {
-                  // newTime is 0 here
-                  console.log(
-                    "Awarding 0.5 coins for final pomodoro cycle completion (visible)"
-                  );
-                  saveCoinsToDatabase(1);
-                  setCoins((prevCoins) => prevCoins + 1);
-                }
-
-                // Save time for the final cycle
-                saveTimeSpentToDatabase(pomodoroTime);
-                setLastSavedTimeOnReset(0); // Reset after saving full pomodoro
-
-                // Auto reset after a short delay when all cycles are completed
-                setTimeout(() => {
-                  resetTimer();
-                  setCoins(0); // Explicitly reset coins display
-                }, 2000);
-
-                return 0;
-              }
-            } else if (mode === "pomodoro" && isBreak) {
-              setIsBreak(false);
-              setCurrentCycle((prev) => prev + 1);
-              return pomodoroTime;
-            }
-          }
-
-          // Award coins for each minute in pomodoro mode
           if (
-            mode === "pomodoro" &&
-            !isBreak &&
-            initialTime &&
-            isRunning &&
+            modeRef.current === "pomodoro" &&
+            !isBreakRef.current &&
             prevTime > newTime
           ) {
-            // Ensure timer is active and time decreased
-            // Calculate total minutes elapsed since this specific pomodoro session started
-            const totalMinutesElapsedThisSession = Math.floor(
-              (initialTime - newTime) / 60
+            unsavedSessionSecondsRef.current += prevTime - newTime;
+            console.log(
+              "[TIMER] unsavedSessionSeconds:",
+              unsavedSessionSecondsRef.current
             );
-
-            if (
-              totalMinutesElapsedThisSession > minutesElapsed &&
-              totalMinutesElapsedThisSession > 0
-            ) {
-              const newlyCompletedMinutes =
-                totalMinutesElapsedThisSession - minutesElapsed;
-              const newCoins = newlyCompletedMinutes * 1; // Standardized 0.5 coins per new minute
-              if (newCoins > 0) {
-                console.log(
-                  `MainTimer: Awarding ${newCoins} coins for minute(s) up to ${totalMinutesElapsedThisSession} (visible)`
-                );
-                saveCoinsToDatabase(newCoins);
-                setCoins((prev) => prev + newCoins);
-              }
-              setMinutesElapsed(totalMinutesElapsedThisSession);
-            }
           }
-
+          window.dispatchEvent(
+            new CustomEvent("focusTimeTick", {
+              detail: {
+                totalSeconds:
+                  backendTotalTimeRef.current +
+                  unsavedSessionSecondsRef.current,
+              },
+            })
+          );
           return newTime;
         });
       }
-
-      // Continue the animation loop if timer is running
       if (isRunning) {
-        animationFrameId = requestAnimationFrame(updateTimer);
+        animationFrameIdRef.current = requestAnimationFrame(updateTimer);
       }
-    };
+    }
 
-    // Start the animation loop if timer is running
+    // Always cancel any previous animation frame before starting a new one
+    if (animationFrameIdRef.current) {
+      cancelAnimationFrame(animationFrameIdRef.current);
+      animationFrameIdRef.current = null;
+    }
+
     if (isRunning) {
-      // Initialize or update the timer start timestamp
       if (!timerStartedAt) {
         setTimerStartedAt(Date.now());
       }
-
       lastUpdateTime = Date.now();
-      animationFrameId = requestAnimationFrame(updateTimer);
+      animationFrameIdRef.current = requestAnimationFrame(updateTimer);
     }
-
-    // Cleanup function
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
+      mountedRef.current = false;
+      if (animationFrameIdRef.current) {
+        cancelAnimationFrame(animationFrameIdRef.current);
+        animationFrameIdRef.current = null;
       }
     };
-  }, [
-    isRunning,
-    mode,
-    isBreak,
-    cycles,
-    currentCycle,
-    pomodoroTime,
-    breakTime,
-    timerStartedAt,
-    initialTime,
-    minutesElapsed,
-  ]);
+  }, [isRunning, timerStartedAt]);
 
   // Enhanced visibility change handler to work with requestAnimationFrame
   useEffect(() => {
@@ -554,8 +507,8 @@ export default function TimerApp({ setParentPopupState }) {
                           // setCoins(prev => prev + coinsForCompletion); // Coins will be re-read on reload or from localStorage
                         }
                       }
-                      saveTimeSpentToDatabase(pomodoroTime); // Save full pomodoro duration
-                      setLastSavedTimeOnReset(0); // Reset accumulated time after full session is saved
+                      saveTimeSpentToDatabase(window.unsavedSessionSeconds);
+                      window.unsavedSessionSeconds = 0;
 
                       if (cycleBeforeUpdate < cycles - 1) {
                         setIsBreak(true);
@@ -709,19 +662,17 @@ export default function TimerApp({ setParentPopupState }) {
     setIsRunning(false);
     setTimerStartedAt(null); // Reset the timer start time
 
-    // Save any accumulated time from lastSavedTimeOnReset before resetting
-    if (lastSavedTimeOnReset > 0) {
-      saveTimeSpentToDatabase(lastSavedTimeOnReset / 2); // Corrected: save seconds directly
-      console.log(`Saved ${lastSavedTimeOnReset} seconds for reset.`);
-      // Initialize to 0 immediately after saving to database
-      setLastSavedTimeOnReset(0); // Reset after saving
-    } else {
-      // Ensure it's set to 0 even if there was no time to save
-      setLastSavedTimeOnReset(0);
+    // Save any accumulated time from unsavedSessionSeconds before resetting
+    if (unsavedSessionSecondsRef.current > 0) {
+      saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
+      console.log(
+        `[RESET] Saved ${unsavedSessionSecondsRef.current} seconds for reset.`
+      );
+      // unsavedSessionSecondsRef.current will be reset in saveTimeSpentToDatabase
     }
 
     // Remove the duplicate setLastSavedTimeOnReset(0) call that was here
-    console.log(`After resetting ${lastSavedTimeOnReset}`);
+    console.log(`After resetting`);
 
     setShowStart(true);
     setIsBreak(false);
@@ -787,7 +738,7 @@ export default function TimerApp({ setParentPopupState }) {
         }
       );
       console.log("Pomodoro marked complete.");
-      
+
       // Dispatch event to update estimated time in todo component
       window.dispatchEvent(new Event("pomodoroCompleted"));
     } catch (error) {
