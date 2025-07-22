@@ -58,8 +58,8 @@ export default function TimerApp({ setParentPopupState }) {
   });
   // Track the initial time when timer starts to calculate elapsed minutes correctly
   const [initialTime, setInitialTime] = useState(null);
-  // Track minutes elapsed to avoid awarding coins multiple times
-  const [minutesElapsed, setMinutesElapsed] = useState(0);
+  // Track minutes elapsed to avoid awarding coins multiple times (use ref for timer logic)
+  const minutesElapsedRef = useRef(0);
   const [pauseStartTime, setPauseStartTime] = useState(() => {
     return localStorage.getItem("timerPauseStartTime")
       ? parseInt(localStorage.getItem("timerPauseStartTime"))
@@ -268,9 +268,11 @@ export default function TimerApp({ setParentPopupState }) {
           if (mode === "pomodoro") {
             if (!isBreak) {
               onPomodoroEnd();
+              // Save focus time with division hack
               saveTimeSpentToDatabase(window.unsavedSessionSeconds);
               window.unsavedSessionSeconds = 0;
               // Standardized coin award: 0.5 coins for every full minute completed in a Pomodoro session.
+              // Use real pomodoroTime for coins
               const minutesInSession = Math.floor(pomodoroTime / 60);
               if (minutesInSession > 0) {
                 const coinsForSession = minutesInSession * 2;
@@ -325,7 +327,7 @@ export default function TimerApp({ setParentPopupState }) {
             saveTimeSpentToDatabase(elapsedSecondsWhileAway); // Save partial time
 
             // Award coins for minutes elapsed while away, respecting minutesElapsed state
-            const currentMinutesAlreadyAwarded = minutesElapsed; // From localStorage via state
+            const currentMinutesAlreadyAwarded = minutesElapsedRef.current; // From localStorage via state
             // initialTime should be the start of this specific pomodoro session
             const totalMinutesNowEffectivelyElapsed = initialTime
               ? Math.floor((initialTime - remainingTimeAfterAway) / 60)
@@ -339,12 +341,9 @@ export default function TimerApp({ setParentPopupState }) {
                 currentMinutesAlreadyAwarded;
               const newCoins = newMinutesToAwardFor * 1; // Standardized 0.5 coins
               if (newCoins > 0) {
-                console.log(
-                  `PageLoad: Partial pomodoro. Awarding ${newCoins} coins for ${newMinutesToAwardFor} new minutes.`
-                );
                 saveCoinsToDatabase(newCoins);
                 setCoins((prev) => prev + newCoins); // Update local state
-                setMinutesElapsed(totalMinutesNowEffectivelyElapsed);
+                minutesElapsedRef.current = totalMinutesNowEffectivelyElapsed;
               }
             }
           }
@@ -401,6 +400,25 @@ export default function TimerApp({ setParentPopupState }) {
               "[TIMER] unsavedSessionSeconds:",
               unsavedSessionSecondsRef.current
             );
+            // Per-minute coin logic (same as visibility handler)
+            if (initialTime) {
+              const totalMinutesElapsedThisSession = Math.floor(
+                (initialTime - newTime) / 60
+              );
+              if (
+                totalMinutesElapsedThisSession > minutesElapsedRef.current &&
+                totalMinutesElapsedThisSession > 0
+              ) {
+                const newlyCompletedMinutes =
+                  totalMinutesElapsedThisSession - minutesElapsedRef.current;
+                const newCoins = newlyCompletedMinutes * 1;
+                if (newCoins > 0) {
+                  saveCoinsToDatabase(newCoins);
+                  setCoins((prev) => prev + newCoins);
+                }
+                minutesElapsedRef.current = totalMinutesElapsedThisSession;
+              }
+            }
           }
           window.dispatchEvent(
             new CustomEvent("focusTimeTick", {
@@ -497,16 +515,14 @@ export default function TimerApp({ setParentPopupState }) {
                         // Award coins based on minutes already passed in this session, up to total.
                         // This ensures we only award for newly completed minutes if some were already awarded.
                         const newlyCompletedMinutes =
-                          minutesInSession - minutesElapsed;
+                          minutesInSession - minutesElapsedRef.current;
                         if (newlyCompletedMinutes > 0) {
                           const coinsForCompletion = newlyCompletedMinutes * 1;
-                          console.log(
-                            `VisibilityChange: Pomodoro completed. Awarding ${coinsForCompletion} coins for ${newlyCompletedMinutes} new minutes.`
-                          );
                           saveCoinsToDatabase(coinsForCompletion);
                           // setCoins(prev => prev + coinsForCompletion); // Coins will be re-read on reload or from localStorage
                         }
                       }
+                      // Save focus time with division hack
                       saveTimeSpentToDatabase(window.unsavedSessionSeconds);
                       window.unsavedSessionSeconds = 0;
 
@@ -576,9 +592,12 @@ export default function TimerApp({ setParentPopupState }) {
                     (initialTime - newCurrentTime) / 60
                   );
 
-                  if (totalMinutesNowActuallyElapsed > minutesElapsed) {
+                  if (
+                    totalMinutesNowActuallyElapsed > minutesElapsedRef.current
+                  ) {
                     const minutesNewlyPassedWhileHidden =
-                      totalMinutesNowActuallyElapsed - minutesElapsed;
+                      totalMinutesNowActuallyElapsed -
+                      minutesElapsedRef.current;
                     const newCoinsToAdd = minutesNewlyPassedWhileHidden * 1; // Changed from 0.5 to 1 for hidden scenario
                     if (newCoinsToAdd > 0) {
                       console.log(
@@ -587,7 +606,7 @@ export default function TimerApp({ setParentPopupState }) {
                       saveCoinsToDatabase(newCoinsToAdd);
                       setCoins((prev) => prev + newCoinsToAdd);
                     }
-                    setMinutesElapsed(totalMinutesNowActuallyElapsed);
+                    minutesElapsedRef.current = totalMinutesNowActuallyElapsed;
                   }
                 }
               }
@@ -628,7 +647,7 @@ export default function TimerApp({ setParentPopupState }) {
     breakTime,
     cycles,
     currentCycle,
-    minutesElapsed,
+    minutesElapsedRef.current,
   ]);
 
   const startTimer = () => {
@@ -648,7 +667,7 @@ export default function TimerApp({ setParentPopupState }) {
 
     setTimerStartedAt(Date.now());
     setInitialTime(time);
-    setMinutesElapsed(0);
+    minutesElapsedRef.current = 0;
   };
 
   const pauseTimer = () => {
@@ -678,7 +697,7 @@ export default function TimerApp({ setParentPopupState }) {
     setIsBreak(false);
     setCurrentCycle(0);
     setInitialTime(null);
-    setMinutesElapsed(0);
+    minutesElapsedRef.current = 0;
     setPauseStartTime(null); // Reset pause start time
     setTotalPausedTime(0); // Reset total paused time
 
@@ -698,7 +717,7 @@ export default function TimerApp({ setParentPopupState }) {
     setShowStart(true);
     setTimerStartedAt(null);
     setInitialTime(null);
-    setMinutesElapsed(0);
+    minutesElapsedRef.current = 0;
 
     // Set new mode
     setMode(newMode);
