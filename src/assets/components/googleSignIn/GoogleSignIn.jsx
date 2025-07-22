@@ -26,6 +26,11 @@ const GoogleLoginButton = () => {
       const { token, user } = response.data;
       if (token) {
         localStorage.setItem("token", token);
+        // Debug: Log the token stored in localStorage
+        console.log(
+          "Token stored in localStorage:",
+          localStorage.getItem("token")
+        );
       }
       login(user); // Only pass user, not token
 
