@@ -1,12 +1,45 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, X } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useTheme } from "../../context/ThemeContext.jsx";
 import Confetti from "react-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import "./LoginBox.css";
+
+// Custom Error Popup Component
+const ErrorPopup = ({ message, onClose }) => (
+  <motion.div
+    initial={{ opacity: 0, y: -20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="fixed inset-0 flex items-center justify-center z-50 px-4"
+  >
+    <div 
+      className="absolute inset-0 bg-black/30 backdrop-blur-sm"
+      onClick={onClose}
+    />
+    <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-lg p-6 max-w-sm w-full shadow-xl z-10 border border-white/20">
+      <button
+        onClick={onClose}
+        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+      >
+        <X size={20} />
+      </button>
+      <div className="text-red-500 font-medium">Error</div>
+      <p className="mt-2 text-gray-700 dark:text-gray-300">{message}</p>
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={onClose}
+          className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </motion.div>
+);
 
 const LoginBox = () => {
   const { login } = useAuth();
@@ -18,6 +51,7 @@ const LoginBox = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [showProgress, setShowProgress] = useState(false);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (event) => {
@@ -73,25 +107,34 @@ const LoginBox = () => {
       setIsLoading(false);
       if (error.response) {
         if (error.response.status === 400) {
-          alert("Invalid username or password! Please try again.");
+          setError("Invalid username or password! Please try again.");
         } else if (error.response.status === 403) {
-          alert("Please verify your email first!");
+          setError("Please verify your email first!");
           window.sessionStorage.setItem("otpSent", "1");
-          navigate("/verify-otp");
+          setTimeout(() => navigate("/verify-otp"), 2000);
         } else {
           console.log(error);
-          alert("Server error! Please try again later.");
-          navigate("/server-error");
+          setError("Server error! Please try again later.");
+          setTimeout(() => navigate("/server-error"), 2000);
         }
       } else {
         console.error("An unexpected error occurred:", error);
-        navigate("/server-error");
+        setError("An unexpected error occurred. Please try again later.");
+        setTimeout(() => navigate("/server-error"), 2000);
       }
     }
   };
 
   return (
     <div className="flex justify-center items-center">
+      <AnimatePresence>
+        {error && (
+          <ErrorPopup 
+            message={error} 
+            onClose={() => setError(null)} 
+          />
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {showProgress && (
           <motion.div

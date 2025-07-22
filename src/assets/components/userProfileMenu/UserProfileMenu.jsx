@@ -13,6 +13,8 @@ import {
   FaLink,
   FaTimes,
   FaCopy,
+  FaCog,
+  FaTrash,
 } from "react-icons/fa";
 import "./UserProfileMenu.css";
 
@@ -60,6 +62,8 @@ const UserProfileMenu = () => {
   const [showReferralPopup, setShowReferralPopup] = useState(false);
   const [referralLink, setReferralLink] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [userStats, setUserStats] = useState({
     totalTime: "0h 0m", // This will be updated by fetchTotalFocusTime
     totalCoinsEarned: 0,
@@ -440,15 +444,12 @@ const UserProfileMenu = () => {
     };
   }, []); // Note: This useEffect is separate and for UI behavior, which is fine.
   const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete your account? This action is irreversible."
-      )
-    )
-      return;
-
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Authentication required");
+        return;
+      }
 
       await axios.delete("/api/user/delete-account", {
         headers: {
@@ -458,12 +459,15 @@ const UserProfileMenu = () => {
 
       // Clear auth tokens
       localStorage.removeItem("token");
-
-      // Optional: callback to redirect to homepage/login
+      
+      // Show success message
+      toast.success("Account deleted successfully");
+      
+      // Logout and redirect
       handleLogout();
     } catch (error) {
-      alert("Failed to delete account. Please try again.");
-      console.error(error);
+      console.error("Error deleting account:", error);
+      toast.error("Failed to delete account. Please try again.");
     }
   };
 
@@ -742,6 +746,13 @@ const UserProfileMenu = () => {
                 Invite Friends
               </button>
               <button
+                onClick={() => setShowSettings(true)}
+                className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+              >
+                <FaCog className="text-white" />
+                Settings
+              </button>
+              <button
                 onClick={handleLogout}
                 className="w-full bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
               >
@@ -838,6 +849,110 @@ const UserProfileMenu = () => {
                           <span className="text-xs">Instagram</span>
                         </button>
                       </div>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Settings Modal */}
+            <AnimatePresence>
+              {showSettings && (
+                <motion.div
+                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowSettings(false)}
+                >
+                  <motion.div
+                    className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={() => setShowSettings(false)}
+                      className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <FaTimes size={20} />
+                    </button>
+
+                    <h3 className="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+                      Settings
+                    </h3>
+
+                    <div className="space-y-4">
+                      <button
+                        onClick={() => {
+                          setShowSettings(false);
+                          setShowDeleteConfirm(true);
+                        }}
+                        className="w-full flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        <FaTrash className="text-white" />
+                        Delete Account
+                      </button>
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+              {showDeleteConfirm && (
+                <motion.div
+                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setShowDeleteConfirm(false)}
+                >
+                  <motion.div
+                    className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      onClick={() => setShowDeleteConfirm(false)}
+                      className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    >
+                      <FaTimes size={20} />
+                    </button>
+
+                    <h3 className="text-xl font-bold text-center mb-4 text-red-600 dark:text-red-400">
+                      Delete Account
+                    </h3>
+
+                    <div className="mb-6">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 text-center mb-4">
+                        Are you sure you want to delete your account?
+                      </p>
+                      <p className="text-xs text-red-500 dark:text-red-400 text-center font-medium">
+                        This action is irreversible and will permanently delete all your data.
+                      </p>
+                    </div>
+
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          handleDelete();
+                        }}
+                        className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        Delete Account
+                      </button>
                     </div>
                   </motion.div>
                 </motion.div>
