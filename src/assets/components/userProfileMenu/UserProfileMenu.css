@@ -159,3 +159,22 @@
 .back-button:hover {
   text-decoration: underline;
 }
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .profile-header p:first-child,
+  .profile-header p:last-child,
+  .stats-container h3 {
+    color: white !important;
+  }
+  
+  .stats-container .stat-value,
+  .stats-container .stat-label {
+    color: white !important;
+  }
+  
+  .stats-container .stat-icon {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+}
