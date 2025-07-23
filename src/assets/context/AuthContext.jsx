@@ -73,7 +73,12 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post("/api/auth/logout");
+      const token = localStorage.getItem("token");
+      await axios.post("/api/auth/logout", null, {
+        headers: {
+          Authorization: token ? `Bearer ${token}` : undefined,
+        },
+      });
       setUser(null);
       Cookies.remove("user"); // Also remove the user cookie on logout
     } catch (error) {
