@@ -756,6 +756,89 @@ export default function TimerApp({ setParentPopupState }) {
     }
   };
 
+  const [finalBreak, setFinalBreak] = useState(false);
+
+  // Helper: Start a Pomodoro session
+  const startPomodoro = () => {
+    setIsBreak(false);
+    setTime(pomodoroTime);
+    setShowStart(false);
+    setIsRunning(true);
+    setTimerStartedAt(Date.now());
+    setInitialTime(pomodoroTime);
+    minutesElapsedRef.current = 0;
+    setFinalBreak(false);
+  };
+
+  // Helper: Start a Break session
+  const startBreak = (isFinal = false) => {
+    setIsBreak(true);
+    setTime(breakTime);
+    setShowStart(false);
+    setIsRunning(true);
+    setTimerStartedAt(Date.now());
+    setInitialTime(breakTime);
+    minutesElapsedRef.current = 0;
+    setFinalBreak(isFinal);
+  };
+
+  // Enhanced timer completion logic (robust cycles)
+  useEffect(() => {
+    if (time === 0 && isRunning) {
+      setIsRunning(false);
+      setShowStart(true);
+      notificationSound.play().catch(() => {});
+      if (mode === "pomodoro") {
+        if (!isBreak) {
+          // Pomodoro just finished, award coins and save time
+          onPomodoroEnd();
+          saveTimeSpentToDatabase(window.unsavedSessionSeconds);
+          window.unsavedSessionSeconds = 0;
+          // Award coins for full session
+          const minutesInSession = Math.floor(pomodoroTime / 60);
+          if (minutesInSession > 0) {
+            const coinsForSession = minutesInSession * 2;
+            saveCoinsToDatabase(coinsForSession);
+          }
+          // Handle cycles
+          if (currentCycle + 1 < cycles) {
+            setTimeout(() => {
+              setCurrentCycle((prev) => prev + 1);
+              startBreak(false);
+            }, 1000); // 1s delay for UX
+          } else if (currentCycle + 1 === cycles) {
+            // Last Pomodoro, do a final break
+            setTimeout(() => {
+              setCurrentCycle((prev) => prev + 1);
+              startBreak(true);
+            }, 1000);
+          }
+        } else {
+          // Break just finished
+          if (!finalBreak) {
+            setTimeout(() => {
+              startPomodoro();
+            }, 1000);
+          } else {
+            // All cycles and breaks done, reset to default Pomodoro state
+            setTimeout(() => {
+              setIsBreak(false);
+              setCurrentCycle(0);
+              setTime(pomodoroTime);
+              setShowStart(true);
+              setIsRunning(false);
+              setTimerStartedAt(null);
+              setInitialTime(null);
+              minutesElapsedRef.current = 0;
+              setFinalBreak(false);
+            }, 1000);
+          }
+        }
+      }
+    }
+    // eslint-disable-next-line
+  }, [time, isRunning]);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
