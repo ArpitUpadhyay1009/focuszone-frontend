@@ -11,6 +11,8 @@ export const Navbar2 = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   // New: control sidebar view ('menu' or 'profile')
   const [mobileSidebarView, setMobileSidebarView] = useState("menu");
+  const [showSettings, setShowSettings] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -47,7 +49,12 @@ export const Navbar2 = () => {
             </svg>
           </motion.button>
           <DarkModeToggle />
-          <UserProfileMenu />
+          <UserProfileMenu
+            showSettings={showSettings}
+            setShowSettings={setShowSettings}
+            showDeleteConfirm={showDeleteConfirm}
+            setShowDeleteConfirm={setShowDeleteConfirm}
+          />
         </div>
 
         {/* Hamburger menu button - shown on tablet and below */}
@@ -203,12 +210,28 @@ export const Navbar2 = () => {
             <UserProfileMenu
               mobileSidebarMode={true}
               onBack={() => setMobileSidebarView("menu")}
+              showSettings={showSettings}
+              setShowSettings={setShowSettings}
+              showDeleteConfirm={showDeleteConfirm}
+              setShowDeleteConfirm={setShowDeleteConfirm}
             />
           )}
         </motion.div>
       )}
 
       <AboutPopup isOpen={isAboutOpen} onClose={() => setIsAboutOpen(false)} />
+
+      {/* Settings Modal - always at root */}
+      <UserProfileMenu.SettingsModal
+        showSettings={showSettings}
+        setShowSettings={setShowSettings}
+        setShowDeleteConfirm={setShowDeleteConfirm}
+      />
+      {/* Delete Confirmation Modal - always at root */}
+      <UserProfileMenu.DeleteConfirmModal
+        showDeleteConfirm={showDeleteConfirm}
+        setShowDeleteConfirm={setShowDeleteConfirm}
+      />
     </>
   );
 };

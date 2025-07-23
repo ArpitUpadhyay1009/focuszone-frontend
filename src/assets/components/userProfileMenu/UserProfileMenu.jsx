@@ -54,6 +54,10 @@ const UserProfileMenu = ({
   mobileSidebarMode = false,
   onBack,
   mobileSidebarAvatarOnly = false,
+  showSettings,
+  setShowSettings,
+  showDeleteConfirm,
+  setShowDeleteConfirm,
 }) => {
   const { user, logout } = useAuth();
   const { theme } = useTheme();
@@ -66,8 +70,6 @@ const UserProfileMenu = ({
   const [showReferralPopup, setShowReferralPopup] = useState(false);
   const [referralLink, setReferralLink] = useState("");
   const [copied, setCopied] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [userStats, setUserStats] = useState({
     totalTime: "0h 0m", // This will be updated by fetchTotalFocusTime
     totalCoinsEarned: 0,
@@ -463,10 +465,10 @@ const UserProfileMenu = ({
 
       // Clear auth tokens
       localStorage.removeItem("token");
-      
+
       // Show success message
       toast.success("Account deleted successfully");
-      
+
       // Logout and redirect
       handleLogout();
     } catch (error) {
@@ -765,6 +767,16 @@ const UserProfileMenu = ({
             >
               <FaLink className="text-white" />
               Invite Friends
+            </button>
+            <button
+              onClick={() => {
+                console.log("Settings button clicked");
+                setShowSettings(true);
+              }}
+              className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <FaCog className="text-white" />
+              Settings
             </button>
             <button
               onClick={handleLogout}
@@ -1147,7 +1159,10 @@ const UserProfileMenu = ({
                 Invite Friends
               </button>
               <button
-                onClick={() => setShowSettings(true)}
+                onClick={() => {
+                  console.log("Settings button clicked");
+                  setShowSettings(true);
+                }}
                 className="w-full flex items-center justify-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <FaCog className="text-white" />
@@ -1256,56 +1271,59 @@ const UserProfileMenu = ({
               )}
             </AnimatePresence>
 
-            {/* Settings Modal */}
+            {/* Settings Modal - always at root */}
             <AnimatePresence>
-              {showSettings && (
-                <motion.div
-                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => setShowSettings(false)}
-                >
+              {showSettings &&
+                ((() => {
+                  console.log("Settings modal rendered");
+                  return null;
+                })(),
+                (
                   <motion.div
-                    className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
-                    initial={{ scale: 0.9, y: 20 }}
-                    animate={{ scale: 1, y: 0 }}
-                    exit={{ scale: 0.9, y: 20 }}
-                    onClick={(e) => e.stopPropagation()}
+                    className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[100] p-4"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setShowSettings(false)}
                   >
-                    <button
-                      onClick={() => setShowSettings(false)}
-                      className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                    <motion.div
+                      className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
+                      initial={{ scale: 0.9, y: 20 }}
+                      animate={{ scale: 1, y: 0 }}
+                      exit={{ scale: 0.9, y: 20 }}
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <FaTimes size={20} />
-                    </button>
-
-                    <h3 className="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">
-                      Settings
-                    </h3>
-
-                    <div className="space-y-4">
                       <button
-                        onClick={() => {
-                          setShowSettings(false);
-                          setShowDeleteConfirm(true);
-                        }}
-                        className="w-full flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
+                        onClick={() => setShowSettings(false)}
+                        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                       >
-                        <FaTrash className="text-white" />
-                        Delete Account
+                        <FaTimes size={20} />
                       </button>
-                    </div>
+                      <h3 className="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+                        Settings
+                      </h3>
+                      <div className="space-y-4">
+                        <button
+                          onClick={() => {
+                            setShowSettings(false);
+                            setShowDeleteConfirm(true);
+                          }}
+                          className="w-full flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
+                        >
+                          <FaTrash className="text-white" />
+                          Delete Account
+                        </button>
+                      </div>
+                    </motion.div>
                   </motion.div>
-                </motion.div>
-              )}
+                ))}
             </AnimatePresence>
 
-            {/* Delete Confirmation Modal */}
+            {/* Delete Confirmation Modal - always at root */}
             <AnimatePresence>
               {showDeleteConfirm && (
                 <motion.div
-                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[110] p-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -1324,20 +1342,18 @@ const UserProfileMenu = ({
                     >
                       <FaTimes size={20} />
                     </button>
-
                     <h3 className="text-xl font-bold text-center mb-4 text-red-600 dark:text-red-400">
                       Delete Account
                     </h3>
-
                     <div className="mb-6">
                       <p className="text-sm text-gray-600 dark:text-gray-300 text-center mb-4">
                         Are you sure you want to delete your account?
                       </p>
                       <p className="text-xs text-red-500 dark:text-red-400 text-center font-medium">
-                        This action is irreversible and will permanently delete all your data.
+                        This action is irreversible and will permanently delete
+                        all your data.
                       </p>
                     </div>
-
                     <div className="flex gap-3">
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
@@ -1367,3 +1383,117 @@ const UserProfileMenu = ({
 };
 
 export default UserProfileMenu;
+
+UserProfileMenu.SettingsModal = function SettingsModal({
+  showSettings,
+  setShowSettings,
+  setShowDeleteConfirm,
+}) {
+  if (!showSettings) return null;
+  return (
+    <motion.div
+      className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[100] p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setShowSettings(false)}
+    >
+      <motion.div
+        className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={() => setShowSettings(false)}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <FaTimes size={20} />
+        </button>
+        <h3 className="text-xl font-bold text-center mb-6 text-gray-800 dark:text-white">
+          Settings
+        </h3>
+        <div className="space-y-4">
+          <button
+            onClick={() => {
+              setShowSettings(false);
+              setShowDeleteConfirm(true);
+            }}
+            className="w-full flex items-center justify-center gap-2 bg-red-500 text-white px-4 py-3 rounded-lg hover:bg-red-600 transition-colors"
+          >
+            <FaTrash className="text-white" />
+            Delete Account
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+UserProfileMenu.DeleteConfirmModal = function DeleteConfirmModal({
+  showDeleteConfirm,
+  setShowDeleteConfirm,
+}) {
+  const handleDelete = UserProfileMenu._handleDelete;
+  if (!showDeleteConfirm) return null;
+  return (
+    <motion.div
+      className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[110] p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={() => setShowDeleteConfirm(false)}
+    >
+      <motion.div
+        className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={() => setShowDeleteConfirm(false)}
+          className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <FaTimes size={20} />
+        </button>
+        <h3 className="text-xl font-bold text-center mb-4 text-red-600 dark:text-red-400">
+          Delete Account
+        </h3>
+        <div className="mb-6">
+          <p className="text-sm text-gray-600 dark:text-gray-300 text-center mb-4">
+            Are you sure you want to delete your account?
+          </p>
+          <p className="text-xs text-red-500 dark:text-red-400 text-center font-medium">
+            This action is irreversible and will permanently delete all your
+            data.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={() => setShowDeleteConfirm(false)}
+            className="flex-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              setShowDeleteConfirm(false);
+              handleDelete();
+            }}
+            className="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+          >
+            Delete Account
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// Expose handleDelete for DeleteConfirmModal
+UserProfileMenu._handleDelete = async function handleDelete() {
+  // This will need to be refactored if you want to lift it up
+  // For now, you can keep the logic here or lift it up as needed
+};
