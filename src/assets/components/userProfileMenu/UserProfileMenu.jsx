@@ -457,23 +457,52 @@ const UserProfileMenu = ({
         return;
       }
 
-      await axios.delete("/api/user/delete-account", {
+      // Make the API call to delete the account
+      const response = await axios.delete("/api/user/delete-account", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        withCredentials: true, // Important for sending cookies
       });
 
-      // Clear auth tokens
-      localStorage.removeItem("token");
-
-      // Show success message
-      toast.success("Account deleted successfully");
-
-      // Logout and redirect
-      handleLogout();
+      if (response.status === 200) {
+        // Clear all authentication state
+        localStorage.removeItem("token");
+        
+        // Clear cookies manually
+        document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        document.cookie = "user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        
+        // Show success message
+        toast.success("Account deleted successfully");
+        
+        // Use logout from AuthContext to ensure proper cleanup
+        await logout();
+        
+        // Force redirect to login page
+        navigate("/login", { replace: true });
+        
+        // Clear browser history to prevent back navigation
+        window.history.pushState(null, "", window.location.href);
+        window.addEventListener("popstate", () => {
+          navigate("/login", { replace: true });
+        });
+      }
     } catch (error) {
       console.error("Error deleting account:", error);
-      toast.error("Failed to delete account. Please try again.");
+      
+      // Check if it's a network error or server error
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || "Failed to delete account";
+        toast.error(errorMessage);
+      } else if (error.request) {
+        // Network error
+        toast.error("Network error. Please check your connection and try again.");
+      } else {
+        // Other error
+        toast.error("Failed to delete account. Please try again.");
+      }
     }
   };
 
@@ -1492,8 +1521,39 @@ UserProfileMenu.DeleteConfirmModal = function DeleteConfirmModal({
   );
 };
 
-// Expose handleDelete for DeleteConfirmModal
+// Handle account deletion
 UserProfileMenu._handleDelete = async function handleDelete() {
-  // This will need to be refactored if you want to lift it up
-  // For now, you can keep the logic here or lift it up as needed
+  try {
+    const token = localStorage.getItem("token");
+    
+    // Make the API call to delete the account
+    const response = await fetch("/api/user/delete-account", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": token ? `Bearer ${token}` : "",
+      },
+      credentials: "include", // Important for sending cookies
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || "Failed to delete account");
+    }
+
+    // Clear local storage and cookies
+    localStorage.removeItem("token");
+    document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    
+    // Refresh the page to ensure all state is cleared
+    window.location.href = "/login";
+    
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    toast.error(error.message || "Failed to delete account. Please try again.");
+    // Still ensure we clean up local state even if there's an error
+    localStorage.removeItem("token");
+    document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    window.location.href = "/login";
+  }
 };

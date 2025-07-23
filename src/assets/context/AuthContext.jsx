@@ -74,15 +74,30 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       const token = localStorage.getItem("token");
-      await axios.post("/api/auth/logout", null, {
-        headers: {
-          Authorization: token ? `Bearer ${token}` : undefined,
-        },
-      });
+      
+      // Clear local storage and cookie first to prevent race conditions
+      localStorage.removeItem("token");
+      Cookies.remove("user");
       setUser(null);
-      Cookies.remove("user"); // Also remove the user cookie on logout
+      
+      // Then make the API call to invalidate the session
+      try {
+        await axios.post("/api/auth/logout", null, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+          withCredentials: true // Ensure cookies are sent with the request
+        });
+      } catch (apiError) {
+        console.error("Logout API error:", apiError);
+        // Even if the API call fails, we still want to proceed with local cleanup
+      }
     } catch (error) {
       console.error("Logout error:", error);
+      // Still ensure we clean up local state even if there's an error
+      localStorage.removeItem("token");
+      Cookies.remove("user");
+      setUser(null);
       throw error;
     }
   };
