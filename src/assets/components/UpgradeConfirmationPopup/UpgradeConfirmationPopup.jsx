@@ -1,4 +1,5 @@
-import React from 'react';
+import { useTheme } from '../../context/ThemeContext.jsx';
+import PropTypes from 'prop-types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaCoins, FaArrowUp } from 'react-icons/fa';
 
@@ -6,13 +7,15 @@ const UpgradeConfirmationPopup = ({
   isOpen, 
   onClose, 
   onConfirm, 
-  upgradeType, 
+
   singleUpgradeCost, 
   maxUpgrades, 
   totalCostForMax,
   currentLevel,
   userCoins 
 }) => {
+  const { theme } = useTheme();
+
   const handleUpgradeChoice = (upgradeAll) => {
     onConfirm(upgradeAll);
   };
@@ -22,14 +25,14 @@ const UpgradeConfirmationPopup = ({
   return (
     <AnimatePresence>
       <motion.div 
-        className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+        className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${theme === 'dark' ? 'bg-black/60' : 'bg-black/30'}`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       >
         <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md relative shadow-2xl"
+          className={`rounded-xl p-6 w-full max-w-md relative shadow-2xl border ${theme === 'dark' ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'}`}
           initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 20 }}
@@ -37,7 +40,7 @@ const UpgradeConfirmationPopup = ({
         >
           <button 
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+            className={`absolute top-4 right-4 transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
           >
             <FaTimes size={20} />
           </button>
@@ -46,7 +49,7 @@ const UpgradeConfirmationPopup = ({
             <div className="mx-auto w-16 h-16 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center mb-4">
               <FaArrowUp className="text-white text-2xl" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+            <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
               Level Upgrade Options
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -54,20 +57,20 @@ const UpgradeConfirmationPopup = ({
             </p>
           </div>
 
-          <div className="space-y-4 mb-6">
+          <div className={`space-y-4 mb-6 ${theme === 'dark' ? 'bg-gray-800/50 p-3 rounded-lg' : ''}`}>
             {/* Single Level Upgrade Option */}
             <motion.button
               onClick={() => handleUpgradeChoice(false)}
-              className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors group"
+              className={`w-full p-4 border-2 rounded-lg transition-colors group ${theme === 'dark' ? 'border-gray-600 hover:border-purple-400' : 'border-gray-200 hover:border-purple-500'}`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
               <div className="flex items-center justify-between">
                 <div className="text-left">
-                  <h4 className="font-semibold text-gray-800 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                  <h4 className={`font-semibold group-hover:text-purple-600 ${theme === 'dark' ? 'text-white group-hover:text-purple-400' : 'text-gray-800'}`}>
                     Upgrade One Level
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                     Level {currentLevel} → {currentLevel + 1}
                   </p>
                 </div>
@@ -82,16 +85,16 @@ const UpgradeConfirmationPopup = ({
             {maxUpgrades > 1 && (
               <motion.button
                 onClick={() => handleUpgradeChoice(true)}
-                className="w-full p-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg hover:border-green-500 dark:hover:border-green-400 transition-colors group bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20"
+                className={`w-full p-4 border-2 rounded-lg transition-colors group ${theme === 'dark' ? 'border-gray-600 hover:border-green-400 bg-gradient-to-r from-green-900/20 to-blue-900/20' : 'border-gray-200 hover:border-green-500 bg-gradient-to-r from-green-50 to-blue-50'}`}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <div className="flex items-center justify-between">
                   <div className="text-left">
-                    <h4 className="font-semibold text-gray-800 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400">
+                    <h4 className={`font-semibold group-hover:text-green-600 ${theme === 'dark' ? 'text-white group-hover:text-green-400' : 'text-gray-800'}`}>
                       Upgrade All Possible Levels
                     </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                       Level {currentLevel} → {currentLevel + maxUpgrades} ({maxUpgrades} levels)
                     </p>
                   </div>
@@ -104,9 +107,9 @@ const UpgradeConfirmationPopup = ({
             )}
           </div>
 
-          <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 rounded-lg p-3 mb-4">
+          <div className={`border rounded-lg p-3 mb-4 ${theme === 'dark' ? 'bg-blue-900/50 border-blue-800/80' : 'bg-blue-50 border-blue-100'}`}>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-blue-700 dark:text-blue-300">Your Coins:</span>
+              <span className={`${theme === 'dark' ? 'text-blue-300' : 'text-blue-700'}`}>Your Coins:</span>
               <div className="flex items-center text-orange-500 font-bold">
                 <FaCoins className="mr-1" />
                 {userCoins}
@@ -116,7 +119,7 @@ const UpgradeConfirmationPopup = ({
 
           <button 
             onClick={onClose}
-            className="w-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            className={`w-full px-4 py-2 rounded-lg transition-colors border ${theme === 'dark' ? 'bg-gray-800 text-gray-200 hover:bg-gray-700 border-gray-600' : 'bg-gray-200 text-gray-800 hover:bg-gray-300 border-gray-300'}`}
           >
             Cancel
           </button>
@@ -124,6 +127,17 @@ const UpgradeConfirmationPopup = ({
       </motion.div>
     </AnimatePresence>
   );
+};
+
+UpgradeConfirmationPopup.propTypes = {
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onConfirm: PropTypes.func.isRequired,
+  singleUpgradeCost: PropTypes.number.isRequired,
+  maxUpgrades: PropTypes.number.isRequired,
+  totalCostForMax: PropTypes.number.isRequired,
+  currentLevel: PropTypes.number.isRequired,
+  userCoins: PropTypes.number.isRequired,
 };
 
 export default UpgradeConfirmationPopup;

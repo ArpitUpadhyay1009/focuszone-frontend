@@ -589,7 +589,7 @@ export default function TodoList() {
                   <>
                     {/* Must Do Section */}
                     <div
-                      className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                      className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-500/10 dark:hover:bg-blue-500/20"
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, "must do")}
                     >
@@ -634,7 +634,7 @@ export default function TodoList() {
 
                     {/* Can Do Section */}
                     <div
-                      className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-50 dark:hover:bg-green-900/20"
+                      className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-500/10 dark:hover:bg-green-500/20"
                       onDragOver={handleDragOver}
                       onDrop={(e) => handleDrop(e, "can do")}
                     >
