@@ -12,7 +12,6 @@ const GoogleLoginButton = () => {
   const handleSuccess = async (credentialResponse) => {
     try {
       const { credential } = credentialResponse;
-      console.log("Google credential received:", credential);
 
       const response = await axios.post(
         "/api/auth/google-login",
@@ -26,11 +25,6 @@ const GoogleLoginButton = () => {
       const { token, user } = response.data;
       if (token) {
         localStorage.setItem("token", token);
-        // Debug: Log the token stored in localStorage
-        console.log(
-          "Token stored in localStorage:",
-          localStorage.getItem("token")
-        );
       }
       login(user); // Only pass user, not token
 
