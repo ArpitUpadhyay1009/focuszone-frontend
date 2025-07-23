@@ -41,7 +41,9 @@ export default function TodoList() {
 
   async function fetchRemainingPomodoros() {
     try {
-      const res = await axios.get("/api/tasks/remaining-pomodoros");
+      const res = await axios.get("/api/tasks/remaining-pomodoros", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
       const remainingCount = res.data.remainingPomodoros || 0;
       console.log("Remaining pomodoros:", remainingCount);
 

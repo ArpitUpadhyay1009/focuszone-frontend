@@ -374,10 +374,6 @@ export default function TimerApp({ setParentPopupState }) {
         setTime((prevTime) => {
           if (modeRef.current === "stopwatch") {
             unsavedSessionSecondsRef.current += secondsToUpdate;
-            console.log(
-              "[TIMER] unsavedSessionSeconds:",
-              unsavedSessionSecondsRef.current
-            );
             window.dispatchEvent(
               new CustomEvent("focusTimeTick", {
                 detail: {
@@ -396,10 +392,6 @@ export default function TimerApp({ setParentPopupState }) {
             prevTime > newTime
           ) {
             unsavedSessionSecondsRef.current += prevTime - newTime;
-            console.log(
-              "[TIMER] unsavedSessionSeconds:",
-              unsavedSessionSecondsRef.current
-            );
             // Per-minute coin logic (same as visibility handler)
             if (initialTime) {
               const totalMinutesElapsedThisSession = Math.floor(
@@ -684,14 +676,8 @@ export default function TimerApp({ setParentPopupState }) {
     // Save any accumulated time from unsavedSessionSeconds before resetting
     if (unsavedSessionSecondsRef.current > 0) {
       saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
-      console.log(
-        `[RESET] Saved ${unsavedSessionSecondsRef.current} seconds for reset.`
-      );
       // unsavedSessionSecondsRef.current will be reset in saveTimeSpentToDatabase
     }
-
-    // Remove the duplicate setLastSavedTimeOnReset(0) call that was here
-    console.log(`After resetting`);
 
     setShowStart(true);
     setIsBreak(false);
@@ -798,9 +784,7 @@ export default function TimerApp({ setParentPopupState }) {
         <div className="relative">
           <motion.button
             className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
-              isRunning
-                ? "opacity-60 cursor-not-allowed"
-                : "cursor-pointer"
+              isRunning ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
             } ${
               isBreak
                 ? "bg-gray-300 text-gray-700"
@@ -823,9 +807,7 @@ export default function TimerApp({ setParentPopupState }) {
         <div className="relative">
           <motion.button
             className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
-              isRunning
-                ? "opacity-60 cursor-not-allowed"
-                : "cursor-pointer"
+              isRunning ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
             } ${
               mode === "countdown"
                 ? "bg-[#FFE3A6] text-black"
@@ -851,9 +833,7 @@ export default function TimerApp({ setParentPopupState }) {
         <div className="relative">
           <motion.button
             className={`flex-1 px-3 py-1 md:px-5 md:py-3 text-sm md:text-base rounded-full transition-all duration-300 min-w-[90px] md:min-w-[110px] ${
-              isRunning
-                ? "opacity-60 cursor-not-allowed"
-                : "cursor-pointer"
+              isRunning ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
             } ${
               mode === "stopwatch"
                 ? "bg-[#FFE3A6] text-black"
