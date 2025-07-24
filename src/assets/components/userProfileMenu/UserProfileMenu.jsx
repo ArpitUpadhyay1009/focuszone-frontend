@@ -400,18 +400,21 @@ const UserProfileMenu = ({
         const tasks = response.data.completedTasks;
         setCompletedTasks(tasks); // This state is for displaying the list of tasks
 
-        const compTasksCount = tasks.length; // Calculate the number of completed tasks
         setUserStats((prev) => ({
           ...prev,
-          completedTasks: compTasksCount, // Update the count in userStats
+          completedTasks: response.data.completedCount || 0,
+          intermediateCount: response.data.intermediateCount || 0,
+          totalTaskCount: response.data.totalCount || 0,
         }));
 
-        return compTasksCount;
+        return response.data.completedCount || 0;
       } else {
         setCompletedTasks([]);
         setUserStats((prev) => ({
           ...prev,
           completedTasks: 0,
+          intermediateCount: 0,
+          totalTaskCount: 0,
         }));
 
         return 0;
@@ -468,20 +471,22 @@ const UserProfileMenu = ({
       if (response.status === 200) {
         // Clear all authentication state
         localStorage.removeItem("token");
-        
+
         // Clear cookies manually
-        document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-        document.cookie = "user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-        
+        document.cookie =
+          "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        document.cookie =
+          "user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+
         // Show success message
         toast.success("Account deleted successfully");
-        
+
         // Use logout from AuthContext to ensure proper cleanup
         await logout();
-        
+
         // Force redirect to login page
         navigate("/login", { replace: true });
-        
+
         // Clear browser history to prevent back navigation
         window.history.pushState(null, "", window.location.href);
         window.addEventListener("popstate", () => {
@@ -490,15 +495,18 @@ const UserProfileMenu = ({
       }
     } catch (error) {
       console.error("Error deleting account:", error);
-      
+
       // Check if it's a network error or server error
       if (error.response) {
         // Server responded with error status
-        const errorMessage = error.response.data?.message || "Failed to delete account";
+        const errorMessage =
+          error.response.data?.message || "Failed to delete account";
         toast.error(errorMessage);
       } else if (error.request) {
         // Network error
-        toast.error("Network error. Please check your connection and try again.");
+        toast.error(
+          "Network error. Please check your connection and try again."
+        );
       } else {
         // Other error
         toast.error("Failed to delete account. Please try again.");
@@ -786,6 +794,65 @@ const UserProfileMenu = ({
                   <p className="stat-value">{userStats.completedTasks}</p>
                 </div>
               </motion.div>
+              {userStats.totalTaskCount !== undefined && (
+                <motion.div
+                  className="stat-item"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.36 }}
+                >
+                  <div className="stat-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                  </div>
+                  <div className="stat-content">
+                    <p className="stat-label">TOTAL TASKS</p>
+                    <p className="stat-value">{userStats.totalTaskCount}</p>
+                  </div>
+                </motion.div>
+              )}
+              {userStats.intermediateCount !== undefined && (
+                <motion.div
+                  className="stat-item"
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.355 }}
+                >
+                  <div className="stat-icon">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <circle cx="10" cy="10" r="8" fill="#fbbf24" />
+                      <text
+                        x="10"
+                        y="15"
+                        textAnchor="middle"
+                        fontSize="10"
+                        fill="#fff"
+                      >
+                        I
+                      </text>
+                    </svg>
+                  </div>
+                  <div className="stat-content">
+                    <p className="stat-label">INTERMEDIATE TASKS</p>
+                    <p className="stat-value">{userStats.intermediateCount}</p>
+                  </div>
+                </motion.div>
+              )}
             </div>
           )}
 
@@ -1525,13 +1592,13 @@ UserProfileMenu.DeleteConfirmModal = function DeleteConfirmModal({
 UserProfileMenu._handleDelete = async function handleDelete() {
   try {
     const token = localStorage.getItem("token");
-    
+
     // Make the API call to delete the account
     const response = await fetch("/api/user/delete-account", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": token ? `Bearer ${token}` : "",
+        Authorization: token ? `Bearer ${token}` : "",
       },
       credentials: "include", // Important for sending cookies
     });
@@ -1544,10 +1611,9 @@ UserProfileMenu._handleDelete = async function handleDelete() {
     // Clear local storage and cookies
     localStorage.removeItem("token");
     document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-    
+
     // Refresh the page to ensure all state is cleared
     window.location.href = "/login";
-    
   } catch (error) {
     console.error("Error deleting account:", error);
     toast.error(error.message || "Failed to delete account. Please try again.");
