@@ -289,6 +289,10 @@ export default function TodoList() {
       );
       // Only update remaining pomodoros, not the whole task list
       fetchRemainingPomodoros();
+      // Wait a moment for backend to update, then dispatch event
+      setTimeout(() => {
+        window.dispatchEvent(new Event("taskCompletionUpdate"));
+      }, 300);
       // Do NOT call fetchTasks() or fetchIntermediateTasks() here!
     } catch (error) {
       // Revert optimistic update if error
