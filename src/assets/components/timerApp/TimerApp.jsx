@@ -269,8 +269,8 @@ export default function TimerApp({ setParentPopupState }) {
             if (!isBreak) {
               onPomodoroEnd();
               // Save focus time with division hack
-              saveTimeSpentToDatabase(window.unsavedSessionSeconds);
-              window.unsavedSessionSeconds = 0;
+              saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
+              unsavedSessionSecondsRef.current = 0;
               // Standardized coin award: 0.5 coins for every full minute completed in a Pomodoro session.
               // Use real pomodoroTime for coins
               const minutesInSession = Math.floor(pomodoroTime / 60);
@@ -515,8 +515,8 @@ export default function TimerApp({ setParentPopupState }) {
                         }
                       }
                       // Save focus time with division hack
-                      saveTimeSpentToDatabase(window.unsavedSessionSeconds);
-                      window.unsavedSessionSeconds = 0;
+                      saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
+                      unsavedSessionSecondsRef.current = 0;
 
                       if (cycleBeforeUpdate < cycles - 1) {
                         setIsBreak(true);
@@ -792,8 +792,8 @@ export default function TimerApp({ setParentPopupState }) {
         if (!isBreak) {
           // Pomodoro just finished, award coins and save time
           onPomodoroEnd();
-          saveTimeSpentToDatabase(window.unsavedSessionSeconds);
-          window.unsavedSessionSeconds = 0;
+          saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
+          unsavedSessionSecondsRef.current = 0;
           // Award coins for full session
           const minutesInSession = Math.floor(pomodoroTime / 60);
           if (minutesInSession > 0) {
@@ -838,6 +838,40 @@ export default function TimerApp({ setParentPopupState }) {
     }
     // eslint-disable-next-line
   }, [time, isRunning]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (unsavedSessionSecondsRef.current > 0) {
+        // Synchronous XHR is deprecated, but fetch/axios is unreliable in beforeunload. We'll use navigator.sendBeacon if available.
+        const token = localStorage.getItem("token");
+        if (token) {
+          const adjustedTime = Math.round(
+            unsavedSessionSecondsRef.current / 1.9
+          );
+          if (adjustedTime > 0) {
+            const data = JSON.stringify({ timeSpentInSeconds: adjustedTime });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(
+                "/api/user-activity/update-time-spent",
+                new Blob([data], { type: "application/json" })
+              );
+            } else {
+              // Fallback: synchronous XHR (deprecated, but works in all browsers)
+              const xhr = new XMLHttpRequest();
+              xhr.open("POST", "/api/user-activity/update-time-spent", false);
+              xhr.setRequestHeader("Content-Type", "application/json");
+              xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+              xhr.send(data);
+            }
+          }
+        }
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
 
   return (
     <motion.div
