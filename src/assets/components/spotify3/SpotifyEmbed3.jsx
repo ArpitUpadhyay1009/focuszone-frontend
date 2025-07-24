@@ -1,11 +1,11 @@
-import "./SpotifyEmbed2.css";
+import "./SpotifyEmbed3.css";
 
-const SpotifyEmbed2 = () => {
+const SpotifyEmbed3 = () => {
   return (
     <>
       <div className="w-full flex justify-center px-4">
         <iframe
-          src="https://open.spotify.com/embed/playlist/37i9dQZF1DZ06evO1GgBuH?utm_source=generator"
+          src="https://open.spotify.com/embed/playlist/0oPyDVNdgcPFAWmOYSK7O1?utm_source=generator"
           height="351"
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -16,4 +16,4 @@ const SpotifyEmbed2 = () => {
     </>
   );
 };
-export default SpotifyEmbed2;
+export default SpotifyEmbed3;

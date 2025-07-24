@@ -10,6 +10,7 @@ import SpotifyEmbed2 from "@components/spotify2/SpotifyEmbed2.jsx";
 import TodoList from "@components/todo/todo.jsx";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import Footer from "@components/footer/Footer.jsx";
+import RouteDropdown from "@components/common/RouteDropdown";
 
 export const Home = () => {
   return (
@@ -23,11 +24,23 @@ export const Home = () => {
             <div className="w-150 sm:w-full md:w-90 md:ml-[5%] max-w-full  lg:w-120 lg:ml-[-10%]">
               <TimerApp />
             </div>
-            <div className="w-full sm:w-full md:w-100 md:mt-[17%] mt-4 sm:mt-6 max-w-full">
+            <div
+              style={{
+                width: "100%",
+                maxWidth: 400,
+                marginTop: "5%",
+                margin: "0 100",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}
+            >
+              <RouteDropdown />
+              <div style={{ height: 10 }} />
               <SpotifyEmbed2 />
             </div>
           </div>
-          
+
           {/* Right Column - Level Components */}
           <div className="flex flex-col gap-4 sm:gap-6">
             <div className="w-110 sm:w-75 md:w-85 lg:w-120 md:mt-[-18%] max-w-full sm:max-w-80 md:max-w-78 lg:max-w-none ml-0 sm:ml-[2%] md:ml-[4%]">
