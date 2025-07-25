@@ -32,7 +32,7 @@ export const Home = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  marginTop: "14%",
+                  marginTop: "15%",
                   marginLeft: "-20%",
                 }}
               >
