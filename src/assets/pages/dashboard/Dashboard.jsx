@@ -33,8 +33,9 @@ export const Home = () => {
                   flexDirection: "column",
                   alignItems: "center",
                   marginTop: "15%",
-                  marginLeft: "-20%",
+                  // marginLeft only for md and up
                 }}
+                className="md:ml-[-20%]"
               >
                 <RouteDropdown />
                 <div style={{ height: 10 }} />
