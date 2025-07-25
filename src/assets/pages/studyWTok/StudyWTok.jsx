@@ -12,7 +12,7 @@ import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackgroun
 import Footer from "@components/footer/Footer.jsx";
 import RouteDropdown from "@components/common/RouteDropdown";
 
-export const Home = () => {
+export const StudyWGram = () => {
   return (
     <div className="app-container">
       <AnimatedBackground />
@@ -24,20 +24,22 @@ export const Home = () => {
             <div className="w-150 sm:w-full md:w-90 md:ml-[5%] max-w-full  lg:w-120 lg:ml-[-10%]">
               <TimerApp />
             </div>
-            <div
-              style={{
-                width: "100%",
-                maxWidth: 400,
-                marginTop: "5%",
-                margin: "0 60",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <RouteDropdown />
-              <div style={{ height: 10 }} />
-              <SpotifyEmbed3 />
+            <div className="flex justify-center w-full">
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 400,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: "24%",
+                  marginLeft: "-20%",
+                }}
+              >
+                <RouteDropdown />
+                <div style={{ height: 10 }} />
+                <SpotifyEmbed3 />
+              </div>
             </div>
           </div>
 
@@ -46,7 +48,7 @@ export const Home = () => {
             <div className="w-110 sm:w-75 md:w-85 lg:w-120 md:mt-[-18%] max-w-full sm:max-w-80 md:max-w-78 lg:max-w-none ml-0 sm:ml-[2%] md:ml-[4%]">
               <LevelRenders />
             </div>
-            <div className="w-full sm:w-80 md:w-96 lg:w-100 px-2 sm:px-4 max-w-full sm:max-w-80 md:max-w-96 lg:max-w-none md:mt-[25%] lg:mt-[0%] lg:ml-[13%]">
+            <div className="w-full sm:w-80 md:w-96 lg:w-100 px-2 sm:px-4 max-w-full sm:max-w-80 md:max-w-96 lg:max-w-none md:mt-[25%] lg:mt-[-5%] lg:ml-[13%]">
               <LevelUpgradeSystem />
             </div>
           </div>
@@ -60,4 +62,4 @@ export const Home = () => {
   );
 };
 
-export default Home;
+export default StudyWGram;

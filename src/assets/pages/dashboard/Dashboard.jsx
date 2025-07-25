@@ -25,7 +25,17 @@ export const Home = () => {
               <TimerApp />
             </div>
             <div className="flex justify-center w-full">
-              <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '35%' }}>
+              <div
+                style={{
+                  width: "100%",
+                  maxWidth: 400,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  marginTop: "24%",
+                  marginLeft: "-20%",
+                }}
+              >
                 <RouteDropdown />
                 <div style={{ height: 10 }} />
                 <SpotifyEmbed2 />
@@ -38,7 +48,7 @@ export const Home = () => {
             <div className="w-110 sm:w-75 md:w-85 lg:w-120 md:mt-[-18%] max-w-full sm:max-w-80 md:max-w-78 lg:max-w-none ml-0 sm:ml-[2%] md:ml-[4%]">
               <LevelRenders />
             </div>
-            <div className="w-full sm:w-80 md:w-96 lg:w-100 px-2 sm:px-4 max-w-full sm:max-w-80 md:max-w-96 lg:max-w-none md:mt-[25%] lg:mt-[0%] lg:ml-[13%]">
+            <div className="w-full sm:w-80 md:w-96 lg:w-100 px-2 sm:px-4 max-w-full sm:max-w-80 md:max-w-96 lg:max-w-none md:mt-[25%] lg:mt-[-5%] lg:ml-[13%]">
               <LevelUpgradeSystem />
             </div>
           </div>
