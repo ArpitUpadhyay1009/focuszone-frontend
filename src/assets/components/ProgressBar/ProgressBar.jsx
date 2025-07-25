@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle, Coins } from "lucide-react";
+import PropTypes from "prop-types";
 
 const ProgressBar = ({
   level,
@@ -52,7 +53,11 @@ const ProgressBar = ({
         <div className="flex items-center text-xs font-medium space-x-1">
           <Coins size={10} className={darkMode ? "text-yellow-400" : "text-yellow-500"} />
           <span className={darkMode ? "text-white" : "text-gray-800"}>
-            {isComplete ? "100%" : `${userCoins} / ${coinsRequired} required`}
+            {isComplete
+              ? "100%"
+              : (coinsRequired === null || coinsRequired === undefined || isNaN(coinsRequired))
+                ? `${userCoins} / – required`
+                : `${userCoins} / ${coinsRequired} required`}
           </span>
         </div>
       </div>
@@ -69,6 +74,15 @@ const ProgressBar = ({
       )}
     </div>
   );
+};
+
+ProgressBar.propTypes = {
+  level: PropTypes.number.isRequired,
+  isComplete: PropTypes.bool.isRequired,
+  coinsRequired: PropTypes.oneOfType([PropTypes.number, PropTypes.oneOf([null])]),
+  darkMode: PropTypes.bool,
+  userCoins: PropTypes.number.isRequired,
+  showLevelText: PropTypes.bool
 };
 
 export default ProgressBar;
