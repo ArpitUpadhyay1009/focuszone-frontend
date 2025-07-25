@@ -24,20 +24,12 @@ export const Home = () => {
             <div className="w-150 sm:w-full md:w-90 md:ml-[5%] max-w-full  lg:w-120 lg:ml-[-10%]">
               <TimerApp />
             </div>
-            <div
-              style={{
-                width: "100%",
-                maxWidth: 400,
-                marginTop: "5%",
-                margin: "0 100",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <RouteDropdown />
-              <div style={{ height: 10 }} />
-              <SpotifyEmbed2 />
+            <div className="flex justify-center w-full">
+              <div style={{ width: '100%', maxWidth: 400, display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '35%' }}>
+                <RouteDropdown />
+                <div style={{ height: 10 }} />
+                <SpotifyEmbed2 />
+              </div>
             </div>
           </div>
 

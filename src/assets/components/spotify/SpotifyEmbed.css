@@ -1,20 +1,36 @@
 @import "tailwindcss";
-/* Default width for mobile */
 .frame {
-    width: 130%;
+  width: 100% !important;
+  max-width: 100%;
+  min-width: 0;
+  display: block;
+}
+
+@media (min-width: 480px) {
+  .frame {
+    max-width: 400px;
   }
-  
-  /* For tablet screens (e.g., 768px and above) */
-  @media (min-width: 768px) {
-    .frame {
-      width: 75%; /* Adjust this value for tablet */
-    }
+}
+
+@media (min-width: 1024px) {
+  .frame {
+    max-width: 500px;
   }
-  
-  /* For laptop screens (e.g., 1024px and above) */
-  @media (min-width: 1024px) {
-    .frame {
-      width: 145%; /* Adjust this value for laptop */
-    }
+}
+
+.spotify-iframe-responsive {
+  height: 25vh !important;
+}
+
+@media (min-width: 768px) {
+  .spotify-iframe-responsive {
+    height: 30vh !important;
   }
+}
+
+@media (min-width: 1024px) {
+  .spotify-iframe-responsive {
+    height: 18em !important;
+  }
+}
   

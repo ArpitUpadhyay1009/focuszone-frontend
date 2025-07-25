@@ -22,6 +22,26 @@ const UpgradeConfirmationPopup = ({
 
   if (!isOpen) return null;
 
+  // Before rendering, cap maxUpgrades so currentLevel + maxUpgrades <= 50
+  const cappedMaxUpgrades = Math.max(0, Math.min(maxUpgrades, 50 - currentLevel));
+
+  if (currentLevel >= 50 || cappedMaxUpgrades === 0) {
+    return (
+      <AnimatePresence>
+        <motion.div className={`fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50 p-4 ${theme === 'dark' ? 'bg-black/60' : 'bg-black/30'}`}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <div className="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-xl text-center">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Max Level Reached</h2>
+            <p className="text-gray-600 dark:text-gray-300">You are already at the maximum level (50). No further upgrades are possible.</p>
+            <button className="mt-6 px-4 py-2 bg-gray-400 text-white rounded-lg" onClick={onClose}>Close</button>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
+
   return (
     <AnimatePresence>
       <motion.div 
@@ -82,7 +102,7 @@ const UpgradeConfirmationPopup = ({
             </motion.button>
 
             {/* Multiple Levels Upgrade Option */}
-            {maxUpgrades > 1 && (
+            {cappedMaxUpgrades > 1 && (
               <motion.button
                 onClick={() => handleUpgradeChoice(true)}
                 className={`w-full p-4 border-2 rounded-lg transition-colors group ${theme === 'dark' ? 'border-gray-600 hover:border-green-400 bg-gradient-to-r from-green-900/20 to-blue-900/20' : 'border-gray-200 hover:border-green-500 bg-gradient-to-r from-green-50 to-blue-50'}`}
@@ -95,7 +115,7 @@ const UpgradeConfirmationPopup = ({
                       Upgrade All Possible Levels
                     </h4>
                     <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Level {currentLevel} → {currentLevel + maxUpgrades} ({maxUpgrades} levels)
+                      Level {currentLevel} → {currentLevel + cappedMaxUpgrades} ({cappedMaxUpgrades} levels)
                     </p>
                   </div>
                   <div className="flex items-center text-orange-500">

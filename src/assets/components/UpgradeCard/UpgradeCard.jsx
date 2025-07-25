@@ -90,9 +90,9 @@ const UpgradeCard = () => {
         return;
       }
 
-      const response = await axios.patch(
+      await axios.patch(
         "/api/auth/updateLevel",
-        { coins: coinsRequired }, // Send the cost in the request body
+        { coins: coinsRequired },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -102,27 +102,19 @@ const UpgradeCard = () => {
       );
 
       // Update the user data with new level
-      const updatedLevel = userData.currentLevel + 1;
+      const updatedLevel = Math.min(userData.currentLevel + 1, 50);
       setNewLevel(updatedLevel);
-
       setUserData((prev) => ({
         ...prev,
         currentLevel: updatedLevel,
-        nextLevel: updatedLevel + 1,
+        nextLevel: Math.min(updatedLevel + 1, 50),
         coins: prev.coins - coinsRequired,
       }));
-
       setUpgradeProgress(0);
       setIsUpgrading(false);
       setShowProgressPopup(false);
-
-      // Show congratulations popup
       setShowCongratsPopup(true);
-
-      // Check if user can still upgrade
       setCanUpgrade(userData.coins - coinsRequired >= coinsRequired);
-
-      // Dispatch coin update event
       window.dispatchEvent(new Event("coinUpdate"));
     } catch (error) {
       console.error("Error upgrading level:", error);
@@ -239,26 +231,30 @@ const UpgradeCard = () => {
         </div>
 
         {/* Upgrade button - centered and styled like the screenshot */}
-        <div className="flex justify-center items-center mb-4">
-          <motion.button
-            whileHover={{ scale: canUpgrade ? 1.05 : 1 }}
-            whileTap={{ scale: canUpgrade ? 0.95 : 1 }}
-            onClick={handleUpgrade}
-            disabled={!canUpgrade || isUpgrading}
-            className={`px-6 py-3 rounded-full flex items-center gap-2 shadow-lg ${
-              canUpgrade && !isUpgrading
-                ? "bg-orange-500 text-white hover:bg-orange-600"
-                : "bg-gray-300 text-gray-600 cursor-not-allowed"
-            }`}
-          >
-            <ArrowUp size={20} />
-            <span className="font-medium">Upgrade</span>
-            <div className="bg-orange-400 px-2 py-1 rounded-full flex items-center ml-1">
-              <Coins size={14} className="mr-1" />
-              <span>{coinsRequired}</span>
-            </div>
-          </motion.button>
-        </div>
+        {userData.currentLevel >= 50 ? (
+          <div className="text-center text-gray-500 font-semibold mt-4">You have reached the maximum level (50).</div>
+        ) : (
+          <div className="flex justify-center items-center mb-4">
+            <motion.button
+              whileHover={{ scale: canUpgrade ? 1.05 : 1 }}
+              whileTap={{ scale: canUpgrade ? 0.95 : 1 }}
+              onClick={handleUpgrade}
+              disabled={!canUpgrade || isUpgrading}
+              className={`px-6 py-3 rounded-full flex items-center gap-2 shadow-lg ${
+                canUpgrade && !isUpgrading
+                  ? "bg-orange-500 text-white hover:bg-orange-600"
+                  : "bg-gray-300 text-gray-600 cursor-not-allowed"
+              }`}
+            >
+              <ArrowUp size={20} />
+              <span className="font-medium">Upgrade</span>
+              <div className="bg-orange-400 px-2 py-1 rounded-full flex items-center ml-1">
+                <Coins size={14} className="mr-1" />
+                <span>{coinsRequired}</span>
+              </div>
+            </motion.button>
+          </div>
+        )}
       </motion.div>
 
       {/* Progress Popup */}
@@ -307,20 +303,3 @@ const UpgradeCard = () => {
 };
 
 export default UpgradeCard;
-
-// Add this to the upgrade success handler in UpgradeCard.jsx
-// Find the section where the upgrade is successful and add this line:
-
-// After successful upgrade
-setUserData((prev) => ({
-  ...prev,
-  currentLevel: prev.currentLevel + 1,
-  nextLevel: prev.nextLevel + 1,
-}));
-
-// Dispatch event to notify level was upgraded
-window.dispatchEvent(new Event('levelUpgraded'));
-
-// Show congrats popup
-setShowCongratsPopup(true);
-setNewLevel(userData.currentLevel + 1);
