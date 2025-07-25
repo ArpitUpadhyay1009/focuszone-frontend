@@ -21,7 +21,7 @@ export const Home = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 lg:gap-30 max-w-6xl mx-auto py-6 md:py-8">
           {/* Left Column - Timer and Spotify */}
           <div className="flex flex-col gap-4 sm:gap-6">
-            <div className="w-150 sm:w-full md:w-90 md:ml-[5%] max-w-full  lg:w-120 lg:ml-[-10%]">
+            <div className="w-150 mt-[10%] sm:w-full md:w-90 md:ml-[5%] max-w-full  lg:w-120 lg:ml-[-10%]">
               <TimerApp />
             </div>
             <div className="flex justify-center w-full">
@@ -32,7 +32,7 @@ export const Home = () => {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  marginTop: "24%",
+                  marginTop: "14%",
                   marginLeft: "-20%",
                 }}
               >
@@ -53,7 +53,7 @@ export const Home = () => {
             </div>
           </div>
         </div>
-        <div className="mt-8 mb-12 w-full max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4">
+        <div className="mt-[-10%] mb-12 w-full max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4">
           <TodoList />
         </div>
       </div>
