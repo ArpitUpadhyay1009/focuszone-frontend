@@ -229,10 +229,10 @@ export default function TodoList() {
         let date;
         try {
           date = res.data.task.dueDate
-            ? new Date(res.data.task.dueDate).toLocaleDateString()
-            : new Date().toLocaleDateString();
+            ? toISODateString(res.data.task.dueDate)
+            : getTodayISO();
         } catch (e) {
-          date = new Date().toLocaleDateString();
+          date = getTodayISO();
         }
 
         setTasks((prev) => [
@@ -335,7 +335,7 @@ export default function TodoList() {
     setEditTask({
       id: task.id,
       name: task.taskName,
-      date: task.date,
+      date: toISODateString(task.dueDate || task.date),
       pomodoros: task.pomodoros,
       priority: task.priority,
     });
@@ -958,3 +958,13 @@ const getTodayISO = () => {
   const today = new Date();
   return today.toISOString().split("T")[0];
 };
+
+// Helper to convert any date to ISO string (YYYY-MM-DD)
+function toISODateString(date) {
+  if (!date) return getTodayISO();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(date)) return date;
+  if (date instanceof Date) return date.toISOString().split("T")[0];
+  const d = new Date(date);
+  if (!isNaN(d)) return d.toISOString().split("T")[0];
+  return getTodayISO();
+}
