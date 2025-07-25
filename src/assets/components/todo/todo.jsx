@@ -20,7 +20,7 @@ export default function TodoList() {
   const [estimatedTime, setEstimatedTime] = useState("");
   const [newTask, setNewTask] = useState({
     name: "",
-    date: today,
+    date: getTodayISO(),
     pomodoros: "",
     completedPomodoros: "",
     priority: "",
@@ -29,7 +29,7 @@ export default function TodoList() {
   const [editTask, setEditTask] = useState({
     id: "",
     name: "",
-    date: today,
+    date: getTodayISO(),
     pomodoros: "",
     priority: "",
   });
@@ -204,11 +204,13 @@ export default function TodoList() {
 
     if (newTask.name.trim()) {
       try {
+        // Always send date in ISO format
+        const isoDate = new Date(newTask.date).toISOString().split("T")[0];
         const res = await axios.post(
           "/api/tasks",
           {
             taskName: newTask.name,
-            dueDate: newTask.date,
+            dueDate: isoDate,
             estimatedPomodoros: newTask.pomodoros || "0",
             priority: newTask.priority || "must do",
           },
@@ -246,7 +248,12 @@ export default function TodoList() {
           },
         ]);
 
-        setNewTask({ name: "", date: today, pomodoros: "", priority: "" });
+        setNewTask({
+          name: "",
+          date: getTodayISO(),
+          pomodoros: "",
+          priority: "",
+        });
         fetchRemainingPomodoros();
         setIsOpen(false);
       } catch (error) {
@@ -338,12 +345,14 @@ export default function TodoList() {
   const updateTask = async () => {
     if (editTask.name.trim()) {
       try {
+        // Always send date in ISO format
+        const isoDate = new Date(editTask.date).toISOString().split("T")[0];
         console.log("Updating task with ID:", editTask.id);
         const res = await axios.patch(
           `/api/tasks/${editTask.id}/edit`,
           {
             taskName: editTask.name,
-            dueDate: editTask.date,
+            dueDate: isoDate,
             estimatedPomodoros: editTask.pomodoros || "0",
             priority: editTask.priority || "must do",
           },
@@ -372,7 +381,7 @@ export default function TodoList() {
         setEditTask({
           id: "",
           name: "",
-          date: today,
+          date: getTodayISO(),
           pomodoros: "",
           priority: "",
         });
@@ -759,12 +768,12 @@ export default function TodoList() {
                   <label>Enter date of completion:</label>
                   <input
                     type="date"
-                    value={newTask.date || today}
+                    value={newTask.date || getTodayISO()}
                     onChange={(e) =>
                       setNewTask({ ...newTask, date: e.target.value })
                     }
                     className="w-full p-2 border rounded mb-2"
-                    min={new Date().toISOString().split("T")[0]}
+                    min={getTodayISO()}
                   />
                   <label>Estimated number of pomodoros:</label>
                   <input
@@ -868,12 +877,12 @@ export default function TodoList() {
                   <label>Enter date of completion:</label>
                   <input
                     type="date"
-                    value={editTask.date || today}
+                    value={editTask.date || getTodayISO()}
                     onChange={(e) =>
                       setEditTask({ ...editTask, date: e.target.value })
                     }
                     className="w-full p-2 border rounded mb-2"
-                    min={new Date().toISOString().split("T")[0]}
+                    min={getTodayISO()}
                   />
                   <label>Estimated number of pomodoros:</label>
                   <input
@@ -943,3 +952,9 @@ export default function TodoList() {
     </>
   );
 }
+
+// Helper to get today's date in ISO format
+const getTodayISO = () => {
+  const today = new Date();
+  return today.toISOString().split("T")[0];
+};
