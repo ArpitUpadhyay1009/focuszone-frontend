@@ -1,20 +1,89 @@
 @import "tailwindcss";
-/* Default width for mobile */
-.frame {
-    width: 130%;
+
+.floating-spotify-widget {
+  position: fixed;
+  bottom: 2vh;
+  right: 2vw;
+  z-index: 1000;
+  background: transparent;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.floating-spotify-widget:hover {
+  transform: scale(1.02);
+}
+
+.floating-spotify-iframe {
+  border-radius: 0.5rem;
+  border: none;
+  width: 25vw;
+  height: 15vh;
+  min-width: 250px;
+  min-height: 100px;
+  max-width: 400px;
+  max-height: 200px;
+}
+
+/* Mobile devices */
+@media (max-width: 480px) {
+  .floating-spotify-widget {
+    bottom: 1.5vh;
+    right: 1.5vw;
+    padding: 0.4rem;
   }
   
-  /* For tablet screens (e.g., 768px and above) */
-  @media (min-width: 768px) {
-    .frame {
-      width: 75%; /* Adjust this value for tablet */
-    }
+  .floating-spotify-iframe {
+    width: 30vw;
+    height: 12vh;
+    min-width: 200px;
+    min-height: 80px;
+  }
+}
+
+/* Tablet screens */
+@media (min-width: 481px) and (max-width: 768px) {
+  .floating-spotify-widget {
+    bottom: 2vh;
+    right: 2vw;
   }
   
-  /* For laptop screens (e.g., 1024px and above) */
-  @media (min-width: 1024px) {
-    .frame {
-      width: 145%; /* Adjust this value for laptop */
-    }
+  .floating-spotify-iframe {
+    width: 28vw;
+    height: 14vh;
+    min-width: 250px;
+    min-height: 100px;
   }
+}
+
+/* Desktop screens */
+@media (min-width: 769px) {
+  .floating-spotify-widget {
+    bottom: 2.5vh;
+    right: 2.5vw;
+  }
+  
+  .floating-spotify-iframe {
+    width: 22vw;
+    height: 16vh;
+    min-width: 300px;
+    min-height: 120px;
+  }
+}
+
+/* Large desktop screens */
+@media (min-width: 1200px) {
+  .floating-spotify-widget {
+    bottom: 3vh;
+    right: 3vw;
+  }
+  
+  .floating-spotify-iframe {
+    width: 20vw;
+    height: 18vh;
+    min-width: 350px;
+    min-height: 140px;
+  }
+}
   

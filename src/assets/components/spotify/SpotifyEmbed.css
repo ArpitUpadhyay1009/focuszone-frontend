@@ -1,36 +1,90 @@
 @import "tailwindcss";
-.frame {
-  width: 100% !important;
-  max-width: 100%;
-  min-width: 0;
-  display: block;
+
+.floating-spotify-widget {
+  position: fixed;
+  bottom: 2vh;
+  right: 2vw;
+  z-index: 1000;
+  background: transparent;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  transition: all 0.3s ease;
 }
 
-@media (min-width: 480px) {
-  .frame {
-    max-width: 400px;
+.floating-spotify-widget:hover {
+  transform: scale(1.02);
+}
+
+.floating-spotify-iframe {
+  border-radius: 0.5rem;
+  border: none;
+  width: 25vw;
+  height: 15vh;
+  min-width: 250px;
+  min-height: 100px;
+  max-width: 400px;
+  max-height: 200px;
+}
+
+/* Mobile devices */
+@media (max-width: 480px) {
+  .floating-spotify-widget {
+    bottom: 1.5vh;
+    right: 1.5vw;
+    padding: 0.4rem;
+  }
+  
+  .floating-spotify-iframe {
+    width: 30vw;
+    height: 12vh;
+    min-width: 200px;
+    min-height: 80px;
   }
 }
 
-@media (min-width: 1024px) {
-  .frame {
-    max-width: 500px;
+/* Tablet screens */
+@media (min-width: 481px) and (max-width: 768px) {
+  .floating-spotify-widget {
+    bottom: 2vh;
+    right: 2vw;
+  }
+  
+  .floating-spotify-iframe {
+    width: 28vw;
+    height: 14vh;
+    min-width: 250px;
+    min-height: 100px;
   }
 }
 
-.spotify-iframe-responsive {
-  height: 25vh !important;
-}
-
-@media (min-width: 768px) {
-  .spotify-iframe-responsive {
-    height: 30vh !important;
+/* Desktop screens */
+@media (min-width: 769px) {
+  .floating-spotify-widget {
+    bottom: 2.5vh;
+    right: 2.5vw;
+  }
+  
+  .floating-spotify-iframe {
+    width: 22vw;
+    height: 16vh;
+    min-width: 300px;
+    min-height: 120px;
   }
 }
 
-@media (min-width: 1024px) {
-  .spotify-iframe-responsive {
-    height: 18em !important;
+/* Large desktop screens */
+@media (min-width: 1200px) {
+  .floating-spotify-widget {
+    bottom: 3vh;
+    right: 3vw;
+  }
+  
+  .floating-spotify-iframe {
+    width: 20vw;
+    height: 18vh;
+    min-width: 350px;
+    min-height: 140px;
   }
 }
+  
   
