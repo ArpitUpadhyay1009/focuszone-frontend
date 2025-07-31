@@ -22,7 +22,7 @@ export const Home = () => {
             <div className="w-150 mt-[10%] sm:w-full md:w-90 md:ml-[5%] max-w-full lg:w-120 lg:ml-[-10%]">
               <TimerApp />
             </div>
-            <div className="w-150 mt-[3%] sm:w-full md:w-90 md:ml-[5%] max-w-full lg:w-120 lg:ml-[-10%]">
+            <div className="w-150 mt-[0%] sm:w-full md:w-90 md:ml-[5%] max-w-full lg:w-120 lg:ml-[-5.5%]">
               <LevelUpgradeSystem />
             </div>
             <div className="flex justify-center w-full">

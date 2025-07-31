@@ -60,7 +60,7 @@ const levelUnlocks = {
   47: "House plant near the window",
   48: "Coffee and Cookies",
   49: "Food Plate",
-  50: "Cat"
+  50: "Cat",
 };
 
 const LevelUpgradeSystem = () => {
@@ -83,78 +83,82 @@ const LevelUpgradeSystem = () => {
   const [isMultipleUpgrade, setIsMultipleUpgrade] = useState(false);
   const [targetLevel, setTargetLevel] = useState(1);
 
-  
   // The cost to upgrade a level (fixed at 150 coins)
   const fetchUpgradableLevels = async () => {
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      console.error("No token found in localStorage.");
-      return;
-    }
-
-    const response = await axios.get("/api/auth/can-level-upgrade", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const { upgradeCost, maxLevelUpgrades } = response.data;
-    setUpgradeCost(upgradeCost);
-    setMaxUpgrades(maxLevelUpgrades || 0);
-    
-    // Calculate total cost for max upgrades
-    if (maxLevelUpgrades > 0) {
-      let totalCost = 0;
-      let tempLevel = userData.level;
-      for (let i = 0; i < maxLevelUpgrades; i++) {
-        totalCost += getLevelUpgradeCost(tempLevel + 1 + i);
+      if (!token) {
+        console.error("No token found in localStorage.");
+        return;
       }
-      setTotalCostForMax(totalCost);
+
+      const response = await axios.get("/api/auth/can-level-upgrade", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const { upgradeCost, maxLevelUpgrades } = response.data;
+      setUpgradeCost(upgradeCost);
+      setMaxUpgrades(maxLevelUpgrades || 0);
+
+      // Calculate total cost for max upgrades
+      if (maxLevelUpgrades > 0) {
+        let totalCost = 0;
+        let tempLevel = userData.level;
+        for (let i = 0; i < maxLevelUpgrades; i++) {
+          totalCost += getLevelUpgradeCost(tempLevel + 1 + i);
+        }
+        setTotalCostForMax(totalCost);
+      }
+
+      console.log(
+        "Set upgradeCost:",
+        upgradeCost,
+        "maxUpgrades:",
+        maxLevelUpgrades
+      );
+    } catch (error) {
+      console.error(
+        "Error fetching upgrade cost:",
+        error.response?.data || error.message
+      );
     }
-    
-    console.log("Set upgradeCost:", upgradeCost, "maxUpgrades:", maxLevelUpgrades);
-  } catch (error) {
-    console.error("Error fetching upgrade cost:", error.response?.data || error.message);
-  }
-};
+  };
 
-// Helper function to calculate upgrade cost (should match backend logic)
-const getLevelUpgradeCost = (level) => {
-  if (level < 2) return 1;
-  if (level <= 5) return 3;
-  if (level <= 8) return 5;
-  if (level <= 12) return 10;
-  if (level <= 20) return 20;
-  if (level <= 30) return 30;
-  if (level <= 33) return 40;
-  if (level <= 36) return 50;
-  if (level <= 39) return 60;
-  if (level <= 42) return 70;
-  if (level <= 45) return 80;
-  if (level <= 48) return 100;
-  if (level <= 51) return 120;
-  if (level <= 54) return 150;
-  if (level <= 57) return 180;
-  if (level <= 60) return 210;
-  if (level <= 63) return 240;
-  if (level <= 66) return 270;
-  if (level <= 69) return 300;
-  if (level <= 72) return 350;
-  if (level <= 75) return 400;
-  if (level <= 78) return 450;
-  if (level <= 81) return 500;
-  if (level <= 83) return 600;
-  return Infinity;
-};
-
-
+  // Helper function to calculate upgrade cost (should match backend logic)
+  const getLevelUpgradeCost = (level) => {
+    if (level < 2) return 1;
+    if (level <= 5) return 3;
+    if (level <= 8) return 5;
+    if (level <= 12) return 10;
+    if (level <= 20) return 20;
+    if (level <= 30) return 30;
+    if (level <= 33) return 40;
+    if (level <= 36) return 50;
+    if (level <= 39) return 60;
+    if (level <= 42) return 70;
+    if (level <= 45) return 80;
+    if (level <= 48) return 100;
+    if (level <= 51) return 120;
+    if (level <= 54) return 150;
+    if (level <= 57) return 180;
+    if (level <= 60) return 210;
+    if (level <= 63) return 240;
+    if (level <= 66) return 270;
+    if (level <= 69) return 300;
+    if (level <= 72) return 350;
+    if (level <= 75) return 400;
+    if (level <= 78) return 450;
+    if (level <= 81) return 500;
+    if (level <= 83) return 600;
+    return Infinity;
+  };
 
   useEffect(() => {
-  fetchUpgradableLevels();
-}, []);
-
+    fetchUpgradableLevels();
+  }, []);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -311,14 +315,14 @@ const getLevelUpgradeCost = (level) => {
   const handleUpgradeConfirm = async (upgradeAll) => {
     setShowUpgradeConfirmation(false);
     setIsMultipleUpgrade(upgradeAll);
-    
+
     // Set target level based on upgrade type
     if (upgradeAll) {
       setTargetLevel(userData.level + maxUpgrades);
     } else {
       setTargetLevel(userData.level + 1);
     }
-    
+
     try {
       setIsUpgrading(true);
       setShowProgressPopup(true);
@@ -389,13 +393,15 @@ const getLevelUpgradeCost = (level) => {
 
       // Show congratulations popup
       setShowCongratsPopup(true);
-      
+
       // Show success message
-      toast.success(`Upgraded ${response.data.levelsUpgraded} levels! Spent ${response.data.totalCostSpent} coins.`);
+      toast.success(
+        `Upgraded ${response.data.levelsUpgraded} levels! Spent ${response.data.totalCostSpent} coins.`
+      );
 
       // Dispatch coin update event to refresh other components
       window.dispatchEvent(new Event("coinUpdate"));
-      
+
       // Refresh upgrade data
       fetchUpgradableLevels();
     } catch (error) {
@@ -481,15 +487,17 @@ const getLevelUpgradeCost = (level) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`w-full p-6 rounded-xl shadow-sm mb-3 backdrop-blur-sm ${
-          theme === "dark" 
-            ? "bg-black text-white bg-opacity-90" 
+        className={`md:w-110 sm:w-100 p-6 rounded-xl shadow-sm mb-3 backdrop-blur-sm ${
+          theme === "dark"
+            ? "bg-black text-white bg-opacity-90"
             : "bg-white text-black bg-opacity-90"
         }`}
       >
-        <h3 className={`text-lg font-semibold mb-2 ${
-          theme === "dark" ? "text-white" : "text-gray-800"
-        }`}>
+        <h3
+          className={`text-lg font-semibold mb-2 ${
+            theme === "dark" ? "text-white" : "text-gray-800"
+          }`}
+        >
           Level Progress
         </h3>
 
@@ -516,7 +524,11 @@ const getLevelUpgradeCost = (level) => {
             showLevelText={true}
           />
           {userData.level < 50 && (
-            <p className={`text-xs mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+            <p
+              className={`text-xs mt-1 ${
+                theme === "dark" ? "text-gray-300" : "text-gray-600"
+              }`}
+            >
               Next Level Unlocks: {levelUnlocks[userData.level + 1]}
             </p>
           )}
@@ -529,45 +541,45 @@ const getLevelUpgradeCost = (level) => {
           >
             <span
               className={`text-xs font-medium ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
             >
               Your coins:
             </span>
             <div
               className={`flex items-center px-2 py-0.5 rounded-md border ${
                 theme === "dark"
-                ? "bg-gray-800 border-gray-700"
-                : "bg-amber-50 border-amber-200"
+                  ? "bg-gray-800 border-gray-700"
+                  : "bg-amber-50 border-amber-200"
               }`}
             >
-            <Coins
-              className={`w-3 h-3 mr-1 ${
-              theme === "dark" ? "text-yellow-400" : "text-amber-500"
-              }`}
-            />
-          <span
-            className={`font-semibold ${
-            theme === "dark" ? "text-yellow-400" : "text-amber-600"
-          }`}
-          >
-          {userData.coins}
-          </span>
-        </div>
-      </motion.div>
+              <Coins
+                className={`w-3 h-3 mr-1 ${
+                  theme === "dark" ? "text-yellow-400" : "text-amber-500"
+                }`}
+              />
+              <span
+                className={`font-semibold ${
+                  theme === "dark" ? "text-yellow-400" : "text-amber-600"
+                }`}
+              >
+                {userData.coins}
+              </span>
+            </div>
+          </motion.div>
 
-    <div className="flex items-center">
-      <UpgradeButton
-        onClick={handleUpgrade}
-        isUpgrading={isUpgrading}
-        coinsRequired={upgradeCost}
-        coinsAvailable={userData.coins}
-        isMaxLevel={isMaxLevel}
-        darkMode={theme === "dark"}
-        small={true}
-        />
-    </div>
-  </div>
+          <div className="flex items-center">
+            <UpgradeButton
+              onClick={handleUpgrade}
+              isUpgrading={isUpgrading}
+              coinsRequired={upgradeCost}
+              coinsAvailable={userData.coins}
+              isMaxLevel={isMaxLevel}
+              darkMode={theme === "dark"}
+              small={true}
+            />
+          </div>
+        </div>
       </motion.div>
 
       {/* Progress Popup */}
@@ -579,7 +591,7 @@ const getLevelUpgradeCost = (level) => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[9999] flex items-center justify-center"
             style={{
-              backdropFilter: 'blur(8px)'
+              backdropFilter: "blur(8px)",
             }}
           >
             <motion.div
@@ -587,19 +599,22 @@ const getLevelUpgradeCost = (level) => {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               className={`p-8 rounded-xl shadow-xl max-w-md w-full ${
-                theme === "dark" ? "bg-gray-800 text-white bg-opacity-90" : "bg-white text-black bg-opacity-90"
+                theme === "dark"
+                  ? "bg-gray-800 text-white bg-opacity-90"
+                  : "bg-white text-black bg-opacity-90"
               }`}
             >
               <h3 className="text-xl font-bold mb-4 text-center">
-                {isMultipleUpgrade 
-                  ? `Upgrading to Level ${targetLevel}` 
-                  : `Upgrading to Level ${userData.level + 1}`
-                }
+                {isMultipleUpgrade
+                  ? `Upgrading to Level ${targetLevel}`
+                  : `Upgrading to Level ${userData.level + 1}`}
               </h3>
 
-              <div className={`w-full h-4 rounded-full overflow-hidden mb-4 ${
-                theme === "dark" ? "bg-gray-700" : "bg-gray-200"
-              }`}>
+              <div
+                className={`w-full h-4 rounded-full overflow-hidden mb-4 ${
+                  theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                }`}
+              >
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${upgradeProgress}%` }}
@@ -607,9 +622,11 @@ const getLevelUpgradeCost = (level) => {
                 />
               </div>
 
-              <p className={`text-center ${
-                theme === "dark" ? "text-gray-300" : "text-gray-600"
-              }`}>
+              <p
+                className={`text-center ${
+                  theme === "dark" ? "text-gray-300" : "text-gray-600"
+                }`}
+              >
                 {upgradeProgress < 100 ? "Please wait..." : "Almost done!"}
               </p>
             </motion.div>
