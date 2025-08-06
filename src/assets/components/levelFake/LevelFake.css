@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Optionally, you can add a utility class for a more prominent shadow or border if needed */
+.level-fake-bg {
+  border: 1.5px solid #e5e7eb;
+  box-shadow: 0 4px 24px 0 rgba(31, 38, 135, 0.12);
+}
