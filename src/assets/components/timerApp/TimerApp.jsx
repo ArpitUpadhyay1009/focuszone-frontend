@@ -421,8 +421,7 @@ export default function TimerApp({ setParentPopupState }) {
           new CustomEvent("focusTimeTick", {
             detail: {
               totalSeconds:
-                backendTotalTimeRef.current +
-                unsavedSessionSecondsRef.current,
+                backendTotalTimeRef.current + unsavedSessionSecondsRef.current,
             },
           })
         );
@@ -502,20 +501,24 @@ export default function TimerApp({ setParentPopupState }) {
                       .play()
                       .catch((e) => console.log("Error playing sound:", e));
                     onPomodoroEnd();
-                    
+
                     if (mode === "pomodoro" && !isBreak) {
                       // Pomodoro session completed
-                      const sessionDurationForCoins = initialTime || pomodoroTime;
-                      const minutesInSession = Math.floor(sessionDurationForCoins / 60);
+                      const sessionDurationForCoins =
+                        initialTime || pomodoroTime;
+                      const minutesInSession = Math.floor(
+                        sessionDurationForCoins / 60
+                      );
 
                       if (minutesInSession > 0) {
-                        const newlyCompletedMinutes = minutesInSession - minutesElapsedRef.current;
+                        const newlyCompletedMinutes =
+                          minutesInSession - minutesElapsedRef.current;
                         if (newlyCompletedMinutes > 0) {
                           const coinsForCompletion = newlyCompletedMinutes * 1;
                           saveCoinsToDatabase(coinsForCompletion);
                         }
                       }
-                      
+
                       // Save focus time with division hack
                       saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
                       unsavedSessionSecondsRef.current = 0;
@@ -532,7 +535,8 @@ export default function TimerApp({ setParentPopupState }) {
                         isBreakRef.current = true;
                         modeRef.current = mode;
                         minutesElapsedRef.current = 0;
-                        animationFrameIdRef.current = requestAnimationFrame(updateTimer);
+                        animationFrameIdRef.current =
+                          requestAnimationFrame(updateTimer);
                         return breakTime;
                       } else if (cycleBeforeUpdate + 1 === cycles) {
                         // Last Pomodoro, do a final break
@@ -546,7 +550,8 @@ export default function TimerApp({ setParentPopupState }) {
                         isBreakRef.current = true;
                         modeRef.current = mode;
                         minutesElapsedRef.current = 0;
-                        animationFrameIdRef.current = requestAnimationFrame(updateTimer);
+                        animationFrameIdRef.current =
+                          requestAnimationFrame(updateTimer);
                         return breakTime;
                       } else {
                         // All pomodoro cycles completed
@@ -572,7 +577,8 @@ export default function TimerApp({ setParentPopupState }) {
                       isBreakRef.current = false;
                       modeRef.current = mode;
                       minutesElapsedRef.current = 0;
-                      animationFrameIdRef.current = requestAnimationFrame(updateTimer);
+                      animationFrameIdRef.current =
+                        requestAnimationFrame(updateTimer);
                       if (cycleBeforeUpdate < cycles - 1) {
                         return pomodoroTime;
                       } else {
@@ -603,7 +609,9 @@ export default function TimerApp({ setParentPopupState }) {
                 }
 
                 if (shouldReloadPage) {
-                  console.log("Last Pomodoro cycle completed while hidden. Reloading page.");
+                  console.log(
+                    "Last Pomodoro cycle completed while hidden. Reloading page."
+                  );
                   window.location.reload();
                   return;
                 }
@@ -686,17 +694,32 @@ export default function TimerApp({ setParentPopupState }) {
   useEffect(() => {
     let bgInterval = null;
     function backgroundModeTransitionCheck() {
-      if (document.visibilityState === 'hidden') {
+      if (document.visibilityState === "hidden") {
         // Read timer state from localStorage to avoid stale closure
-        const modeLS = localStorage.getItem('timerMode') || 'pomodoro';
-        const isBreakLS = localStorage.getItem('timerIsBreak') === 'true';
-        const isRunningLS = localStorage.getItem('timerIsRunning') === 'true';
-        let timeLS = parseInt(localStorage.getItem('timerTime') || '0', 10);
-        const pomodoroTimeLS = parseInt(localStorage.getItem('timerPomodoroTime') || '1500', 10);
-        const breakTimeLS = parseInt(localStorage.getItem('timerBreakTime') || '300', 10);
-        const cyclesLS = parseInt(localStorage.getItem('timerCycles') || '1', 10);
-        const currentCycleLS = parseInt(localStorage.getItem('timerCurrentCycle') || '0', 10);
-        let lastTick = parseInt(localStorage.getItem('timerLastBgTick') || '0', 10);
+        const modeLS = localStorage.getItem("timerMode") || "pomodoro";
+        const isBreakLS = localStorage.getItem("timerIsBreak") === "true";
+        const isRunningLS = localStorage.getItem("timerIsRunning") === "true";
+        let timeLS = parseInt(localStorage.getItem("timerTime") || "0", 10);
+        const pomodoroTimeLS = parseInt(
+          localStorage.getItem("timerPomodoroTime") || "1500",
+          10
+        );
+        const breakTimeLS = parseInt(
+          localStorage.getItem("timerBreakTime") || "300",
+          10
+        );
+        const cyclesLS = parseInt(
+          localStorage.getItem("timerCycles") || "1",
+          10
+        );
+        const currentCycleLS = parseInt(
+          localStorage.getItem("timerCurrentCycle") || "0",
+          10
+        );
+        let lastTick = parseInt(
+          localStorage.getItem("timerLastBgTick") || "0",
+          10
+        );
         const now = Date.now();
 
         // Decrement timer if running and time > 0
@@ -704,54 +727,60 @@ export default function TimerApp({ setParentPopupState }) {
           // Only decrement once per second
           if (!lastTick || now - lastTick >= 1000) {
             timeLS = Math.max(0, timeLS - 1);
-            localStorage.setItem('timerTime', timeLS.toString());
-            localStorage.setItem('timerLastBgTick', now.toString());
+            localStorage.setItem("timerTime", timeLS.toString());
+            localStorage.setItem("timerLastBgTick", now.toString());
             // Optionally, fire a custom event for React to sync
-            window.dispatchEvent(new Event('timerBgTick'));
+            window.dispatchEvent(new Event("timerBgTick"));
           }
         }
 
         // If timer reached 0, trigger transition
         if (isRunningLS && timeLS === 0) {
-          if (modeLS === 'pomodoro') {
+          if (modeLS === "pomodoro") {
             if (!isBreakLS) {
               // Pomodoro finished, go to break
               if (currentCycleLS + 1 < cyclesLS) {
-                localStorage.setItem('timerCurrentCycle', (currentCycleLS + 1).toString());
-                localStorage.setItem('timerIsBreak', 'true');
-                localStorage.setItem('timerIsRunning', 'true');
-                localStorage.setItem('timerShowStart', 'false');
-                localStorage.setItem('timerStartedAt', now.toString());
-                localStorage.setItem('timerTime', breakTimeLS.toString());
-                window.dispatchEvent(new Event('timerModeAutoTransition'));
+                localStorage.setItem(
+                  "timerCurrentCycle",
+                  (currentCycleLS + 1).toString()
+                );
+                localStorage.setItem("timerIsBreak", "true");
+                localStorage.setItem("timerIsRunning", "true");
+                localStorage.setItem("timerShowStart", "false");
+                localStorage.setItem("timerStartedAt", now.toString());
+                localStorage.setItem("timerTime", breakTimeLS.toString());
+                window.dispatchEvent(new Event("timerModeAutoTransition"));
               } else if (currentCycleLS + 1 === cyclesLS) {
                 // Last Pomodoro, do a final break
-                localStorage.setItem('timerCurrentCycle', (currentCycleLS + 1).toString());
-                localStorage.setItem('timerIsBreak', 'true');
-                localStorage.setItem('timerIsRunning', 'true');
-                localStorage.setItem('timerShowStart', 'false');
-                localStorage.setItem('timerStartedAt', now.toString());
-                localStorage.setItem('timerTime', breakTimeLS.toString());
-                window.dispatchEvent(new Event('timerModeAutoTransition'));
+                localStorage.setItem(
+                  "timerCurrentCycle",
+                  (currentCycleLS + 1).toString()
+                );
+                localStorage.setItem("timerIsBreak", "true");
+                localStorage.setItem("timerIsRunning", "true");
+                localStorage.setItem("timerShowStart", "false");
+                localStorage.setItem("timerStartedAt", now.toString());
+                localStorage.setItem("timerTime", breakTimeLS.toString());
+                window.dispatchEvent(new Event("timerModeAutoTransition"));
               }
             } else {
               // Break finished, go to next pomodoro
               if (currentCycleLS < cyclesLS) {
-                localStorage.setItem('timerIsBreak', 'false');
-                localStorage.setItem('timerIsRunning', 'true');
-                localStorage.setItem('timerShowStart', 'false');
-                localStorage.setItem('timerStartedAt', now.toString());
-                localStorage.setItem('timerTime', pomodoroTimeLS.toString());
-                window.dispatchEvent(new Event('timerModeAutoTransition'));
+                localStorage.setItem("timerIsBreak", "false");
+                localStorage.setItem("timerIsRunning", "true");
+                localStorage.setItem("timerShowStart", "false");
+                localStorage.setItem("timerStartedAt", now.toString());
+                localStorage.setItem("timerTime", pomodoroTimeLS.toString());
+                window.dispatchEvent(new Event("timerModeAutoTransition"));
               } else {
                 // All cycles and breaks done, reset
-                localStorage.setItem('timerIsBreak', 'false');
-                localStorage.setItem('timerIsRunning', 'false');
-                localStorage.setItem('timerShowStart', 'true');
-                localStorage.setItem('timerCurrentCycle', '0');
-                localStorage.setItem('timerStartedAt', '');
-                localStorage.setItem('timerTime', pomodoroTimeLS.toString());
-                window.dispatchEvent(new Event('timerModeAutoTransition'));
+                localStorage.setItem("timerIsBreak", "false");
+                localStorage.setItem("timerIsRunning", "false");
+                localStorage.setItem("timerShowStart", "true");
+                localStorage.setItem("timerCurrentCycle", "0");
+                localStorage.setItem("timerStartedAt", "");
+                localStorage.setItem("timerTime", pomodoroTimeLS.toString());
+                window.dispatchEvent(new Event("timerModeAutoTransition"));
               }
             }
           }
@@ -998,25 +1027,46 @@ export default function TimerApp({ setParentPopupState }) {
   // Optionally, listen for 'timerModeAutoTransition' event in React to force sync state
   useEffect(() => {
     function syncFromLocalStorage() {
-      setMode(localStorage.getItem('timerMode') || 'pomodoro');
-      setIsBreak(localStorage.getItem('timerIsBreak') === 'true');
-      setIsRunning(localStorage.getItem('timerIsRunning') === 'true');
-      setShowStart(localStorage.getItem('timerShowStart') !== 'false');
-      setTimerStartedAt(localStorage.getItem('timerStartedAt') ? parseInt(localStorage.getItem('timerStartedAt')) : null);
-      setTime(localStorage.getItem('timerTime') ? parseInt(localStorage.getItem('timerTime')) : 25 * 60);
-      setCurrentCycle(localStorage.getItem('timerCurrentCycle') ? parseInt(localStorage.getItem('timerCurrentCycle')) : 0);
+      setMode(localStorage.getItem("timerMode") || "pomodoro");
+      setIsBreak(localStorage.getItem("timerIsBreak") === "true");
+      setIsRunning(localStorage.getItem("timerIsRunning") === "true");
+      setShowStart(localStorage.getItem("timerShowStart") !== "false");
+      setTimerStartedAt(
+        localStorage.getItem("timerStartedAt")
+          ? parseInt(localStorage.getItem("timerStartedAt"))
+          : null
+      );
+      setTime(
+        localStorage.getItem("timerTime")
+          ? parseInt(localStorage.getItem("timerTime"))
+          : 25 * 60
+      );
+      setCurrentCycle(
+        localStorage.getItem("timerCurrentCycle")
+          ? parseInt(localStorage.getItem("timerCurrentCycle"))
+          : 0
+      );
     }
-    window.addEventListener('timerModeAutoTransition', syncFromLocalStorage);
-    return () => window.removeEventListener('timerModeAutoTransition', syncFromLocalStorage);
+    window.addEventListener("timerModeAutoTransition", syncFromLocalStorage);
+    return () =>
+      window.removeEventListener(
+        "timerModeAutoTransition",
+        syncFromLocalStorage
+      );
   }, []);
 
   // Optionally, listen for 'timerBgTick' event in React to force sync state
   useEffect(() => {
     function syncFromLocalStorageTick() {
-      setTime(localStorage.getItem('timerTime') ? parseInt(localStorage.getItem('timerTime')) : 25 * 60);
+      setTime(
+        localStorage.getItem("timerTime")
+          ? parseInt(localStorage.getItem("timerTime"))
+          : 25 * 60
+      );
     }
-    window.addEventListener('timerBgTick', syncFromLocalStorageTick);
-    return () => window.removeEventListener('timerBgTick', syncFromLocalStorageTick);
+    window.addEventListener("timerBgTick", syncFromLocalStorageTick);
+    return () =>
+      window.removeEventListener("timerBgTick", syncFromLocalStorageTick);
   }, []);
 
   return (
@@ -1237,12 +1287,17 @@ export default function TimerApp({ setParentPopupState }) {
         </AnimatePresence>
 
         <motion.button
-          whileHover={{ scale: 1.1, rotate: 15 }}
+          whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setIsSettingsOpen(true)}
           className="timer-control-button timer-settings-button flex items-center justify-center ml-2" // Added margin-left
         >
-          <Settings size={20} />
+          <motion.div
+            whileHover={{ rotate: 15 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Settings size={20} />
+          </motion.div>
         </motion.button>
       </div>
 
