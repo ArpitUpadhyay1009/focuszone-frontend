@@ -463,6 +463,25 @@ export default function TimerApp({ setParentPopupState }) {
     let visibilityChangeTimeout = null;
 
     const handleVisibilityChange = () => {
+      // Quick recovery: Clear any corrupted state when page becomes visible
+      if (document.visibilityState === "visible") {
+        // Force a clean state recovery
+        const savedIsRunning =
+          localStorage.getItem("timerIsRunning") === "true";
+        const savedTime = localStorage.getItem("timerTime");
+        const savedMode = localStorage.getItem("timerMode");
+
+        // If state seems corrupted, reset to safe defaults
+        if (savedIsRunning && (!savedTime || !savedMode)) {
+          console.log("Detected corrupted timer state, resetting...");
+          localStorage.removeItem("timerStartedAt");
+          localStorage.removeItem("timerPauseStartTime");
+          localStorage.setItem("timerIsRunning", "false");
+          localStorage.setItem("timerShowStart", "true");
+          window.location.reload();
+          return;
+        }
+      }
       if (visibilityChangeTimeout) {
         clearTimeout(visibilityChangeTimeout);
       }
@@ -671,10 +690,45 @@ export default function TimerApp({ setParentPopupState }) {
       visibilityChangeTime = Date.now();
     });
 
+    // Add page focus handler to detect sleep mode recovery
+    const handlePageFocus = () => {
+      // Check if we're recovering from sleep mode
+      const lastFocusTime = sessionStorage.getItem("lastFocusTime");
+      const now = Date.now();
+
+      if (lastFocusTime) {
+        const timeSinceLastFocus = now - parseInt(lastFocusTime);
+        // If more than 30 seconds have passed, likely recovered from sleep
+        if (timeSinceLastFocus > 30000) {
+          console.log(
+            "Detected potential sleep mode recovery, validating state..."
+          );
+          const savedIsRunning =
+            localStorage.getItem("timerIsRunning") === "true";
+          const savedTime = localStorage.getItem("timerTime");
+
+          // If timer was running but time is invalid, reset
+          if (savedIsRunning && (!savedTime || savedTime <= 0)) {
+            console.log("Invalid timer state after sleep, resetting...");
+            localStorage.setItem("timerIsRunning", "false");
+            localStorage.setItem("timerShowStart", "true");
+            localStorage.removeItem("timerStartedAt");
+            window.location.reload();
+            return;
+          }
+        }
+      }
+
+      sessionStorage.setItem("lastFocusTime", now.toString());
+    };
+
+    window.addEventListener("focus", handlePageFocus);
+
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("focus", handleVisibilityChange);
       window.removeEventListener("blur", () => {});
+      window.removeEventListener("focus", handlePageFocus);
       clearTimeout(visibilityChangeTimeout);
     };
   }, [
