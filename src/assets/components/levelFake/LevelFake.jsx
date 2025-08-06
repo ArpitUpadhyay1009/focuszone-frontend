@@ -33,7 +33,7 @@ const LevelFake = () => {
       {/* Fake LevelUpgradeSystem box for background look */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 0.92, y: 0 }}
+        animate={{ opacity: 0.85, y: 0 }}
         transition={{ duration: 0.5 }}
         className={`md:w-110 sm:w-100 p-6 rounded-xl shadow-lg mb-3 ${
           theme === "dark"
