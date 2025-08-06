@@ -502,7 +502,7 @@ const LevelUpgradeSystem = () => {
         </h3>
 
         {/* Current level progress bar */}
-        <ProgressBar
+        {/* <ProgressBar
           level={userData.level}
           progress={100}
           isComplete={true}
@@ -510,7 +510,7 @@ const LevelUpgradeSystem = () => {
           darkMode={theme === "dark"}
           userCoins={userData.coins}
           showLevelText={false}
-        />
+        /> */}
 
         {/* Next level */}
         <div className="mb-2">

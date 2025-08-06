@@ -42,11 +42,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
+  border-radius: 0.75rem; /* Match UpgradeButton's rounded-xl */
   background-color: #7500CA;
   color: white;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 6px rgba(117, 0, 202, 0.2);
+  box-shadow: 0 4px 12px rgba(117, 0, 202, 0.18); /* Slightly more pronounced shadow like UpgradeButton */
+  font-weight: 500;
 }
 
 .timer-control-button:hover {
