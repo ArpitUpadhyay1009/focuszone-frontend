@@ -128,6 +128,32 @@
   transition: all 0.3s ease;
 }
 
+/* Drag and Drop Styling */
+.drop-zone {
+  transition: all 0.3s ease;
+}
+
+.drop-zone.drag-over {
+  transform: scale(1.02);
+  box-shadow: 0 0 15px rgba(117, 0, 202, 0.3);
+}
+
+.must-do-zone.drag-over {
+  border-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.can-do-zone.drag-over {
+  border-color: #10b981 !important;
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.task-item.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
 .task-list {
   margin-top: 1rem;
   display: flex;

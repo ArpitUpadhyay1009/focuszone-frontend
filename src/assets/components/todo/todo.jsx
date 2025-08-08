@@ -705,55 +705,257 @@ export default function TodoList() {
     [fetchRemainingPomodoros]
   );
 
-  // Drag and Drop Functions
-  const toggleTaskPriority = useCallback(
-    async (taskId, newPriority) => {
+  // Reorder tasks function using the new API endpoint
+  const reorderTasks = useCallback(
+    async (orderedTasks) => {
       try {
-        await axios.patch(
-          `/api/tasks/${taskId}/priority`,
-          { priority: newPriority },
+        console.log('Reordering tasks:', orderedTasks);
+        const response = await axios.patch(
+          '/api/tasks/reorder',
+          { orderedTasks }, // Changed to match the API expectation
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
+              'Content-Type': 'application/json'
             },
           }
         );
 
-        setTasks((prev) =>
-          prev.map((task) =>
-            task.id === taskId ? { ...task, priority: newPriority } : task
+        console.log('Reorder response:', response.data);
+
+        // Update tasks with the response from the server
+        if (response.data && response.data.ongoingTasks) {
+          // Format tasks to match our expected format
+          const formattedTasks = response.data.ongoingTasks.map(task => {
+            // Format date consistently with fetchTasks function
+            let date;
+            try {
+              date = task.dueDate
+                ? new Date(task.dueDate).toLocaleDateString()
+                : new Date().toLocaleDateString();
+            } catch (e) {
+              date = new Date().toLocaleDateString();
+            }
+            
+            return {
+              id: task._id,
+              taskName: task.taskName,
+              date,
+              pomodoros: task.estimatedPomodoros,
+              completedPomodoros: task.completedPomodoros,
+              priority: task.priority,
+              status: 'ongoing',
+              order: task.order
+            };
+          });
+          
+          setTasks(formattedTasks);
+          fetchRemainingPomodoros();
+        }
+      } catch (error) {
+        console.error("Error reordering tasks:", error.response?.data || error.message);
+        // Refresh tasks to ensure UI is in sync with server
+        fetchTasks();
+      }
+    },
+    [fetchRemainingPomodoros, fetchTasks]
+  );
+
+  // Drag and Drop Functions
+
+  const toggleTaskPriority = useCallback(
+    async (taskId, newPriority) => {
+      try {
+        // Find the task in tasks array
+        const task = tasks.find((t) => t.id === taskId);
+        
+        if (!task) {
+          console.error('Task not found');
+          return;
+        }
+        
+        // Optimistic UI update
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t.id === taskId ? { ...t, priority: newPriority } : t
           )
         );
 
-        fetchRemainingPomodoros();
+        // Create ordered tasks array with updated priority
+        const orderedTasks = tasks.map((t, index) => ({
+          id: t.id,
+          priority: t.id === taskId ? newPriority : t.priority,
+          order: index
+        }));
+
+        // Use the new reorderTasks function to update the backend
+        await reorderTasks(orderedTasks);
       } catch (error) {
-        console.error("Error updating task priority:", error.message);
+        console.error("Error updating task priority:", error);
+        // Revert the optimistic update in case of error
+        fetchTasks();
       }
     },
-    [fetchRemainingPomodoros]
+    [tasks, reorderTasks, fetchTasks]
   );
 
   const handleDragStart = useCallback((e, taskId) => {
+    console.log('Drag started with task ID:', taskId);
     e.dataTransfer.setData("text/plain", taskId);
     e.dataTransfer.effectAllowed = "move";
+    
+    // Add a dragging class to improve visual feedback
+    const element = e.target.closest('.task-item');
+    if (element) {
+      element.classList.add('dragging');
+      setTimeout(() => {
+        element.classList.remove('dragging');
+      }, 0);
+    }
   }, []);
 
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
+    
+    // Add visual feedback for the drop zone
+    const dropZone = e.currentTarget;
+    if (dropZone && !dropZone.classList.contains('drag-over')) {
+      dropZone.classList.add('drag-over');
+    }
+  }, []);
+  
+  // Add dragLeave handler to remove visual feedback
+  const handleDragLeave = useCallback((e) => {
+    const dropZone = e.currentTarget;
+    if (dropZone) {
+      dropZone.classList.remove('drag-over');
+    }
   }, []);
 
   const handleDrop = useCallback(
     (e, targetPriority) => {
       e.preventDefault();
-      const taskId = e.dataTransfer.getData("text/plain");
-      const task = tasks.find((t) => t.id === taskId);
-
-      if (task && task.priority !== targetPriority) {
-        toggleTaskPriority(taskId, targetPriority);
+      console.log('Drop event triggered');
+      
+      // Remove drag-over class for visual feedback
+      const dropZone = e.currentTarget;
+      if (dropZone) {
+        dropZone.classList.remove('drag-over');
       }
+      
+      // Get the task ID from dataTransfer
+      const taskId = e.dataTransfer.getData("text/plain");
+      console.log('Task ID from dataTransfer:', taskId);
+      
+      if (!taskId) {
+        console.error('No task ID found in dataTransfer');
+        return;
+      }
+      
+      // Check in tasks array
+      const task = tasks.find((t) => t.id === taskId);
+      
+      if (!task) {
+        console.error('Task not found in tasks array');
+        return;
+      }
+      
+      console.log('Found task:', task);
+      console.log('Target priority:', targetPriority);
+
+      // Get the target element (where we're dropping)
+      const targetElement = e.target.closest('.task-item');
+      const targetTaskId = targetElement ? targetElement.getAttribute('data-task-id') : null;
+      
+      console.log('Target element:', targetElement);
+      console.log('Target task ID:', targetTaskId);
+      
+      // Create a copy of tasks to reorder
+      let orderedTasks = [...tasks];
+      
+      // If priority is changing
+      if (task.priority !== targetPriority) {
+        console.log('Updating task priority');
+        
+        // Get tasks with the target priority
+        const tasksWithTargetPriority = orderedTasks.filter(t => t.priority === targetPriority);
+        
+        // Update the priority of the dragged task
+        const updatedTask = { ...task, priority: targetPriority };
+        
+        // Remove the task from its current position
+        orderedTasks = orderedTasks.filter(t => t.id !== taskId);
+        
+        // If dropping on a specific task, insert at that position
+        if (targetTaskId && targetTaskId !== taskId) {
+          const targetIndex = orderedTasks.findIndex(t => t.id === targetTaskId);
+          if (targetIndex !== -1) {
+            // Insert at the target position
+            orderedTasks.splice(targetIndex, 0, updatedTask);
+          } else {
+            // Add to the end of tasks with the target priority
+            const lastTargetPriorityIndex = orderedTasks.reduce((lastIndex, t, index) => {
+              return t.priority === targetPriority ? index : lastIndex;
+            }, -1);
+            
+            if (lastTargetPriorityIndex !== -1) {
+              orderedTasks.splice(lastTargetPriorityIndex + 1, 0, updatedTask);
+            } else {
+              // If no tasks with target priority, add to the beginning
+              orderedTasks.push(updatedTask);
+            }
+          }
+        } else {
+          // If dropping on the section (not on a task), add to the end of that section
+          if (tasksWithTargetPriority.length > 0) {
+            const lastTargetPriorityIndex = orderedTasks.reduce((lastIndex, t, index) => {
+              return t.priority === targetPriority ? index : lastIndex;
+            }, -1);
+            
+            orderedTasks.splice(lastTargetPriorityIndex + 1, 0, updatedTask);
+          } else {
+            // If no tasks with target priority, add to the end
+            orderedTasks.push(updatedTask);
+          }
+        }
+        
+        // Update UI optimistically
+        setTasks(orderedTasks);
+      } 
+      // If we're reordering within the same priority section
+      else if (targetTaskId && targetTaskId !== taskId) {
+        console.log('Reordering tasks within same priority');
+        
+        // Find the indices of the dragged and target tasks
+        const draggedIndex = orderedTasks.findIndex(t => t.id === taskId);
+        const targetIndex = orderedTasks.findIndex(t => t.id === targetTaskId);
+        
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+          // Remove the dragged task from the array
+          const [draggedTask] = orderedTasks.splice(draggedIndex, 1);
+          
+          // Insert it at the target position
+          orderedTasks.splice(targetIndex, 0, draggedTask);
+          
+          // Update UI optimistically
+          setTasks(orderedTasks);
+        }
+      }
+      
+      // Prepare the ordered tasks array for the API call
+      const tasksForApi = orderedTasks.map((t, index) => ({
+        id: t.id,
+        priority: t.priority,
+        order: index
+      }));
+      
+      console.log('Sending to API:', tasksForApi);
+      
+      // Call the reorderTasks function to update the backend
+      reorderTasks(tasksForApi);
     },
-    [tasks, toggleTaskPriority]
+    [tasks, reorderTasks, setTasks]
   );
 
   const handleTaskCompletion = useCallback(async (taskId) => {
@@ -822,6 +1024,7 @@ export default function TodoList() {
       onDeleteTask,
       onDragStart,
       onDragOver,
+      onDragLeave,
       onDrop,
     }) => (
       <>
@@ -829,6 +1032,7 @@ export default function TodoList() {
         <div
           className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-500/10 dark:hover:bg-blue-500/20"
           onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, "must do")}
         >
           <h3 className="text-lg font-semibold mb-3 text-left text-red-600 dark:text-red-400">
@@ -876,6 +1080,7 @@ export default function TodoList() {
         <div
           className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-500/10 dark:hover:bg-green-500/20"
           onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, "can do")}
         >
           <h3 className="text-lg font-semibold mb-3 text-left text-green-600 dark:text-green-400">
@@ -938,8 +1143,15 @@ export default function TodoList() {
     }) => (
       <motion.li
         key={task.id}
-        draggable
+        draggable="true"
+        data-task-id={task.id}
         onDragStart={(e) => onDragStart(e, task.id)}
+        onDragEnd={(e) => {
+          const element = e.target.closest('.task-item');
+          if (element) {
+            element.classList.remove('dragging');
+          }
+        }}
         className={`task-item ${theme === "dark" ? "dark" : "light"} ${
           task.status === "finished" ? "completed" : ""
         } ${
@@ -1050,6 +1262,7 @@ export default function TodoList() {
                     onDeleteTask={deleteTask}
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
                   />
                 )}
