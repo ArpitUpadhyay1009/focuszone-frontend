@@ -4,7 +4,7 @@
   position: fixed;
   bottom: 2vh;
   right: 2vw;
-  z-index: 1000;
+  z-index: 1;
   background: transparent;
   border-radius: 1rem;
   padding: 0.5rem;

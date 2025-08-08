@@ -37,6 +37,7 @@
   box-shadow: 0 4px 6px rgba(117, 0, 202, 0.2);
   position: relative;
   overflow: hidden;
+  border-radius: 0.75rem;
 }
 
 .add-task-button:hover {

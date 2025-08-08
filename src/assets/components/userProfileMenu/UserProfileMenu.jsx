@@ -545,7 +545,7 @@ const UserProfileMenu = ({
   if (mobileSidebarMode) {
     // Mobile sidebar overlay mode
     return (
-      <div className="fixed inset-0 z-[100] flex flex-col bg-white dark:bg-gray-900">
+      <div className="fixed inset-0 z-[9999] flex flex-col bg-white dark:bg-gray-900">
         {/* Top bar with back arrow */}
         <div className="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
           <button
@@ -886,7 +886,7 @@ const UserProfileMenu = ({
           <AnimatePresence>
             {showReferralPopup && (
               <motion.div
-                className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+                className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[9999] p-4"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -1018,7 +1018,7 @@ const UserProfileMenu = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="profile-dropdown absolute right-0 mt-2 w-64 rounded-lg shadow-lg overflow-hidden z-50"
+            className="profile-dropdown absolute right-0 mt-2 w-64 rounded-lg shadow-lg overflow-hidden z-[9998]"
           >
             <div className="profile-header p-4 border-b">
               <p className="text-lg font-semibold">
@@ -1276,7 +1276,7 @@ const UserProfileMenu = ({
             <AnimatePresence>
               {showReferralPopup && (
                 <motion.div
-                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-50 p-4"
+                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[9999] p-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -1376,7 +1376,7 @@ const UserProfileMenu = ({
                 })(),
                 (
                   <motion.div
-                    className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[100] p-4"
+                    className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[10000] p-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -1419,7 +1419,7 @@ const UserProfileMenu = ({
             <AnimatePresence>
               {showDeleteConfirm && (
                 <motion.div
-                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[110] p-4"
+                  className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[10000] p-4"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
@@ -1488,7 +1488,7 @@ UserProfileMenu.SettingsModal = function SettingsModal({
   if (!showSettings) return null;
   return (
     <motion.div
-      className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[100] p-4"
+      className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[10000] p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -1535,7 +1535,7 @@ UserProfileMenu.DeleteConfirmModal = function DeleteConfirmModal({
   if (!showDeleteConfirm) return null;
   return (
     <motion.div
-      className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[110] p-4"
+      className="fixed inset-0 backdrop-blur-sm bg-black/30 flex items-center justify-center z-[10000] p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}

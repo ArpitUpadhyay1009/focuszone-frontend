@@ -49,9 +49,9 @@ img:hover {
   }
 }
 
-/* Add hover effect to make the room grow - reduced scaling */
+/* Add hover effect to make the room grow */
 .flex.justify-center.items-center img:hover {
-  transform: scale(1.45) !important; /* Reduced from 1.6 to 1.45 */
+  transform: scale(1.6) !important; /* Grow even larger on hover */
 }
 
 /* Adjust the container for the larger image */
@@ -77,6 +77,6 @@ img:hover {
 
 @media (max-width: 767px) {
   .flex.justify-center.items-center img:hover {
-    transform: scale(1.15) !important; /* Reduced from 1.25 to 1.15 */
+    transform: scale(1.25) !important;
   }
 }
