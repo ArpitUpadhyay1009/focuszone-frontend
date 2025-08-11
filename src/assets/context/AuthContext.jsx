@@ -74,19 +74,30 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       const token = localStorage.getItem("token");
-      
-      // Clear local storage and cookie first to prevent race conditions
-      localStorage.removeItem("token");
-      Cookies.remove("user");
+
+      // Clear all local storage
+      localStorage.clear();
+
+      // Clear all cookies
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie =
+          name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
+
+      // Clear user state
       setUser(null);
-      
+
       // Then make the API call to invalidate the session
       try {
         await axios.post("/api/auth/logout", null, {
           headers: {
             Authorization: token ? `Bearer ${token}` : undefined,
           },
-          withCredentials: true // Ensure cookies are sent with the request
+          withCredentials: true, // Ensure cookies are sent with the request
         });
       } catch (apiError) {
         console.error("Logout API error:", apiError);
@@ -95,8 +106,18 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Logout error:", error);
       // Still ensure we clean up local state even if there's an error
-      localStorage.removeItem("token");
-      Cookies.remove("user");
+      localStorage.clear();
+
+      // Clear all cookies
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie =
+          name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
+
       setUser(null);
       throw error;
     }

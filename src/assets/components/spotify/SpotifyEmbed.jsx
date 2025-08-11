@@ -5,7 +5,7 @@ const SpotifyEmbed2 = () => {
     <>
       <div className="floating-spotify-widget">
         <iframe
-          src="https://open.spotify.com/embed/playlist/2M2sS2wB173sce3MFbGp4Q?utm_source=generator"
+          src="https://open.spotify.com/embed/playlist/37i9dQZF1DZ06evO1GgBuH?utm_source=generator"
           height="220"
           allowfullscreen=""
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"

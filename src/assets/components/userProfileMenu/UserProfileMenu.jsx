@@ -508,13 +508,17 @@ const UserProfileMenu = ({
 
       if (response.status === 200) {
         // Clear all authentication state
-        localStorage.removeItem("token");
+        localStorage.clear();
 
-        // Clear cookies manually
-        document.cookie =
-          "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-        document.cookie =
-          "user=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+        // Clear all cookies
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i];
+          const eqPos = cookie.indexOf("=");
+          const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+          document.cookie =
+            name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+        }
 
         // Show success message
         toast.success("Account deleted successfully");
@@ -1646,9 +1650,17 @@ UserProfileMenu._handleDelete = async function handleDelete() {
       throw new Error(errorData.message || "Failed to delete account");
     }
 
-    // Clear local storage and cookies
-    localStorage.removeItem("token");
-    document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    // Clear all local storage and cookies
+    localStorage.clear();
+
+    // Clear all cookies
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    }
 
     // Refresh the page to ensure all state is cleared
     window.location.href = "/login";
@@ -1656,8 +1668,16 @@ UserProfileMenu._handleDelete = async function handleDelete() {
     console.error("Error deleting account:", error);
     toast.error(error.message || "Failed to delete account. Please try again.");
     // Still ensure we clean up local state even if there's an error
-    localStorage.removeItem("token");
-    document.cookie = "jwt=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+    localStorage.clear();
+
+    // Clear all cookies
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+      document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+    }
     window.location.href = "/login";
   }
 };
