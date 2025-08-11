@@ -1,5 +1,11 @@
 import "./todo.css";
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { FaTrash, FaPlus, FaPencilAlt } from "react-icons/fa";
 import { Dialog } from "@headlessui/react";
 import { useTheme } from "../../context/ThemeContext.jsx";
@@ -7,6 +13,20 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import confetti from "canvas-confetti";
 import { useSelectedTask } from "@context/SelectedTaskContext.jsx";
+import EstimatedTimeDisplay from "./EstimatedTimeDisplay.jsx";
+
+// Debounce function implementation
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
 
 // Separate AddTaskModal component to isolate modal state
 const AddTaskModal = React.memo(({ isOpen, onClose, onAddTask, theme }) => {
@@ -305,32 +325,53 @@ export default function TodoList() {
   const [intermediateTasks, setIntermediateTasks] = useState([]);
   const today = new Date().toISOString().split("T")[0];
   const { selectedTaskId, setSelectedTaskId } = useSelectedTask();
-  const [estimatedTime, setEstimatedTime] = useState("");
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [editTaskData, setEditTaskData] = useState(null);
   const [windowWidth, setWindowWidth] = useState(
     typeof window !== "undefined" ? window.innerWidth : 1024
   );
 
+  // Store remaining pomodoros count for local time calculations
+  const [remainingPomodoros, setRemainingPomodoros] = useState(0);
+  const previousRemainingPomodorosRef = useRef(remainingPomodoros);
+
   const token = localStorage.getItem("token");
 
+  // Debounced version of fetchRemainingPomodoros to prevent frequent updates
+  const fetchRemainingPomodorosDebounced = useCallback(
+    debounce(async () => {
+      try {
+        const res = await axios.get("/api/tasks/remaining-pomodoros", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+        const remainingCount = res.data.remainingPomodoros || 0;
+        console.log("Remaining pomodoros:", remainingCount);
+
+        // Only dispatch event if there's an actual change in remaining pomodoros
+        if (previousRemainingPomodorosRef.current !== remainingCount) {
+          // Store the remaining count for local calculations
+          setRemainingPomodoros(remainingCount);
+          previousRemainingPomodorosRef.current = remainingCount;
+
+          // Dispatch event for estimated time component to update
+          window.dispatchEvent(new Event("taskCompletionUpdate"));
+        }
+      } catch (error) {
+        console.error("Failed to fetch remaining pomodoros", error);
+        // Dispatch event even on error so the estimated time component can handle it
+        window.dispatchEvent(new Event("taskCompletionUpdate"));
+      }
+    }, 300), // Debounce for 300ms
+    []
+  );
+
+  // Update the ref when remainingPomodoros state changes
+  useEffect(() => {
+    previousRemainingPomodorosRef.current = remainingPomodoros;
+  }, [remainingPomodoros]);
+
   async function fetchRemainingPomodoros() {
-    try {
-      const res = await axios.get("/api/tasks/remaining-pomodoros", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-      });
-      const remainingCount = res.data.remainingPomodoros || 0;
-      console.log("Remaining pomodoros:", remainingCount);
-
-      // Store the remaining count for local calculations
-      setRemainingPomodoros(remainingCount);
-
-      // Calculate and set the estimated time
-      calculateEstimatedTime(remainingCount);
-    } catch (error) {
-      console.error("Failed to fetch remaining pomodoros", error);
-      setEstimatedTime("N/A");
-    }
+    fetchRemainingPomodorosDebounced();
   }
 
   // Move fetchTasks outside useEffect so it can be called from event handlers
@@ -417,7 +458,7 @@ export default function TodoList() {
     } else if (!selectedTaskId && tasks.length > 0) {
       setSelectedTaskId(tasks[tasks.length - 1].id);
     }
-  }, [tasks.length]); // Only depend on tasks.length, not selectedTaskId
+  }, [tasks.length, selectedTaskId, setSelectedTaskId]); // Include all dependencies
 
   // Memoize filtered task lists to prevent unnecessary re-renders
   const mustDoTasks = useMemo(
@@ -440,21 +481,13 @@ export default function TodoList() {
     [intermediateTasks]
   );
 
-  // Memoize the entire task sections to prevent re-renders when modal state changes
-  const taskSections = useMemo(
-    () => ({
-      mustDoTasks,
-      canDoTasks,
-      mustDoIntermediateTasks,
-      canDoIntermediateTasks,
-    }),
-    [mustDoTasks, canDoTasks, mustDoIntermediateTasks, canDoIntermediateTasks]
-  );
-
   // Memoized click handler to prevent re-renders
-  const handleTaskClick = useCallback((taskId) => {
-    setSelectedTaskId(taskId);
-  }, []);
+  const handleTaskClick = useCallback(
+    (taskId) => {
+      setSelectedTaskId(taskId);
+    },
+    [setSelectedTaskId]
+  );
 
   useEffect(() => {
     const handleResize = () => {
@@ -466,44 +499,6 @@ export default function TodoList() {
       return () => window.removeEventListener("resize", handleResize);
     }
   }, []);
-
-  // Store remaining pomodoros count for local time calculations
-  const [remainingPomodoros, setRemainingPomodoros] = useState(0);
-
-  // Function to calculate estimated time locally without API call
-  const calculateEstimatedTime = (remainingCount) => {
-    const DEFAULT_POMODORO_SECONDS = 1500;
-    const pomodoroLength =
-      (parseInt(localStorage.getItem("timerTime"), 10) ||
-        DEFAULT_POMODORO_SECONDS) / 60;
-
-    const completionDate = new Date();
-    completionDate.setMinutes(
-      completionDate.getMinutes() + remainingCount * pomodoroLength
-    );
-
-    const hours = completionDate.getHours();
-    const minutes = completionDate.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    const formattedHours = hours % 12 || 12;
-
-    setEstimatedTime(
-      `${formattedHours}:${minutes < 10 ? "0" : ""}${minutes} ${ampm}`
-    );
-  };
-
-  // Auto-update estimated time every minute (local calculation only)
-  useEffect(() => {
-    const updateEstimatedTimeLocally = () => {
-      calculateEstimatedTime(remainingPomodoros);
-    };
-
-    // Set up interval to update every minute (60000ms)
-    const interval = setInterval(updateEstimatedTimeLocally, 60000);
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(interval);
-  }, [remainingPomodoros]);
 
   const addTask = useCallback(
     async (newTaskData) => {
@@ -609,12 +604,10 @@ export default function TodoList() {
           }
         );
         // Only update remaining pomodoros, not the whole task list
-        fetchRemainingPomodoros();
-        // Wait a moment for backend to update, then dispatch event
+        // Use a debounced version of fetchRemainingPomodoros to prevent frequent updates
         setTimeout(() => {
-          window.dispatchEvent(new Event("taskCompletionUpdate"));
-        }, 300);
-        // Do NOT call fetchTasks() or fetchIntermediateTasks() here!
+          fetchRemainingPomodoros();
+        }, 100);
       } catch (error) {
         // Revert optimistic update if error
         if (isOngoing) {
@@ -643,8 +636,10 @@ export default function TodoList() {
         setIntermediateTasks((prev) =>
           prev.filter((task) => task.id !== taskId)
         );
-        fetchRemainingPomodoros();
-        window.dispatchEvent(new Event("taskCompletionUpdate"));
+        // Use a debounced version of fetchRemainingPomodoros to prevent frequent updates
+        setTimeout(() => {
+          fetchRemainingPomodoros();
+        }, 100);
       } catch (error) {
         console.error("Error deleting task:", error.message);
       }
@@ -709,56 +704,32 @@ export default function TodoList() {
   const reorderTasks = useCallback(
     async (orderedTasks) => {
       try {
-        console.log('Reordering tasks:', orderedTasks);
+        console.log("Reordering tasks:", orderedTasks);
         const response = await axios.patch(
-          '/api/tasks/reorder',
+          "/api/tasks/reorder",
           { orderedTasks }, // Changed to match the API expectation
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
-              'Content-Type': 'application/json'
+              "Content-Type": "application/json",
             },
           }
         );
 
-        console.log('Reorder response:', response.data);
+        console.log("Reorder response:", response.data);
 
-        // Update tasks with the response from the server
-        if (response.data && response.data.ongoingTasks) {
-          // Format tasks to match our expected format
-          const formattedTasks = response.data.ongoingTasks.map(task => {
-            // Format date consistently with fetchTasks function
-            let date;
-            try {
-              date = task.dueDate
-                ? new Date(task.dueDate).toLocaleDateString()
-                : new Date().toLocaleDateString();
-            } catch (e) {
-              date = new Date().toLocaleDateString();
-            }
-            
-            return {
-              id: task._id,
-              taskName: task.taskName,
-              date,
-              pomodoros: task.estimatedPomodoros,
-              completedPomodoros: task.completedPomodoros,
-              priority: task.priority,
-              status: 'ongoing',
-              order: task.order
-            };
-          });
-          
-          setTasks(formattedTasks);
-          fetchRemainingPomodoros();
-        }
+        // Only update remaining pomodoros, not the whole task list to prevent double reloads
+        fetchRemainingPomodoros();
       } catch (error) {
-        console.error("Error reordering tasks:", error.response?.data || error.message);
-        // Refresh tasks to ensure UI is in sync with server
-        fetchTasks();
+        console.error(
+          "Error reordering tasks:",
+          error.response?.data || error.message
+        );
+        // Only update remaining pomodoros on error, don't refresh the entire task list
+        fetchRemainingPomodoros();
       }
     },
-    [fetchRemainingPomodoros, fetchTasks]
+    [fetchRemainingPomodoros]
   );
 
   // Drag and Drop Functions
@@ -768,12 +739,12 @@ export default function TodoList() {
       try {
         // Find the task in tasks array
         const task = tasks.find((t) => t.id === taskId);
-        
+
         if (!task) {
-          console.error('Task not found');
+          console.error("Task not found");
           return;
         }
-        
+
         // Optimistic UI update
         setTasks((prevTasks) =>
           prevTasks.map((t) =>
@@ -785,7 +756,7 @@ export default function TodoList() {
         const orderedTasks = tasks.map((t, index) => ({
           id: t.id,
           priority: t.id === taskId ? newPriority : t.priority,
-          order: index
+          order: index,
         }));
 
         // Use the new reorderTasks function to update the backend
@@ -800,16 +771,16 @@ export default function TodoList() {
   );
 
   const handleDragStart = useCallback((e, taskId) => {
-    console.log('Drag started with task ID:', taskId);
+    console.log("Drag started with task ID:", taskId);
     e.dataTransfer.setData("text/plain", taskId);
     e.dataTransfer.effectAllowed = "move";
-    
+
     // Add a dragging class to improve visual feedback
-    const element = e.target.closest('.task-item');
+    const element = e.target.closest(".task-item");
     if (element) {
-      element.classList.add('dragging');
+      element.classList.add("dragging");
       setTimeout(() => {
-        element.classList.remove('dragging');
+        element.classList.remove("dragging");
       }, 0);
     }
   }, []);
@@ -817,88 +788,97 @@ export default function TodoList() {
   const handleDragOver = useCallback((e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
-    
+
     // Add visual feedback for the drop zone
     const dropZone = e.currentTarget;
-    if (dropZone && !dropZone.classList.contains('drag-over')) {
-      dropZone.classList.add('drag-over');
+    if (dropZone && !dropZone.classList.contains("drag-over")) {
+      dropZone.classList.add("drag-over");
     }
   }, []);
-  
+
   // Add dragLeave handler to remove visual feedback
   const handleDragLeave = useCallback((e) => {
     const dropZone = e.currentTarget;
     if (dropZone) {
-      dropZone.classList.remove('drag-over');
+      dropZone.classList.remove("drag-over");
     }
   }, []);
 
   const handleDrop = useCallback(
     (e, targetPriority) => {
       e.preventDefault();
-      console.log('Drop event triggered');
-      
+      console.log("Drop event triggered");
+
       // Remove drag-over class for visual feedback
       const dropZone = e.currentTarget;
       if (dropZone) {
-        dropZone.classList.remove('drag-over');
+        dropZone.classList.remove("drag-over");
       }
-      
+
       // Get the task ID from dataTransfer
       const taskId = e.dataTransfer.getData("text/plain");
-      console.log('Task ID from dataTransfer:', taskId);
-      
+      console.log("Task ID from dataTransfer:", taskId);
+
       if (!taskId) {
-        console.error('No task ID found in dataTransfer');
+        console.error("No task ID found in dataTransfer");
         return;
       }
-      
+
       // Check in tasks array
       const task = tasks.find((t) => t.id === taskId);
-      
+
       if (!task) {
-        console.error('Task not found in tasks array');
+        console.error("Task not found in tasks array");
         return;
       }
-      
-      console.log('Found task:', task);
-      console.log('Target priority:', targetPriority);
+
+      console.log("Found task:", task);
+      console.log("Target priority:", targetPriority);
 
       // Get the target element (where we're dropping)
-      const targetElement = e.target.closest('.task-item');
-      const targetTaskId = targetElement ? targetElement.getAttribute('data-task-id') : null;
-      
-      console.log('Target element:', targetElement);
-      console.log('Target task ID:', targetTaskId);
-      
+      const targetElement = e.target.closest(".task-item");
+      const targetTaskId = targetElement
+        ? targetElement.getAttribute("data-task-id")
+        : null;
+
+      console.log("Target element:", targetElement);
+      console.log("Target task ID:", targetTaskId);
+
       // Create a copy of tasks to reorder
       let orderedTasks = [...tasks];
-      
+
       // If priority is changing
       if (task.priority !== targetPriority) {
-        console.log('Updating task priority');
-        
+        console.log("Updating task priority");
+
         // Get tasks with the target priority
-        const tasksWithTargetPriority = orderedTasks.filter(t => t.priority === targetPriority);
-        
+        const tasksWithTargetPriority = orderedTasks.filter(
+          (t) => t.priority === targetPriority
+        );
+
         // Update the priority of the dragged task
         const updatedTask = { ...task, priority: targetPriority };
-        
+
         // Remove the task from its current position
-        orderedTasks = orderedTasks.filter(t => t.id !== taskId);
-        
+        orderedTasks = orderedTasks.filter((t) => t.id !== taskId);
+
         // If dropping on a specific task, insert at that position
         if (targetTaskId && targetTaskId !== taskId) {
-          const targetIndex = orderedTasks.findIndex(t => t.id === targetTaskId);
+          const targetIndex = orderedTasks.findIndex(
+            (t) => t.id === targetTaskId
+          );
           if (targetIndex !== -1) {
             // Insert at the target position
             orderedTasks.splice(targetIndex, 0, updatedTask);
           } else {
             // Add to the end of tasks with the target priority
-            const lastTargetPriorityIndex = orderedTasks.reduce((lastIndex, t, index) => {
-              return t.priority === targetPriority ? index : lastIndex;
-            }, -1);
-            
+            const lastTargetPriorityIndex = orderedTasks.reduce(
+              (lastIndex, t, index) => {
+                return t.priority === targetPriority ? index : lastIndex;
+              },
+              -1
+            );
+
             if (lastTargetPriorityIndex !== -1) {
               orderedTasks.splice(lastTargetPriorityIndex + 1, 0, updatedTask);
             } else {
@@ -909,49 +889,54 @@ export default function TodoList() {
         } else {
           // If dropping on the section (not on a task), add to the end of that section
           if (tasksWithTargetPriority.length > 0) {
-            const lastTargetPriorityIndex = orderedTasks.reduce((lastIndex, t, index) => {
-              return t.priority === targetPriority ? index : lastIndex;
-            }, -1);
-            
+            const lastTargetPriorityIndex = orderedTasks.reduce(
+              (lastIndex, t, index) => {
+                return t.priority === targetPriority ? index : lastIndex;
+              },
+              -1
+            );
+
             orderedTasks.splice(lastTargetPriorityIndex + 1, 0, updatedTask);
           } else {
             // If no tasks with target priority, add to the end
             orderedTasks.push(updatedTask);
           }
         }
-        
+
         // Update UI optimistically
         setTasks(orderedTasks);
-      } 
+      }
       // If we're reordering within the same priority section
       else if (targetTaskId && targetTaskId !== taskId) {
-        console.log('Reordering tasks within same priority');
-        
+        console.log("Reordering tasks within same priority");
+
         // Find the indices of the dragged and target tasks
-        const draggedIndex = orderedTasks.findIndex(t => t.id === taskId);
-        const targetIndex = orderedTasks.findIndex(t => t.id === targetTaskId);
-        
+        const draggedIndex = orderedTasks.findIndex((t) => t.id === taskId);
+        const targetIndex = orderedTasks.findIndex(
+          (t) => t.id === targetTaskId
+        );
+
         if (draggedIndex !== -1 && targetIndex !== -1) {
           // Remove the dragged task from the array
           const [draggedTask] = orderedTasks.splice(draggedIndex, 1);
-          
+
           // Insert it at the target position
           orderedTasks.splice(targetIndex, 0, draggedTask);
-          
+
           // Update UI optimistically
           setTasks(orderedTasks);
         }
       }
-      
+
       // Prepare the ordered tasks array for the API call
       const tasksForApi = orderedTasks.map((t, index) => ({
         id: t.id,
         priority: t.priority,
-        order: index
+        order: index,
       }));
-      
-      console.log('Sending to API:', tasksForApi);
-      
+
+      console.log("Sending to API:", tasksForApi);
+
       // Call the reorderTasks function to update the backend
       reorderTasks(tasksForApi);
     },
@@ -959,24 +944,37 @@ export default function TodoList() {
   );
 
   const handleTaskCompletion = useCallback(async (taskId) => {
+    // Optimistically update the UI
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => {
+        if (task.id === taskId) {
+          // Show confetti immediately for completed tasks
+          if (!task.completed) {
+            confetti({
+              particleCount: 100,
+              spread: 70,
+              origin: { y: 0.6 },
+            });
+          }
+          return { ...task, completed: !task.completed };
+        }
+        return task;
+      })
+    );
+
     try {
+      // Make the API call in the background
       await axios.patch(`/api/tasks/${taskId}/toggle`);
+    } catch (error) {
+      // Revert the UI update if the API call fails
       setTasks((prevTasks) =>
         prevTasks.map((task) => {
           if (task.id === taskId) {
-            if (!task.completed) {
-              confetti({
-                particleCount: 100,
-                spread: 70,
-                origin: { y: 0.6 },
-              });
-            }
             return { ...task, completed: !task.completed };
           }
           return task;
         })
       );
-    } catch (error) {
       console.error(
         "Error toggling task:",
         error.response?.data || error.message
@@ -987,237 +985,6 @@ export default function TodoList() {
   useEffect(() => {
     fetchRemainingPomodoros();
   }, []);
-
-  // Listen for timer settings updates to recalculate estimated time
-  useEffect(() => {
-    const handleTimerSettingsUpdate = () => {
-      fetchRemainingPomodoros();
-    };
-
-    const handlePomodoroCompleted = () => {
-      fetchRemainingPomodoros();
-      fetchTasks(); // Refresh task data to show updated completedPomodoros
-    };
-
-    window.addEventListener("timerSettingsUpdate", handleTimerSettingsUpdate);
-    window.addEventListener("pomodoroCompleted", handlePomodoroCompleted);
-
-    return () => {
-      window.removeEventListener(
-        "timerSettingsUpdate",
-        handleTimerSettingsUpdate
-      );
-      window.removeEventListener("pomodoroCompleted", handlePomodoroCompleted);
-    };
-  }, []);
-
-  // Memoized Task Sections Component to isolate from modal state changes
-  const TaskSections = React.memo(
-    ({
-      mustDoTasks,
-      canDoTasks,
-      mustDoIntermediateTasks,
-      canDoIntermediateTasks,
-      onTaskClick,
-      onToggleStatus,
-      onEditTask,
-      onDeleteTask,
-      onDragStart,
-      onDragOver,
-      onDragLeave,
-      onDrop,
-    }) => (
-      <>
-        {/* Must Do Section */}
-        <div
-          className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-500/10 dark:hover:bg-blue-500/20"
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={(e) => onDrop(e, "must do")}
-        >
-          <h3 className="text-lg font-semibold mb-3 text-left text-red-600 dark:text-red-400">
-            🔥 Must Do
-          </h3>
-          <motion.ul className="space-y-2">
-            {mustDoTasks.length === 0 &&
-            mustDoIntermediateTasks.length === 0 ? (
-              <motion.li>
-                No must-do tasks. Drop tasks here to make them high priority.
-              </motion.li>
-            ) : (
-              <>
-                {mustDoTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    section="must-do"
-                    onTaskClick={onTaskClick}
-                    onToggleStatus={onToggleStatus}
-                    onEditTask={onEditTask}
-                    onDeleteTask={onDeleteTask}
-                    onDragStart={onDragStart}
-                  />
-                ))}
-                {mustDoIntermediateTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    section="must-do"
-                    isIntermediate
-                    onTaskClick={onTaskClick}
-                    onToggleStatus={onToggleStatus}
-                    onEditTask={onEditTask}
-                    onDeleteTask={onDeleteTask}
-                    onDragStart={onDragStart}
-                  />
-                ))}
-              </>
-            )}
-          </motion.ul>
-        </div>
-
-        {/* Can Do Section */}
-        <div
-          className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-500/10 dark:hover:bg-green-500/20"
-          onDragOver={onDragOver}
-          onDragLeave={onDragLeave}
-          onDrop={(e) => onDrop(e, "can do")}
-        >
-          <h3 className="text-lg font-semibold mb-3 text-left text-green-600 dark:text-green-400">
-            ✅ Can Do
-          </h3>
-          <motion.ul className="space-y-2">
-            {canDoTasks.length === 0 && canDoIntermediateTasks.length === 0 ? (
-              <motion.li
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center py-4 opacity-70 italic border-2 border-dashed border-gray-300 rounded-lg"
-              >
-                No can-do tasks. Drop tasks here for lower priority.
-              </motion.li>
-            ) : (
-              <>
-                {canDoTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    section="can-do"
-                    onTaskClick={onTaskClick}
-                    onToggleStatus={onToggleStatus}
-                    onEditTask={onEditTask}
-                    onDeleteTask={onDeleteTask}
-                    onDragStart={onDragStart}
-                  />
-                ))}
-                {canDoIntermediateTasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    section="can-do"
-                    isIntermediate
-                    onTaskClick={onTaskClick}
-                    onToggleStatus={onToggleStatus}
-                    onEditTask={onEditTask}
-                    onDeleteTask={onDeleteTask}
-                    onDragStart={onDragStart}
-                  />
-                ))}
-              </>
-            )}
-          </motion.ul>
-        </div>
-      </>
-    )
-  );
-
-  const TaskItem = React.memo(
-    ({
-      task,
-      section,
-      isIntermediate,
-      onTaskClick,
-      onToggleStatus,
-      onEditTask,
-      onDeleteTask,
-      onDragStart,
-    }) => (
-      <motion.li
-        key={task.id}
-        draggable="true"
-        data-task-id={task.id}
-        onDragStart={(e) => onDragStart(e, task.id)}
-        onDragEnd={(e) => {
-          const element = e.target.closest('.task-item');
-          if (element) {
-            element.classList.remove('dragging');
-          }
-        }}
-        className={`task-item ${theme === "dark" ? "dark" : "light"} ${
-          task.status === "finished" ? "completed" : ""
-        } ${
-          selectedTaskId === task.id ? "selected-task" : ""
-        } cursor-move hover:shadow-lg transition-shadow`}
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, x: -100 }}
-        whileHover={{ scale: 1.01 }}
-        transition={{ duration: 0.2 }}
-        onClick={() => onTaskClick(task.id)}
-      >
-        <input
-          type="checkbox"
-          name={`task-${task.id}`}
-          checked={isIntermediate || task.status === "finished"}
-          onChange={() => onToggleStatus(task.id)}
-          className="task-checkbox"
-        />
-        <div className="task-content">
-          <p
-            className={`task-name ${
-              task.status === "finished" ? "finished" : ""
-            }`}
-          >
-            {task.taskName}
-          </p>
-          <p className="task-details">
-            {task.status === "finished"
-              ? "Completed"
-              : `Due: ${
-                  task.date || new Date().toLocaleDateString()
-                } | Est. Pomodoros: ${task.completedPomodoros}/${
-                  task.pomodoros
-                }`}
-          </p>
-        </div>
-        <div className="task-actions">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onEditTask(task);
-            }}
-            className="task-edit"
-            title="Edit task"
-          >
-            <FaPencilAlt size={14} />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onDeleteTask(task.id);
-            }}
-            className="task-delete"
-            title="Delete task"
-          >
-            <FaTrash size={14} />
-          </motion.button>
-        </div>
-      </motion.li>
-    )
-  );
 
   return (
     <>
@@ -1264,6 +1031,8 @@ export default function TodoList() {
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
                     onDrop={handleDrop}
+                    theme={theme}
+                    selectedTaskId={selectedTaskId}
                   />
                 )}
               </div>
@@ -1303,17 +1072,229 @@ export default function TodoList() {
           />
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="info-box mt-2 p-1 border rounded text-xs"
-        >
-          <p>Estimated Completion Time: {estimatedTime}</p>
-        </motion.div>
+        <EstimatedTimeDisplay theme={theme} />
       </div>
     </>
   );
 }
+
+// Memoized Task Item Component
+const TaskItem = React.memo(
+  ({
+    task,
+    section,
+    isIntermediate,
+    onTaskClick,
+    onToggleStatus,
+    onEditTask,
+    onDeleteTask,
+    onDragStart,
+    theme,
+    selectedTaskId,
+  }) => (
+    <motion.li
+      key={task.id}
+      draggable="true"
+      data-task-id={task.id}
+      onDragStart={(e) => onDragStart(e, task.id)}
+      onDragEnd={(e) => {
+        const element = e.target.closest(".task-item");
+        if (element) {
+          element.classList.remove("dragging");
+        }
+      }}
+      className={`task-item ${theme === "dark" ? "dark" : "light"} ${
+        task.status === "finished" ? "completed" : ""
+      } ${
+        selectedTaskId === task.id ? "selected-task" : ""
+      } cursor-move hover:shadow-lg transition-shadow`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, x: -100 }}
+      whileHover={{ scale: 1.01 }}
+      transition={{ duration: 0.2 }}
+      onClick={() => onTaskClick(task.id)}
+    >
+      <input
+        type="checkbox"
+        name={`task-${task.id}`}
+        checked={isIntermediate || task.status === "finished"}
+        onChange={() => onToggleStatus(task.id)}
+        className="task-checkbox"
+      />
+      <div className="task-content">
+        <p
+          className={`task-name ${
+            task.status === "finished" ? "finished" : ""
+          }`}
+        >
+          {task.taskName}
+        </p>
+        <p className="task-details">
+          {task.status === "finished"
+            ? "Completed"
+            : `Due: ${
+                task.date || new Date().toLocaleDateString()
+              } | Est. Pomodoros: ${task.completedPomodoros}/${task.pomodoros}`}
+        </p>
+      </div>
+      <div className="task-actions">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEditTask(task);
+          }}
+          className="task-edit"
+          title="Edit task"
+        >
+          <FaPencilAlt size={14} />
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDeleteTask(task.id);
+          }}
+          className="task-delete"
+          title="Delete task"
+        >
+          <FaTrash size={14} />
+        </motion.button>
+      </div>
+    </motion.li>
+  )
+);
+
+// Memoized Task Sections Component to isolate from modal state changes
+const TaskSections = React.memo(
+  ({
+    mustDoTasks,
+    canDoTasks,
+    mustDoIntermediateTasks,
+    canDoIntermediateTasks,
+    onTaskClick,
+    onToggleStatus,
+    onEditTask,
+    onDeleteTask,
+    onDragStart,
+    onDragOver,
+    onDragLeave,
+    onDrop,
+    theme,
+    selectedTaskId,
+  }) => (
+    <>
+      {/* Must Do Section */}
+      <div
+        className="drop-zone must-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-blue-300 hover:bg-blue-500/10 dark:hover:bg-blue-500/20"
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={(e) => onDrop(e, "must do")}
+      >
+        <h3 className="text-lg font-semibold mb-3 text-left text-red-600 dark:text-red-400">
+          🔥 Must Do
+        </h3>
+        <motion.ul className="space-y-2">
+          {mustDoTasks.length === 0 && mustDoIntermediateTasks.length === 0 ? (
+            <motion.li>
+              No must-do tasks. Drop tasks here to make them high priority.
+            </motion.li>
+          ) : (
+            <>
+              {mustDoTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  section="must-do"
+                  onTaskClick={onTaskClick}
+                  onToggleStatus={onToggleStatus}
+                  onEditTask={onEditTask}
+                  onDeleteTask={onDeleteTask}
+                  onDragStart={onDragStart}
+                  theme={theme}
+                  selectedTaskId={selectedTaskId}
+                />
+              ))}
+              {mustDoIntermediateTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  section="must-do"
+                  isIntermediate
+                  onTaskClick={onTaskClick}
+                  onToggleStatus={onToggleStatus}
+                  onEditTask={onEditTask}
+                  onDeleteTask={onDeleteTask}
+                  onDragStart={onDragStart}
+                  theme={theme}
+                  selectedTaskId={selectedTaskId}
+                />
+              ))}
+            </>
+          )}
+        </motion.ul>
+      </div>
+
+      {/* Can Do Section */}
+      <div
+        className="drop-zone can-do-zone p-4 border-2 border-dashed border-transparent rounded-lg transition-all duration-300 hover:border-green-300 hover:bg-green-500/10 dark:hover:bg-green-500/20"
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={(e) => onDrop(e, "can do")}
+      >
+        <h3 className="text-lg font-semibold mb-3 text-left text-green-600 dark:text-green-400">
+          ✅ Can Do
+        </h3>
+        <motion.ul className="space-y-2">
+          {canDoTasks.length === 0 && canDoIntermediateTasks.length === 0 ? (
+            <motion.li
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center py-4 opacity-70 italic border-2 border-dashed border-gray-300 rounded-lg"
+            >
+              No can-do tasks. Drop tasks here for lower priority.
+            </motion.li>
+          ) : (
+            <>
+              {canDoTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  section="can-do"
+                  onTaskClick={onTaskClick}
+                  onToggleStatus={onToggleStatus}
+                  onEditTask={onEditTask}
+                  onDeleteTask={onDeleteTask}
+                  onDragStart={onDragStart}
+                  theme={theme}
+                  selectedTaskId={selectedTaskId}
+                />
+              ))}
+              {canDoIntermediateTasks.map((task) => (
+                <TaskItem
+                  key={task.id}
+                  task={task}
+                  section="can-do"
+                  isIntermediate
+                  onTaskClick={onTaskClick}
+                  onToggleStatus={onToggleStatus}
+                  onEditTask={onEditTask}
+                  onDeleteTask={onDeleteTask}
+                  onDragStart={onDragStart}
+                  theme={theme}
+                  selectedTaskId={selectedTaskId}
+                />
+              ))}
+            </>
+          )}
+        </motion.ul>
+      </div>
+    </>
+  )
+);
 
 // Helper to get today's date in ISO format
 const getTodayISO = () => {

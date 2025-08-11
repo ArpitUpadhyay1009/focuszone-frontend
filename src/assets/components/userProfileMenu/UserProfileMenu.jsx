@@ -83,8 +83,7 @@ const UserProfileMenu = ({
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found for total focus time");
-        setUserStats((prev) => ({ ...prev, totalTime: "0h 0m" }));
-        return;
+        return "0h 0m";
       }
 
       const response = await axios.get(`/api/user-activity/total-time-spent`, {
@@ -97,16 +96,14 @@ const UserProfileMenu = ({
         const totalSeconds = response.data.totalTimeSpent;
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor((totalSeconds % 3600) / 60);
-        setUserStats((prev) => ({
-          ...prev,
-          totalTime: `${hours}h ${minutes}m`,
-        }));
+        // Return the data instead of updating state directly
+        return `${hours}h ${minutes}m`;
       } else {
-        setUserStats((prev) => ({ ...prev, totalTime: "0h 0m" }));
+        return "0h 0m";
       }
     } catch (error) {
       console.error("Error fetching total focus time:", error.message);
-      setUserStats((prev) => ({ ...prev, totalTime: "0h 0m" }));
+      return "0h 0m";
     }
   };
 
@@ -115,7 +112,7 @@ const UserProfileMenu = ({
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found");
-        return;
+        return null;
       }
 
       const response = await axios.get(`/api/user/stats`, {
@@ -129,14 +126,10 @@ const UserProfileMenu = ({
         // const hours = Math.floor(totalMinutes / 60);
         // const minutes = totalMinutes % 60;
 
-        setUserStats((prev) => ({
-          ...prev,
-          // totalTime: `${hours}h ${minutes}m`, // Removed, handled by fetchTotalFocusTime
-          yourCoins: response.data.currentCoins || 0,
-          // completedTasks: response.data.completedTasksCount || 0, // Removed: fetchCompletedTasks will handle this
-        }));
+        // Return the data instead of updating state directly
+        let coins = response.data.currentCoins || 0;
 
-        if (response.data.currentCoins === 0) {
+        if (coins === 0) {
           try {
             const levelResponse = await axios.get("/api/auth/user-level", {
               headers: {
@@ -145,21 +138,22 @@ const UserProfileMenu = ({
             });
 
             if (levelResponse.data && levelResponse.data.coins > 0) {
-              setUserStats((prev) => ({
-                ...prev,
-                yourCoins: levelResponse.data.coins,
-              }));
+              coins = levelResponse.data.coins;
             }
           } catch (error) {
             console.error("Error fetching user level data:", error);
           }
         }
+
+        return { currentCoins: coins };
       }
+
+      return null;
     } catch (error) {
       console.error("Error fetching user stats:", error.message);
       try {
         const token = localStorage.getItem("token");
-        if (!token) return;
+        if (!token) return null;
 
         const levelResponse = await axios.get("/api/auth/user-level", {
           headers: {
@@ -168,14 +162,13 @@ const UserProfileMenu = ({
         });
 
         if (levelResponse.data && levelResponse.data.coins !== undefined) {
-          setUserStats((prev) => ({
-            ...prev,
-            yourCoins: levelResponse.data.coins,
-          }));
+          return { currentCoins: levelResponse.data.coins };
         }
       } catch (fallbackError) {
         console.error("Error in fallback coin fetch:", fallbackError);
       }
+
+      return null;
     }
   };
 
@@ -184,7 +177,7 @@ const UserProfileMenu = ({
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found for total coins earned");
-        return;
+        return null;
       }
 
       const response = await axios.get(
@@ -197,22 +190,14 @@ const UserProfileMenu = ({
       );
 
       if (response.data && response.data.totalCoinsEarned !== undefined) {
-        setUserStats((prev) => ({
-          ...prev,
-          totalCoinsEarned: response.data.totalCoinsEarned,
-        }));
+        // Return the data instead of updating state directly
+        return { totalCoinsEarned: response.data.totalCoinsEarned };
       } else {
-        setUserStats((prev) => ({
-          ...prev,
-          totalCoinsEarned: 0,
-        }));
+        return { totalCoinsEarned: 0 };
       }
     } catch (error) {
       console.error("Error fetching total coins earned:", error.message);
-      setUserStats((prev) => ({
-        ...prev,
-        totalCoinsEarned: 0,
-      }));
+      return { totalCoinsEarned: 0 };
     }
   };
 
@@ -221,7 +206,7 @@ const UserProfileMenu = ({
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found");
-        return;
+        return null;
       }
 
       const response = await axios.get(`/api/user-activity/coins-spent`, {
@@ -231,12 +216,11 @@ const UserProfileMenu = ({
       });
 
       if (response.data && response.data.coinsSpent !== undefined) {
-        setUserStats((prev) => ({
-          ...prev,
-          coinsSpent: response.data.coinsSpent,
-        }));
+        // Return the data instead of updating state directly
         return response.data.coinsSpent;
       }
+
+      return null;
     } catch (error) {
       console.error("Error fetching coins spent:", error.message);
       return null;
@@ -267,11 +251,36 @@ const UserProfileMenu = ({
   useEffect(() => {
     const initializeData = async () => {
       try {
-        await fetchCompletedTasks();
-        await fetchCoinsSpent();
-        await fetchUserStats();
-        await fetchTotalCoinsEarned();
-        await fetchTotalFocusTime();
+        // Run all fetch operations in parallel
+        const [
+          completedTasksData,
+          coinsSpentData,
+          userStatsData,
+          totalCoinsData,
+          totalTimeData,
+        ] = await Promise.all([
+          fetchCompletedTasks(),
+          fetchCoinsSpent(),
+          fetchUserStats(),
+          fetchTotalCoinsEarned(),
+          fetchTotalFocusTime(),
+        ]);
+
+        // Update all states after collecting data
+        setCompletedTasks(completedTasksData?.tasks || []);
+        setUserStats((prev) => ({
+          ...prev,
+          yourCoins: userStatsData?.currentCoins || prev.yourCoins,
+          coinsSpent: coinsSpentData || prev.coinsSpent,
+          totalCoinsEarned:
+            totalCoinsData?.totalCoinsEarned || prev.totalCoinsEarned,
+          totalTime: totalTimeData || prev.totalTime,
+          completedTasks:
+            completedTasksData?.completedCount || prev.completedTasks,
+          intermediateCount:
+            completedTasksData?.intermediateCount || prev.intermediateCount,
+          totalTaskCount: completedTasksData?.totalCount || prev.totalTaskCount,
+        }));
       } catch (error) {
         console.error("Error initializing data:", error);
       }
@@ -283,11 +292,36 @@ const UserProfileMenu = ({
       console.log(
         "Stats, Coin, or Task update event detected, refreshing stats..."
       ); // Log message updated
-      await fetchUserStats();
-      await fetchCoinsSpent();
-      await fetchTotalCoinsEarned();
-      await fetchTotalFocusTime();
-      await fetchCompletedTasks(); // Add this to refresh completed tasks count
+
+      // Run all fetch operations in parallel to reduce total execution time
+      const [
+        userStatsData,
+        coinsSpentData,
+        totalCoinsData,
+        totalTimeData,
+        completedTasksData,
+      ] = await Promise.all([
+        fetchUserStats(),
+        fetchCoinsSpent(),
+        fetchTotalCoinsEarned(),
+        fetchTotalFocusTime(),
+        fetchCompletedTasks(),
+      ]);
+
+      // Batch update all state at once to prevent multiple re-renders
+      setUserStats((prev) => ({
+        ...prev,
+        yourCoins: userStatsData?.currentCoins || prev.yourCoins,
+        coinsSpent: coinsSpentData || prev.coinsSpent,
+        totalCoinsEarned:
+          totalCoinsData?.totalCoinsEarned || prev.totalCoinsEarned,
+        totalTime: totalTimeData || prev.totalTime,
+        completedTasks:
+          completedTasksData?.completedCount || prev.completedTasks,
+        intermediateCount:
+          completedTasksData?.intermediateCount || prev.intermediateCount,
+        totalTaskCount: completedTasksData?.totalCount || prev.totalTaskCount,
+      }));
     };
 
     window.addEventListener("coinUpdate", handleStatsAndCoinUpdate);
@@ -384,10 +418,13 @@ const UserProfileMenu = ({
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found for completed tasks");
-        setCompletedTasks([]); // Clear the list of tasks
-        setUserStats((prev) => ({ ...prev, completedTasks: 0 })); // Reset count in userStats
         // setLoading(false); // setLoading is handled in finally
-        return 0; // Return a value for consistency or handle as needed
+        return {
+          tasks: [],
+          completedCount: 0,
+          intermediateCount: 0,
+          totalCount: 0,
+        };
       }
 
       const response = await axios.get(`/api/tasks/completed`, {
@@ -398,44 +435,45 @@ const UserProfileMenu = ({
 
       if (response.data && response.data.completedTasks) {
         const tasks = response.data.completedTasks;
-        setCompletedTasks(tasks); // This state is for displaying the list of tasks
-
-        setUserStats((prev) => ({
-          ...prev,
-          completedTasks: response.data.completedCount || 0,
+        return {
+          tasks,
+          completedCount: response.data.completedCount || 0,
           intermediateCount: response.data.intermediateCount || 0,
-          totalTaskCount: response.data.totalCount || 0,
-        }));
-
-        return response.data.completedCount || 0;
+          totalCount: response.data.totalCount || 0,
+        };
       } else {
-        setCompletedTasks([]);
-        setUserStats((prev) => ({
-          ...prev,
-          completedTasks: 0,
+        return {
+          tasks: [],
+          completedCount: 0,
           intermediateCount: 0,
-          totalTaskCount: 0,
-        }));
-
-        return 0;
+          totalCount: 0,
+        };
       }
     } catch (error) {
       console.error("Error fetching completed tasks:", error.message);
-      setCompletedTasks([]);
-      setUserStats((prev) => ({
-        ...prev,
-        completedTasks: 0,
-      }));
-      return 0;
+      return {
+        tasks: [],
+        completedCount: 0,
+        intermediateCount: 0,
+        totalCount: 0,
+      };
     } finally {
       setLoading(false);
     }
   };
 
   // Handle click on completed tasks stat
-  const handleCompletedTasksClick = () => {
+  const handleCompletedTasksClick = async () => {
     setShowCompletedTasks(true);
-    fetchCompletedTasks();
+    const completedTasksData = await fetchCompletedTasks();
+    setCompletedTasks(completedTasksData?.tasks || []);
+    setUserStats((prev) => ({
+      ...prev,
+      completedTasks: completedTasksData?.completedCount || prev.completedTasks,
+      intermediateCount:
+        completedTasksData?.intermediateCount || prev.intermediateCount,
+      totalTaskCount: completedTasksData?.totalCount || prev.totalTaskCount,
+    }));
   };
 
   // Close menu when clicking outside
