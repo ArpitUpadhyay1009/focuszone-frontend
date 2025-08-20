@@ -8,12 +8,10 @@
   background: transparent;
   border-radius: 1rem;
   padding: 0.5rem;
-  transition: all 0.3s ease;
+  transform: none !important;
 }
 
-.floating-spotify-widget:hover {
-  transform: scale(1.02);
-}
+
 
 .floating-spotify-iframe {
   border-radius: 0.5rem;
@@ -29,15 +27,20 @@
 /* Mobile devices */
 @media (max-width: 480px) {
   .floating-spotify-widget {
-    bottom: 1.5vh;
-    right: 1.5vw;
+    left: 50%;
+    transform: translateX(-50%) !important;
+    bottom: 2vh;
+    right: auto;
+    width: 96vw;
+    margin: 0;
     padding: 0.4rem;
   }
   
   .floating-spotify-iframe {
-    width: 30vw;
-    height: 12vh;
-    min-width: 200px;
+    width: 100% !important;
+    height: 5vh;
+    min-width: unset;
+    max-width: none;
     min-height: 80px;
   }
 }
