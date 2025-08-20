@@ -15,49 +15,54 @@ img:hover {
   -moz-box-shadow: none !important;
 }
 
-/* Make the level render image larger */
+/* Base styles for the image */
 .flex.justify-center.items-center img {
   width: 100% !important;
   max-width: 100% !important;
-  transform: scale(1) !important;
+  transform: scale(1.4) !important;  /* Increased from scale(1) */
   transform-origin: center center;
   margin: 1.5rem auto !important;
   transition: transform 0.5s ease !important;
 }
 
+/* Remove the conflicting general hover rule and update media queries */
 @media (min-width: 480px) {
   .flex.justify-center.items-center img {
-    max-width: 600px !important;
-    transform: scale(1.1) !important;
+    max-width: 800px !important;     /* Increased from 600px */
+    transform: scale(1.4) !important; /* Increased from scale(1) */
     margin: 2rem auto !important;
+  }
+  .flex.justify-center.items-center img:hover {
+    transform: scale(1.46) !important; /* 1.4 × 1.06 = 6% increase */
   }
 }
 
 @media (min-width: 768px) {
   .flex.justify-center.items-center img {
-    max-width: 800px !important;
-    transform: scale(1.2) !important;
+    max-width: 1000px !important;    /* Increased from 800px */
+    transform: scale(1.4) !important;
     margin: 2.5rem auto !important;
+  }
+  .flex.justify-center.items-center img:hover {
+    transform: scale(1.46) !important; /* 1.4 × 1.06 = 6% increase */
   }
 }
 
 @media (min-width: 1200px) {
   .flex.justify-center.items-center img {
-    max-width: 1100px !important;
+    max-width: 1300px !important;    /* Increased from 1100px */
     transform: scale(1.4) !important;
     margin: 3rem auto !important;
   }
+  .flex.justify-center.items-center img:hover {
+    transform: scale(1.46) !important; /* 1.4 × 1.06 = 6% increase */
+  }
 }
 
-/* Add hover effect to make the room grow */
-.flex.justify-center.items-center img:hover {
-  transform: scale(1.6) !important; /* Grow even larger on hover */
-}
-
-/* Adjust the container for the larger image */
-.relative.w-full.max-w-lg.mx-auto {
-  max-width: 1100px !important; /* Increased from 1000px to 1200px */
-  margin: 3rem auto !important; /* Increased margin from 2rem to 3rem */
+@media (max-width: 767px) {
+  .flex.justify-center.items-center img:hover {
+    transform: scale(1.43) !important; /* 1.4 × 1.02 = 2% increase for mobile */
+  }
 }
 
 /* Add transition for level progress elements */
@@ -73,10 +78,4 @@ img:hover {
 [data-theme="light"] .level-progress-container,
 [data-theme="dark"] .level-progress-container {
   transition: background-color 2.6s ease, color 2.6s ease;
-}
-
-@media (max-width: 767px) {
-  .flex.justify-center.items-center img:hover {
-    transform: scale(1.25) !important;
-  }
 }
