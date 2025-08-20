@@ -1259,7 +1259,7 @@ const UserProfileMenu = ({
                 </motion.div>
 
                 <motion.div
-                  className="stat-item"
+                  className="stat-item tasks-completed-stat"
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.35 }}

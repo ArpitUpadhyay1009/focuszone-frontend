@@ -28,6 +28,10 @@
   border-top-color: rgba(255, 255, 255, 0.1);
 }
 
+.tasks-completed-stat{
+  cursor: pointer;
+}
+
 .stat-item {
   display: flex;
   align-items: center;
