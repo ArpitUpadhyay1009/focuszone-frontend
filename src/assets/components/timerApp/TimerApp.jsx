@@ -52,10 +52,7 @@ export default function TimerApp({ setParentPopupState }) {
     const saved = localStorage.getItem("timerCountdownTime");
     return saved ? parseInt(saved) : 5 * 60;
   });
-  const [coins, setCoins] = useState(() => {
-    const saved = localStorage.getItem("timerCoins");
-    return saved ? parseFloat(saved) : 0;
-  });
+  const [coins, setCoins] = useState(0);
   // Track the initial time when timer starts to calculate elapsed minutes correctly
   const [initialTime, setInitialTime] = useState(null);
   // Track minutes elapsed to avoid awarding coins multiple times (use ref for timer logic)
@@ -181,7 +178,6 @@ export default function TimerApp({ setParentPopupState }) {
     localStorage.setItem("timerCurrentCycle", currentCycle.toString());
     localStorage.setItem("timerIsBreak", isBreak.toString());
     localStorage.setItem("timerCountdownTime", countdownTime.toString());
-    localStorage.setItem("timerCoins", coins.toString());
     localStorage.setItem("timerTotalPausedTime", totalPausedTime.toString());
 
     if (timerStartedAt) {
@@ -205,7 +201,6 @@ export default function TimerApp({ setParentPopupState }) {
     currentCycle,
     isBreak,
     countdownTime,
-    coins,
     timerStartedAt,
     totalPausedTime,
     pauseStartTime, // Added new state variables to dependency array
@@ -1309,7 +1304,8 @@ export default function TimerApp({ setParentPopupState }) {
                 whileHover={{ y: -2 }}
                 whileTap={{ y: 1 }}
               >
-                <Timer size={20} />
+                <Timer size={20} className="hidden md:block" />{" "}
+                {/* Hide on mobile */}
                 <span className="text-base md:text-lg font-medium">
                   {time > 0 &&
                   isRunning === false &&
@@ -1343,7 +1339,8 @@ export default function TimerApp({ setParentPopupState }) {
                     exit={{ opacity: 1 }}
                     transition={{ duration: 0 }}
                   >
-                    <RefreshCcw size={20} />
+                    <RefreshCcw size={20} className="hidden md:block" />{" "}
+                    {/* Hide on mobile */}
                     <span className="text-base md:text-lg font-medium">
                       Reset
                     </span>
@@ -1369,7 +1366,8 @@ export default function TimerApp({ setParentPopupState }) {
                 exit={{ opacity: 1 }}
                 transition={{ duration: 0 }}
               >
-                <Pause size={20} />
+                <Pause size={20} className="hidden md:block" />{" "}
+                {/* Hide on mobile */}
                 <span className="text-base md:text-lg font-medium">Pause</span>
               </motion.button>
               <motion.button
@@ -1382,7 +1380,8 @@ export default function TimerApp({ setParentPopupState }) {
                 exit={{ opacity: 1 }}
                 transition={{ duration: 0 }}
               >
-                <RefreshCcw size={20} />
+                <RefreshCcw size={20} className="hidden md:block" />{" "}
+                {/* Hide on mobile */}
                 <span className="text-base md:text-lg font-medium">Reset</span>
               </motion.button>
             </motion.div>
