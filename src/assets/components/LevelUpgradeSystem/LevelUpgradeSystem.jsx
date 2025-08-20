@@ -535,7 +535,7 @@ const LevelUpgradeSystem = () => {
         </div>
 
         <div className="flex justify-between items-center mt-3">
-          <motion.div
+          <div
             whileHover={{ scale: 1.02 }}
             className="flex items-center space-x-1"
           >
@@ -566,7 +566,7 @@ const LevelUpgradeSystem = () => {
                 {userData.coins}
               </span>
             </div>
-          </motion.div>
+          </div>
 
           <div className="flex items-center">
             <UpgradeButton
