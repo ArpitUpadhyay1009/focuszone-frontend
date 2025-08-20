@@ -487,7 +487,7 @@ const LevelUpgradeSystem = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className={`md:w-100 lg:w-112 ml-[-1%] sm:w-100 p-6 rounded-xl shadow-sm mb-3 backdrop-blur-sm ${
+        className={`md:w-100 lg:w-112 ml-[0%] sm:w-100 p-6 rounded-xl shadow-sm mb-3 backdrop-blur-sm ${
           theme === "dark"
             ? "bg-black text-white bg-opacity-90"
             : "bg-white text-black bg-opacity-90"
