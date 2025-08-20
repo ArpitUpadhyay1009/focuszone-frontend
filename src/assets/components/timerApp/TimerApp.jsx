@@ -271,13 +271,17 @@ export default function TimerApp({ setParentPopupState }) {
               // Save focus time with division hack
               saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
               unsavedSessionSecondsRef.current = 0;
-              // Standardized coin award: 0.5 coins for every full minute completed in a Pomodoro session.
-              // Use real pomodoroTime for coins
+              // Award only remaining unawarded minutes at 1 coin/min
               const minutesInSession = Math.floor(pomodoroTime / 60);
-              if (minutesInSession > 0) {
-                const coinsForSession = minutesInSession * 2;
-                saveCoinsToDatabase(coinsForSession);
-                // setCoins will be initialized from localStorage, which should reflect this save after 'coinUpdate'
+              const remainingMinutes = Math.max(
+                0,
+                minutesInSession - minutesElapsedRef.current
+              );
+              if (remainingMinutes > 0) {
+                const coinsForCompletion = remainingMinutes * 1;
+                saveCoinsToDatabase(coinsForCompletion);
+                setCoins((prev) => prev + coinsForCompletion);
+                minutesElapsedRef.current = minutesInSession;
               }
 
               if (currentCycle + 1 < cycles) {
@@ -392,8 +396,8 @@ export default function TimerApp({ setParentPopupState }) {
         }
         const newTime = Math.max(0, prevTime - secondsToUpdate);
         if (
-          modeRef.current === "pomodoro" &&
-          !isBreakRef.current &&
+          ((modeRef.current === "pomodoro" && !isBreakRef.current) ||
+            modeRef.current === "countdown") &&
           prevTime > newTime
         ) {
           unsavedSessionSecondsRef.current += prevTime - newTime;
@@ -613,11 +617,30 @@ export default function TimerApp({ setParentPopupState }) {
                       }
                     } else {
                       // Countdown completed
+                      // Award only remaining unawarded minutes at 1 coin/min
+                      const minutesInSession = initialTime
+                        ? Math.floor(initialTime / 60)
+                        : Math.floor((countdownTime || 0) / 60);
+                      if (minutesInSession > 0) {
+                        const remainingMinutes = Math.max(
+                          0,
+                          minutesInSession - minutesElapsedRef.current
+                        );
+                        if (remainingMinutes > 0) {
+                          const coinsForCompletion = remainingMinutes * 1;
+                          saveCoinsToDatabase(coinsForCompletion);
+                          setCoins((prev) => prev + coinsForCompletion);
+                          minutesElapsedRef.current = minutesInSession;
+                        }
+                      }
                       setIsRunning(false);
                       timerShouldContinueRunning = false;
                       setShowStart(true);
                       setTimerStartedAt(null);
-                      return 0;
+                      setInitialTime(null);
+                      // Auto-reset display back to initial countdown time
+                      setTime(countdownTime);
+                      return countdownTime;
                     }
                   }
                   return newTime; // Timer did NOT complete, just update the time
@@ -638,8 +661,7 @@ export default function TimerApp({ setParentPopupState }) {
                 // Update minutes elapsed for coin calculation ONLY IF TIMER DID NOT COMPLETE IN THIS UPDATE
                 if (
                   !timerJustCompletedInThisUpdate &&
-                  mode === "pomodoro" &&
-                  !isBreak &&
+                  ((mode === "pomodoro" && !isBreak) || mode === "countdown") &&
                   initialTime &&
                   isRunning
                 ) {
@@ -989,7 +1011,7 @@ export default function TimerApp({ setParentPopupState }) {
 
   // Enhanced timer completion logic (robust cycles)
   useEffect(() => {
-    if (time === 0 && isRunning) {
+    if (mode !== "stopwatch" && time === 0 && isRunning) {
       setIsRunning(false);
       setShowStart(true);
       notificationSound.play().catch(() => {});
@@ -999,11 +1021,17 @@ export default function TimerApp({ setParentPopupState }) {
           onPomodoroEnd();
           saveTimeSpentToDatabase(unsavedSessionSecondsRef.current);
           unsavedSessionSecondsRef.current = 0;
-          // Award coins for full session
+          // Award only remaining unawarded minutes at 1 coin/min
           const minutesInSession = Math.floor(pomodoroTime / 60);
-          if (minutesInSession > 0) {
-            const coinsForSession = minutesInSession * 2;
-            saveCoinsToDatabase(coinsForSession);
+          const remainingMinutes = Math.max(
+            0,
+            minutesInSession - minutesElapsedRef.current
+          );
+          if (remainingMinutes > 0) {
+            const coinsForCompletion = remainingMinutes * 1;
+            saveCoinsToDatabase(coinsForCompletion);
+            setCoins((prev) => prev + coinsForCompletion);
+            minutesElapsedRef.current = minutesInSession;
           }
           // Handle cycles
           if (currentCycle + 1 < cycles) {
@@ -1039,6 +1067,27 @@ export default function TimerApp({ setParentPopupState }) {
             }, 1000);
           }
         }
+      } else if (mode === "countdown") {
+        // Countdown reached zero while visible: award remaining minutes and reset to initial time
+        const minutesInSession = initialTime
+          ? Math.floor(initialTime / 60)
+          : Math.floor((countdownTime || 0) / 60);
+        if (minutesInSession > 0) {
+          const remainingMinutes = Math.max(
+            0,
+            minutesInSession - minutesElapsedRef.current
+          );
+          if (remainingMinutes > 0) {
+            const coinsForCompletion = remainingMinutes * 1;
+            saveCoinsToDatabase(coinsForCompletion);
+            setCoins((prev) => prev + coinsForCompletion);
+            minutesElapsedRef.current = minutesInSession;
+          }
+        }
+        setInitialTime(null);
+        setTimerStartedAt(null);
+        minutesElapsedRef.current = 0;
+        setTime(countdownTime);
       }
     }
     // eslint-disable-next-line
