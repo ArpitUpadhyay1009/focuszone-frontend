@@ -234,6 +234,9 @@ const LevelUpgradeSystem = () => {
       });
 
       setNewLevel((data.level || 1) + 1);
+
+      // Also fetch upgradable levels to update maxUpgrades state
+      await fetchUpgradableLevels();
     } catch (error) {
       console.error("Failed to refresh user data:", error);
     }
@@ -295,6 +298,11 @@ const LevelUpgradeSystem = () => {
   };
 
   const handleUpgrade = async () => {
+    // Ensure maxUpgrades is up-to-date
+    if (maxUpgrades === 0) {
+      await fetchUpgradableLevels();
+    }
+
     if (userData.coins < upgradeCost) {
       toast.error(
         `Not enough coins! You need ${upgradeCost} coins to upgrade.`
