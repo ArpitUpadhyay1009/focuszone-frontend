@@ -1,4 +1,4 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { createContext, useState, useContext, useEffect, useRef } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
 
@@ -19,6 +19,38 @@ export const AuthProvider = ({ children }) => {
     }
   });
   const [loading, setLoading] = useState(true);
+  const hasAutoLoggedOutRef = useRef(false);
+
+  // Inactivity threshold for auto-logout (e.g., 12 hours)
+  const INACTIVITY_LOGOUT_THRESHOLD_MS = 12 * 60 * 60 * 1000;
+
+  // Helper to safely clear storage and cookies
+  const safeLocalCleanup = () => {
+    try {
+      // Clear all local storage
+      localStorage.clear();
+    } catch {}
+
+    try {
+      // Clear all cookies (best-effort)
+      const cookies = document.cookie.split(";");
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i];
+        const eqPos = cookie.indexOf("=");
+        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+        document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+      }
+    } catch {}
+  };
+
+  // Helper to add a timeout to a promise
+  const withTimeout = (promise, ms, timeoutMessage = "Request timed out") => {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(timeoutMessage)), ms);
+    });
+    return Promise.race([promise.finally(() => clearTimeout(timer)), timeout]);
+  };
 
   // Persist user state to Cookies whenever it changes
   useEffect(() => {
@@ -29,16 +61,63 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user]);
 
-  // Check for existing session on initial load
+  // Track last active timestamp to detect long background/sleep and auto-logout
+  useEffect(() => {
+    const markActive = () => {
+      try {
+        localStorage.setItem("lastActiveAt", String(Date.now()));
+      } catch {}
+    };
+
+    // Mark immediately and then on visibility/focus and periodically
+    markActive();
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") {
+        markActive();
+      }
+    };
+    window.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("focus", markActive);
+    const interval = setInterval(markActive, 60 * 1000);
+
+    return () => {
+      window.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("focus", markActive);
+      clearInterval(interval);
+    };
+  }, []);
+
+  // Check for existing session on initial load, with inactivity and timeout protection
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
+        const now = Date.now();
+        const lastActiveRaw = localStorage.getItem("lastActiveAt");
+        const lastActiveAt = lastActiveRaw ? parseInt(lastActiveRaw, 10) : null;
+
+        // If device/browser was inactive for a long time, force logout for a clean state
+        if (
+          !hasAutoLoggedOutRef.current &&
+          lastActiveAt &&
+          now - lastActiveAt > INACTIVITY_LOGOUT_THRESHOLD_MS
+        ) {
+          hasAutoLoggedOutRef.current = true;
+          safeLocalCleanup();
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
         const token = localStorage.getItem("token");
-        const response = await axios.get("/api/auth/verify-session", {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : undefined,
-          },
-        });
+        const response = await withTimeout(
+          axios.get("/api/auth/verify-session", {
+            headers: {
+              Authorization: token ? `Bearer ${token}` : undefined,
+            },
+          }),
+          8000,
+          "Session verification timed out"
+        );
 
         if (response.data.isValid) {
           setUser(response.data.user);
@@ -48,12 +127,14 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error("Session verification failed:", error);
-        // Don't clear user state on network errors
-        if (error.response && error.response.status === 401) {
-          // Only clear user if the server explicitly says the token is invalid
+        // If unauthorized or timed out, reset to a clean state to avoid app hang
+        if (
+          (error.response && error.response.status === 401) ||
+          /timed out/i.test(error.message || "")
+        ) {
+          safeLocalCleanup();
           setUser(null);
         }
-        // For other errors, keep the current user state
       } finally {
         setLoading(false);
       }
@@ -75,49 +156,34 @@ export const AuthProvider = ({ children }) => {
     try {
       const token = localStorage.getItem("token");
 
-      // Clear all local storage
-      localStorage.clear();
-
-      // Clear all cookies
-      const cookies = document.cookie.split(";");
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        document.cookie =
-          name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-      }
-
-      // Clear user state
+      // Local cleanup first to ensure UI recovers immediately
+      safeLocalCleanup();
       setUser(null);
 
-      // Then make the API call to invalidate the session
+      // Then make the API call to invalidate the session (with timeout)
       try {
-        await axios.post("/api/auth/logout", null, {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : undefined,
-          },
-          withCredentials: true, // Ensure cookies are sent with the request
-        });
+        await withTimeout(
+          axios.post(
+            "/api/auth/logout",
+            null,
+            {
+              headers: {
+                Authorization: token ? `Bearer ${token}` : undefined,
+              },
+              withCredentials: true, // Ensure cookies are sent with the request
+            }
+          ),
+          5000,
+          "Logout request timed out"
+        );
       } catch (apiError) {
         console.error("Logout API error:", apiError);
-        // Even if the API call fails, we still want to proceed with local cleanup
+        // Even if the API call fails, we still proceed with local cleanup (already done)
       }
     } catch (error) {
       console.error("Logout error:", error);
       // Still ensure we clean up local state even if there's an error
-      localStorage.clear();
-
-      // Clear all cookies
-      const cookies = document.cookie.split(";");
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i];
-        const eqPos = cookie.indexOf("=");
-        const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-        document.cookie =
-          name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
-      }
-
+      safeLocalCleanup();
       setUser(null);
       throw error;
     }
