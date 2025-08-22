@@ -451,14 +451,27 @@ export default function TodoList() {
     }
   }, [token]);
 
-  // Handle selectedTaskId logic only when tasks are initially loaded or when tasks are added/removed
+  // Keep selection persistent; only pick a fallback when the current selection is invalid
   useEffect(() => {
-    if (tasks.length === 0) {
-      setSelectedTaskId(null);
-    } else if (!selectedTaskId && tasks.length > 0) {
-      setSelectedTaskId(tasks[tasks.length - 1].id);
+    // Wait until loading is done so we don't override with partial data
+    if (isLoading) return;
+
+    const hasTasks = tasks && tasks.length > 0;
+    if (!hasTasks) {
+      // No tasks: clear selection
+      if (selectedTaskId !== null) setSelectedTaskId(null);
+      return;
     }
-  }, [tasks.length, selectedTaskId, setSelectedTaskId]); // Include all dependencies
+
+    // If we already have a selection and it exists (in ongoing or intermediate), keep it
+    const existsInOngoing = tasks.some((t) => t.id === selectedTaskId);
+    const existsInIntermediate = intermediateTasks.some((t) => t.id === selectedTaskId);
+    if (selectedTaskId && (existsInOngoing || existsInIntermediate)) return;
+
+    // Otherwise choose a sensible fallback (last ongoing task)
+    const fallbackId = tasks[tasks.length - 1]?.id ?? null;
+    setSelectedTaskId(fallbackId);
+  }, [isLoading, tasks, intermediateTasks, selectedTaskId, setSelectedTaskId]);
 
   // Memoize filtered task lists to prevent unnecessary re-renders
   const mustDoTasks = useMemo(
