@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Navbar2 from "@components/navbar2/Navbar2.jsx";
 import "./StudyWTok.css";
 import TimerApp from "@components/timerApp/TimerApp.jsx";
@@ -9,12 +10,53 @@ import SpotifyEmbed3 from "@components/spotify3/SpotifyEmbed3.jsx";
 import TodoList from "@components/todo/todo.jsx";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import Footer from "@components/footer/Footer.jsx";
+import "@components/common/ThemeStyles.css";
 
 export const StudyWGram = () => {
+  const [showSpotifyTip, setShowSpotifyTip] = useState(true);
   return (
     <div className="app-container">
       <AnimatedBackground />
       <Navbar2 />
+      {showSpotifyTip && (
+        <div
+          className="spotify-tip"
+          style={{
+            background: "rgba(17, 24, 39, 0.9)",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: "1rem",
+            padding: "0.5rem",
+            boxShadow:
+              "0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 14 }}>
+            Login to Spotify to avoid song skipping
+          </span>
+          <button
+            onClick={() => setShowSpotifyTip(false)}
+            aria-label="Dismiss Spotify tip"
+            style={{
+              marginLeft: 8,
+              background: "transparent",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1,
+              opacity: 0.9,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 lg:gap-30 max-w-6xl mx-auto py-6 md:py-8">
           {/* Left Column - Timer, Level Progress, and Spotify */}

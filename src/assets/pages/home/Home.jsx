@@ -10,9 +10,11 @@ import GuestTodoList from "../../components/guestTodo/GuestTodo";
 import Footer from "../../components/footer/Footer";
 import AboutSection from "../../components/home/AboutSection";
 import LevelFake from "../../components/levelFake/LevelFake";
+import "@components/common/ThemeStyles.css";
 export const Home = () => {
   const navigate = useNavigate();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [showSpotifyTip, setShowSpotifyTip] = useState(true);
 
   // Listen for popup events from child components
   useEffect(() => {
@@ -37,6 +39,45 @@ export const Home = () => {
       <div className={isPopupOpen ? "blur-sm transition-all duration-300" : ""}>
         <Navbar />
       </div>
+      {showSpotifyTip && (
+        <div
+          className="spotify-tip"
+          style={{
+            background: "rgba(17, 24, 39, 0.9)",
+            color: "#fff",
+            border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: "1rem",
+            padding: "0.5rem",
+            boxShadow:
+              "0 8px 24px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)",
+            backdropFilter: "blur(6px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 8,
+          }}
+        >
+          <span style={{ fontSize: 14 }}>
+            Login to Spotify to avoid song skipping
+          </span>
+          <button
+            onClick={() => setShowSpotifyTip(false)}
+            aria-label="Dismiss Spotify tip"
+            style={{
+              marginLeft: 8,
+              background: "transparent",
+              border: "none",
+              color: "#fff",
+              cursor: "pointer",
+              fontSize: 16,
+              lineHeight: 1,
+              opacity: 0.9,
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
       <div className="container mx-auto px-4">
         <div
           className={`flex flex-col md:flex-row justify-center items-center md:items-center gap-8 md:gap-12 lg:gap-16 py-6 md:py-8 transition-all duration-300 ${

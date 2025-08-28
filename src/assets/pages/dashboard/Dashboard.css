@@ -125,3 +125,27 @@
     max-width: initial;
   }
 }
+
+/* Spotify login tip placement */
+.spotify-tip {
+  position: fixed;
+  bottom: 2vh;
+  right: 5vw;
+  z-index: 1000;
+  background: transparent;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  transform: none !important;
+}
+
+/* Smartphones: center the tip at the bottom */
+@media (max-width: 480px) {
+  .spotify-tip {
+    left: 50%;
+    transform: translateX(-50%) !important;
+    bottom: 1vh;
+    right: auto;
+    width: max(260px, 90vw);
+    padding: 0.5rem;
+  }
+}

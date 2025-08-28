@@ -19,10 +19,8 @@ export const Home = () => {
       <Navbar2 />
       {showSpotifyTip && (
         <div
+          className="spotify-tip"
           style={{
-            position: "fixed",
-            bottom: "2vh",
-            right: "5vw",
             background: "rgba(17, 24, 39, 0.9)",
             color: "#fff",
             border: "1px solid rgba(255,255,255,0.12)",
@@ -35,7 +33,6 @@ export const Home = () => {
             alignItems: "center",
             justifyContent: "space-between",
             gap: 8,
-            zIndex: 1000,
           }}
         >
           <span style={{ fontSize: 14 }}>
