@@ -864,8 +864,30 @@ export default function TimerApp({ setParentPopupState }) {
 
   const saveSettings = () => {
     setIsSettingsOpen(false);
-    if (mode === "pomodoro") setTime(pomodoroTime);
-    if (mode === "countdown") setTime(countdownTime);
+
+    // If the timer is running, stop and reset to avoid instant coin awards
+    if (isRunning) {
+      // Reset persists any unsaved focus time and clears runtime refs/states
+      resetTimer();
+    }
+
+    // Apply new values and ensure a fresh start state
+    if (mode === "pomodoro") {
+      setIsBreak(false);
+      setCurrentCycle(0);
+      setTime(pomodoroTime);
+    } else if (mode === "countdown") {
+      setTime(countdownTime);
+    } else if (mode === "stopwatch") {
+      setTime(0);
+    }
+
+    // Guarantee timer is stopped and ready to start with new settings
+    setIsRunning(false);
+    setShowStart(true);
+    setTimerStartedAt(null);
+    setInitialTime(null);
+    minutesElapsedRef.current = 0;
 
     // Dispatch a custom event to notify other components that timer settings have been updated
     window.dispatchEvent(new Event("timerSettingsUpdate"));
