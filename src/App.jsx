@@ -17,10 +17,17 @@ import StudyWGram from "@pages/studyWGram/StudyWGram";
 import Terms from "@pages/terms/Terms";
 import Contact from "@pages/contact/Contact";
 import Cookie from "@pages/cookie/Cookie";
+import NewsletterSubscription from "@pages/newsletter";
+import NewsletterLanding from "@pages/newsletter/NewsletterLanding";
 import ProtectedRoute, {
   PublicRoute,
 } from "./assets/components/protectedpage/ProtectedRoute";
 import { useAuth } from "./assets/context/AuthContext";
+import {
+  NewsletterProvider,
+  useNewsletter,
+} from "./assets/context/NewsletterContext";
+import NewsletterModal from "./assets/components/NewsletterModal/NewsletterModal";
 
 function App() {
   const { user } = useAuth();
@@ -51,7 +58,7 @@ function App() {
   };
 
   return (
-    <>
+    <NewsletterProvider>
       <BrowserTracker />
       <Helmet>
         <script type="application/ld+json">
@@ -62,6 +69,7 @@ function App() {
         </script>
       </Helmet>
       <BrowserRouter>
+        <NewsletterModalWrapper />
         <Routes>
           {/* Public routes (only for unauthenticated users) */}
           <Route
@@ -124,6 +132,15 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/newsletter"
+            element={
+              <ProtectedRoute>
+                <NewsletterSubscription />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/newsletter/subscribe" element={<NewsletterLanding />} />
 
           {/* Public informational routes */}
           <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -142,7 +159,23 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </NewsletterProvider>
+  );
+}
+
+// Newsletter Modal Wrapper Component
+function NewsletterModalWrapper() {
+  const { user } = useAuth();
+  const { showNewsletterModal, hideModal } = useNewsletter();
+
+  if (!user) return null;
+
+  return (
+    <NewsletterModal
+      isOpen={showNewsletterModal}
+      onClose={hideModal}
+      userEmail={user.email || ""}
+    />
   );
 }
 

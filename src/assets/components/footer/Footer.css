@@ -24,8 +24,47 @@
     white-space: nowrap; /* Prevent wrapping on small screens */
 }
 
+.footer-link.newsletter-link {
+    color: #667eea;
+    font-weight: 500;
+    position: relative;
+}
+
+.footer-link.newsletter-link:hover {
+    color: #5a67d8;
+    text-decoration: none;
+}
+
+.footer-link.newsletter-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 50%;
+    background-color: #667eea;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+.footer-link.newsletter-link:hover::after {
+    width: 100%;
+}
+
 [data-theme="dark"] .footer-link {
     color: #b0b0b0;
+}
+
+[data-theme="dark"] .footer-link.newsletter-link {
+    color: #8b9cf4;
+}
+
+[data-theme="dark"] .footer-link.newsletter-link:hover {
+    color: #a5b4fc;
+}
+
+[data-theme="dark"] .footer-link.newsletter-link::after {
+    background-color: #8b9cf4;
 }
 
 .footer-link:hover {
