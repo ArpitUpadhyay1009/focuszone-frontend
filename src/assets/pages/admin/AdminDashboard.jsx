@@ -3,11 +3,11 @@ import AdminSidebar from "@components/adminSidebar/AdminSidebar";
 import DashboardSection from "@components/dashboardSection/DashboardSection";
 import UsersSection from "../../components/userSection/UserSection";
 import AnalyticsSection from "@components/analyticsSection/AnalyticsSection";
+import NewsletterAdminSection from "@components/newsletterAdminSection";
 // import SettingsSection from "@components/settingsSection/SettingSection";
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
-  
 
   const renderSection = () => {
     switch (activeTab) {
@@ -17,8 +17,10 @@ const AdminPanel = () => {
         return <UsersSection />;
       case "Analytics":
         return <AnalyticsSection />;
+      case "Newsletter Subscribers":
+        return <NewsletterAdminSection />;
       // case "Settings":
-        // return <SettingsSection />;
+      // return <SettingsSection />;
       default:
         return <DashboardSection />;
     }
@@ -28,7 +30,9 @@ const AdminPanel = () => {
     <div className="flex">
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-black">{activeTab}</h1>
+        <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-black">
+          {activeTab}
+        </h1>
         {renderSection()}
       </main>
     </div>
