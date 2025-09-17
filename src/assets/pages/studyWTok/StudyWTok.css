@@ -80,6 +80,94 @@
   }
 }
 
+/* Mobile Styles (up to 767px) */
+@media (max-width: 767px) {
+  .container > div {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .timer-wrapper,
+  .level-wrapper,
+  .spotify-wrapper,
+  .renders-wrapper {
+    width: 95% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 500px;
+  }
+}
+
+/* Tablet Styles (768px to 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .container > div {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .timer-wrapper,
+  .level-wrapper,
+  .spotify-wrapper,
+  .renders-wrapper {
+    width: 90% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    max-width: 700px;
+  }
+}
+
+/* Desktop/Laptop Styles (1024px and above) */
+@media (min-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  /* Reset the forced single column styles */
+  .timer-wrapper,
+  .level-wrapper,
+  .spotify-wrapper,
+  .renders-wrapper {
+    width: initial;
+    margin-left: initial;
+    margin-right: initial;
+    max-width: initial;
+  }
+}
+
+/* Spotify login tip placement */
+.spotify-tip {
+  position: fixed;
+  bottom: 2vh;
+  right: 5vw;
+  z-index: 1000;
+  background: transparent;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  transform: none !important;
+}
+
+/* Smartphones: center the tip at the bottom */
+@media (max-width: 480px) {
+  .spotify-tip {
+    left: 50%;
+    transform: translateX(-50%) !important;
+    bottom: 1vh;
+    right: auto;
+    width: max(260px, 90vw);
+    padding: 0.5rem;
+  }
+}
+
 /* Quote heading: default light and multiple dark-mode selector fallbacks */
 .quote-heading {
   color: #000000;
@@ -107,6 +195,6 @@ html[class*="dark"] .card-frosted,
 body[class*="dark"] .card-frosted,
 [data-theme="dark"] .card-frosted,
 [data-color-mode="dark"] .card-frosted {
-  background: rgba(173, 173, 173, 0.099);
+  background: rgba(173, 173, 173, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.06);
 }

@@ -58,16 +58,16 @@ export const StudyWGram = () => {
         </div>
       )}
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 lg:gap-30 max-w-6xl mx-auto py-6 md:py-8">
-          {/* Left Column - Timer, Level Progress, and Spotify */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 lg:gap-30 max-w-6xl mx-auto py-6 md:py-8">
+          {/* Left Column */}
           <div className="flex flex-col gap-1 sm:gap-2">
-            <div className="w-150 mt-[10%] sm:w-full md:w-90 md:ml-[5%] max-w-full lg:w-120 lg:ml-[-10%]">
+            <div className="timer-wrapper w-150 mt-[10%] sm:w-full lg:w-120 lg:ml-[-10%]">
               <TimerApp />
             </div>
-            <div className="w-150 mt-[3%] sm:w-full md:w-90 md:ml-[5%] max-w-full lg:w-120 lg:ml-[-10%]">
+            <div className="level-wrapper w-150 mt-[0%] sm:w-full lg:w-120 lg:ml-[-5.5%]">
               <LevelUpgradeSystem />
             </div>
-            <div className="flex justify-center w-full">
+            <div className="spotify-wrapper flex justify-center w-full">
               <div
                 style={{
                   width: "100%",
@@ -77,16 +77,18 @@ export const StudyWGram = () => {
                   alignItems: "center",
                   marginTop: "15%",
                 }}
-                className="md:ml-[-20%]"
+                className="lg:ml-[-20%]"
               >
-                <SpotifyEmbed3 />
+                <div style={{ position: "relative", width: "100%" }}>
+                  <SpotifyEmbed3 />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Level Components */}
+          {/* Right Column */}
           <div className="flex flex-col gap-4 sm:gap-6">
-            <div className="w-110 sm:w-75 md:w-85 lg:w-120 md:mt-[10%] max-w-full sm:max-w-80 md:max-w-78 lg:max-w-none ml-0 sm:ml-[2%] md:ml-[4%]">
+            <div className="renders-wrapper w-110 sm:w-full lg:w-120 md:mt-[10%] lg:ml-[4%]">
               <LevelRenders />
             </div>
           </div>
