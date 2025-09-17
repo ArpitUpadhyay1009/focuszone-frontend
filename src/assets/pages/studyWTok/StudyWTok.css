@@ -62,55 +62,33 @@
   }
 }
 
-/* Motivational Section Styles */
-.motivational-card {
-  position: relative;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  isolation: isolate;
+/* Quote heading: default light and multiple dark-mode selector fallbacks */
+.quote-heading {
+  color: #000000;
 }
 
-.motivational-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: inherit;
-  filter: blur(10px);
-  z-index: -1;
-  opacity: 0.8;
-  border-radius: inherit;
+/* Common dark-mode selectors used across the project */
+html.dark .quote-heading,
+body.dark .quote-heading,
+html[class*="dark"] .quote-heading,
+body[class*="dark"] .quote-heading,
+[data-theme="dark"] .quote-heading,
+[data-color-mode="dark"] .quote-heading {
+  color: #ffffff !important;
 }
 
-.motivational-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+/* Frosted card: use adaptable backgrounds for light/dark with multiple selectors */
+.card-frosted {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.profile-image-container {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.profile-image-container:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
-}
-
-/* Dark mode adjustments */
-.dark .motivational-card {
-  background: rgba(31, 41, 55, 0.7);
-}
-
-.dark .motivational-card:hover {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-}
-
-/* Responsive adjustments */
-@media (max-width: 640px) {
-  .motivational-card {
-    padding: 1.25rem;
-  }
-  
-  .profile-image-container {
-    width: 7.5rem !important;
-    height: 7.5rem !important;
-  }
+html.dark .card-frosted,
+body.dark .card-frosted,
+html[class*="dark"] .card-frosted,
+body[class*="dark"] .card-frosted,
+[data-theme="dark"] .card-frosted,
+[data-color-mode="dark"] .card-frosted {
+  background: rgba(173, 173, 173, 0.099);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
