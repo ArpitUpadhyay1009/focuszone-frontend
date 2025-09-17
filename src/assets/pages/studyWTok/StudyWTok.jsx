@@ -93,6 +93,29 @@ export const StudyWGram = () => {
         </div>
         <div className="mt-[5%] mb-12 w-full max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4">
           <TodoList />
+          
+          {/* Motivational Section */}
+          <div className="mt-12 w-full">
+            <div className="motivational-card p-6 sm:p-8 rounded-2xl backdrop-blur-lg bg-opacity-20 dark:bg-opacity-20 bg-white dark:bg-gray-800 border border-white/20 dark:border-gray-700/50 shadow-xl overflow-hidden">
+              <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 text-center md:text-left">
+                <div className="profile-image-container relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden border-4 border-white/30 dark:border-gray-600/30 shadow-lg">
+                  <img 
+                    src="/background.jpg" 
+                    alt="Motivational" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-3">
+                    Remember Why You Started
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm sm:text-base">
+                    Every great journey begins with a single step. Stay focused, stay motivated, and keep pushing forward.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <Footer />
