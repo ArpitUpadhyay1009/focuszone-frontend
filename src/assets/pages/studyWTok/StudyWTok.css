@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* Fix for profile image container */
+.w-24.h-24.md\:w-32.md\:h-32.rounded-lg.overflow-hidden.flex-shrink-0.border.border-white\/10 {
+  padding: 0;
+  margin: 0;
+  line-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.w-24.h-24.md\:w-32.md\:h-32.rounded-lg.overflow-hidden.flex-shrink-0.border.border-white\/10 img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
 .app-container {
   width: 100%;
   min-height: 100vh;
