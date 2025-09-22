@@ -107,12 +107,12 @@ const UserCard = ({ user }) => {
             value={level}
             onChange={(e) => setLevel(e.target.value)}
           />
-          <button className="bg-green-500 mx-1 px-2 py-[0.5] rounded-[10%]" onClick={handleSave}>Save</button>
-          <button className="bg-red-700 mx-1 px-2 py-[0.5] rounded-[10%]" onClick={() => setIsEditing(false)}>Cancel</button>
+          <button className="bg-[rgb(34,197,94)] text-white mx-1 px-2 py-[0.5] rounded-[10%]" onClick={handleSave}>Save</button>
+          <button className="bg-[rgb(185,28,28)] text-white mx-1 px-2 py-[0.5] rounded-[10%]" onClick={() => setIsEditing(false)}>Cancel</button>
         </>
       ) : (
         <>
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-gray-200 dark:border-gray-600">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow border border-gray-200 dark:border-gray-600 text-black dark:text-white">
             <h2 className="text-lg font-semibold mb-2">{user.username}</h2>
             <p>✅ Verified: {user.isVerified ? "Yes" : "No"}</p>
             <p>🏆 Level: {level}</p>
@@ -120,7 +120,7 @@ const UserCard = ({ user }) => {
             <p>📅 Logins Today: {daily ? daily : "0"}</p>
             <p>📈 Logins This Month: {monthly ? monthly : "0"}</p>
             <p>📆 Logins This Year: {yearly ? yearly : "0"}</p>
-            <button className="bg-[#7500CA] px-2 py-[0.5] text-white rounded-[10%]" onClick={() => setIsEditing(true)}>Edit</button>
+            <button className="bg-[rgb(117,0,202)] px-2 py-[0.5] text-white rounded-[10%]" onClick={() => setIsEditing(true)}>Edit</button>
           </div>
         </>
       )}

@@ -1,6 +1,6 @@
 .user-card {
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: rgb(255, 255, 255);
+  border: 1px solid rgb(229, 231, 235);
   border-radius: 12px;
   padding: 20px;
   margin: 16px;
@@ -12,21 +12,21 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .user-card {
-    background-color: #1f2937;
-    border-color: #374151;
+    background-color: rgb(31, 41, 55);
+    border-color: rgb(55, 65, 81);
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
   }
 }
 
 /* Dark mode class-based (if using class toggle) */
 .dark .user-card {
-  background-color: #1f2937;
-  border-color: #374151;
+  background-color: rgb(31, 41, 55);
+  border-color: rgb(55, 65, 81);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
 }
 
 .user-card h3 {
-  color: #1f2937;
+  color: rgb(31, 41, 55);
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 16px;
@@ -34,7 +34,7 @@
 }
 
 .user-card h2 {
-  color: #374151;
+  color: rgb(55, 65, 81);
   font-size: 1.125rem;
   font-weight: 600;
   margin-bottom: 12px;
@@ -59,69 +59,69 @@
 /* Dark mode text colors */
 @media (prefers-color-scheme: dark) {
   .user-card h3 {
-    color: #f9fafb;
+    color: rgb(249, 250, 251);
   }
 
   .user-card h2 {
-    color: #e5e7eb;
+    color: rgb(229, 231, 235);
   }
 
   .user-card p {
-    color: white;
+    color: rgb(255, 255, 255);
   }
 
   .user-card label {
-    color: white;
+    color: rgb(255, 255, 255);
   }
 }
 
 /* Dark mode class-based text colors */
 .dark .user-card h3 {
-  color: #f9fafb;
+  color: rgb(249, 250, 251);
 }
 
 .dark .user-card h2 {
-  color: #e5e7eb;
+  color: rgb(229, 231, 235);
 }
 
 .dark .user-card p {
-  color: #d1d5db;
+  color: rgb(209, 213, 219);
 }
 
 .dark .user-card label {
-  color: #e5e7eb;
+  color: rgb(229, 231, 235);
 }
 
 .user-card input {
-  border: 1px solid #d1d5db;
+  border: 1px solid rgb(209, 213, 219);
   border-radius: 6px;
   padding: 8px 12px;
   width: 100%;
   margin-bottom: 12px;
   font-size: 0.875rem;
-  color: #1f2937;
-  background-color: #ffffff;
+  color: rgb(31, 41, 55);
+  background-color: rgb(255, 255, 255);
 }
 
 .user-card input:focus {
   outline: none;
-  border-color: #7c3aed;
+  border-color: rgb(124, 58, 237);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
 }
 
 /* Dark mode input styles */
 @media (prefers-color-scheme: dark) {
   .user-card input {
-    background-color: #374151;
-    border-color: #4b5563;
-    color: #f9fafb;
+    background-color: rgb(55, 65, 81);
+    border-color: rgb(75, 85, 99);
+    color: rgb(249, 250, 251);
   }
 }
 
 .dark .user-card input {
-  background-color: #374151;
-  border-color: #4b5563;
-  color: #f9fafb;
+  background-color: rgb(55, 65, 81);
+  border-color: rgb(75, 85, 99);
+  color: rgb(249, 250, 251);
 }
 
 .user-card button {

@@ -30,7 +30,7 @@ const AdminPanel = () => {
     <div className="flex">
       <AdminSidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       <main className="flex-1 p-6 bg-gray-100 min-h-screen">
-        <h1 className="text-3xl font-bold mb-6 text-gray-900 dark:text-black">
+        <h1 className="text-3xl font-bold mb-6 bg-[rgb(37,99,235)] text-white px-4 py-2 rounded-md shadow-md border-2 border-[rgb(30,58,138)]">
           {activeTab}
         </h1>
         {renderSection()}
