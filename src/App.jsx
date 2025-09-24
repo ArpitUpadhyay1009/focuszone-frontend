@@ -97,7 +97,8 @@ function App() {
             }
           />
 
-          {/* Step-protected routes */}
+          {/* Step-protected routes (verify-otp temporarily disabled) */}
+          {/**
           <Route
             path="/verify-otp"
             element={
@@ -106,6 +107,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          */}
           <Route
             path="/reset-password"
             element={

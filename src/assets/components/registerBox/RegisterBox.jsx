@@ -37,15 +37,8 @@ const RegisterBox = () => {
         password,
       });
 
-      alert("Registered successfully! Please verify.");
-      window.localStorage.setItem("otpSent", "1");
-      window.localStorage.setItem("emailForOtp", email);
-      console.log(
-        "[RegisterBox] Set otpSent and emailForOtp in localStorage",
-        window.localStorage.getItem("otpSent"),
-        window.localStorage.getItem("emailForOtp")
-      );
-      navigate("/verify-otp", { state: { email } }); // Navigate to OTP verification page
+      alert("Registered successfully! Please login.");
+      navigate("/login"); // Redirect to login page after registration
     } catch (error) {
       if (error.response) {
         if (error.response.status === 400) {
