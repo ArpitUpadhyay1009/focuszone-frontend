@@ -10,6 +10,7 @@ import GuestTodoList from "../../components/guestTodo/GuestTodo";
 import Footer from "../../components/footer/Footer";
 import AboutSection from "../../components/home/AboutSection";
 import LevelFake from "../../components/levelFake/LevelFake";
+import ReviewForm from "../../components/reviewForm/ReviewForm.jsx";
 import "@components/common/ThemeStyles.css";
 export const Home = () => {
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ export const Home = () => {
           About Focuszone.io
         </h2>
         <AboutSection />
+        <ReviewForm />
         <Footer />
       </div>
     </div>

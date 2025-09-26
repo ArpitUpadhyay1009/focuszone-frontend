@@ -1,7 +1,7 @@
 import React from "react";
 
 const AdminSidebar = ({ activeTab, setActiveTab }) => {
-  const menu = ["Dashboard", "Users", "Analytics", "Newsletter Subscribers"];
+  const menu = ["Dashboard", "Users", "Analytics", "Newsletter Subscribers", "Reviews"];
 
   return (
     <aside className="w-64 bg-[rgb(17,24,39)] text-[rgb(255,255,255)] min-h-screen p-4">

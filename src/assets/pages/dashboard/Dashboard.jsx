@@ -10,6 +10,7 @@ import SpotifyEmbed2 from "@components/spotify2/SpotifyEmbed2.jsx";
 import TodoList from "@components/todo/todo.jsx";
 import AnimatedBackground from "@components/AnimatedBackground/AnimatedBackground.jsx";
 import Footer from "@components/footer/Footer.jsx";
+import UserReview from "../../components/userReview/UserReview.jsx";
 
 export const Home = () => {
   const [showSpotifyTip, setShowSpotifyTip] = useState(true);
@@ -94,6 +95,9 @@ export const Home = () => {
         </div>
         <div className="mt-[5%] mb-12 w-full max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4">
           <TodoList />
+        </div>
+        <div className="mt-[5%] mb-12 w-full max-w-md sm:max-w-2xl md:max-w-3xl lg:max-w-4xl mx-auto px-4">
+          <UserReview />
         </div>
       </div>
       <Footer />

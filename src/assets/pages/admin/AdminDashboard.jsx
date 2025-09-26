@@ -4,6 +4,7 @@ import DashboardSection from "@components/dashboardSection/DashboardSection";
 import UsersSection from "../../components/userSection/UserSection";
 import AnalyticsSection from "@components/analyticsSection/AnalyticsSection";
 import NewsletterAdminSection from "@components/newsletterAdminSection";
+import ReviewsSection from "@components/reviewsSection/ReviewsSection";
 // import SettingsSection from "@components/settingsSection/SettingSection";
 
 const AdminPanel = () => {
@@ -19,6 +20,8 @@ const AdminPanel = () => {
         return <AnalyticsSection />;
       case "Newsletter Subscribers":
         return <NewsletterAdminSection />;
+      case "Reviews":
+        return <ReviewsSection />;
       // case "Settings":
       // return <SettingsSection />;
       default:
